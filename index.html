@@ -81,19 +81,23 @@
       color: var(--muted);
     }
 
-    /* ── 4-Module Selector Cards ── */
+    /* ── 5-Module Selector Cards (Spread across top bar) ── */
     .app-tabs {
       display: flex;
-      align-items: center;
-      gap: 6px;
+      flex: 1;
+      align-items: stretch;
+      justify-content: space-between;
+      gap: 8px;
       overflow-x: auto;
-      padding: 2px 0;
+      padding: 2px 4px;
     }
     .app-tab {
       display: flex;
+      flex: 1;
       align-items: center;
+      justify-content: space-between;
       gap: 8px;
-      padding: 6px 11px;
+      padding: 6px 12px;
       border-radius: 7px;
       border: 1px solid rgba(255, 255, 255, 0.11);
       background: rgba(255, 255, 255, 0.03);
@@ -103,6 +107,7 @@
       white-space: nowrap;
       text-align: left;
       position: relative;
+      min-width: 0;
     }
     .app-tab:hover {
       color: var(--text);
@@ -125,6 +130,7 @@
       color: var(--cyan);
       border: 1px solid rgba(0, 245, 212, 0.3);
       letter-spacing: 0.04em;
+      flex-shrink: 0;
     }
     .app-tab.active .era {
       background: var(--cyan);
@@ -134,15 +140,21 @@
       display: flex;
       flex-direction: column;
       gap: 1px;
+      flex: 1;
+      min-width: 0;
     }
     .tab-name {
       font-size: 11.8px;
       font-weight: 700;
       color: inherit;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .tab-desc {
       font-size: 9.8px;
       color: #7c8798;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .app-tab.active .tab-desc {
       color: #b4f8ec;
@@ -171,26 +183,10 @@
       align-items: center;
       gap: 7px;
       white-space: nowrap;
-    }
-    .audio-status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 9px;
-      border-radius: 5px;
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      font-family: ui-monospace, SFMono-Regular, monospace;
-      font-size: 10.5px;
-      color: var(--muted);
-    }
-    .audio-status-pill.active {
-      border-color: rgba(48, 209, 88, 0.5);
-      color: #86efac;
-      background: rgba(20, 83, 45, 0.3);
+      flex-shrink: 0;
     }
     .btn-action {
-      padding: 5px 10px;
+      padding: 6px 11px;
       border-radius: 5px;
       border: 1px solid rgba(255, 146, 43, 0.45);
       background: rgba(255, 146, 43, 0.13);
@@ -203,10 +199,6 @@
     }
     .btn-action:hover {
       background: rgba(255, 146, 43, 0.26);
-    }
-    .btn-action.quad-active {
-      background: var(--amber);
-      color: #0b0c0e;
     }
     .btn-silence {
       border-color: rgba(255, 69, 58, 0.45);
@@ -385,13 +377,12 @@
     <!-- Top Master Navigation & Era Selector -->
     <header class="hub-nav">
       <div class="hub-brand">
-        <span class="hub-badge">STUDIO ACOUSTICS LAB</span>
         <div class="hub-brand-titles">
           <div class="hub-brand-main">
-            <span>5-Era Interactive Audio Engineering Suite</span>
-            <button type="button" class="edu-tip-badge" data-edu-title="How to Use This Interactive Learning Suite" data-edu-tip="Choose any of the 5 historical studio & acoustic simulators across the top bar. Throughout every simulator, click or hover over any '?' badge for pop-up physics & engineering breakdowns, or click any '▼ Unfold' bar to reveal deep-dive notes without cluttering the hardware controls. Switching tabs automatically pauses audio in the previous simulator so audio never overlaps!" data-edu-try="Click the foldable 'Interactive Learning Guide' bar right below the header to view 3 guided listening experiments for the active simulator.">?</button>
+            <span>Studio FX Eras</span>
+            <button type="button" class="edu-tip-badge" data-edu-title="How to Use Studio FX Eras" data-edu-tip="Choose any of the 5 historical studio & acoustic simulators across the top bar. Throughout every simulator, click or hover over any '?' badge for pop-up physics & engineering breakdowns, or click any '▼ Unfold' bar to reveal deep-dive notes without cluttering the hardware controls. Switching tabs automatically pauses audio in the previous simulator so audio never overlaps!" data-edu-try="Click the foldable 'Interactive Learning Guide' bar right below the header to view 3 guided listening experiments for the active simulator.">?</button>
           </div>
-          <div class="hub-brand-sub">Click any <strong>?</strong> badge for pop-up tips • Unfold <strong>▼</strong> drawers for deep notes</div>
+          <div class="hub-brand-sub">Click any <strong>?</strong> badge for tips • Unfold <strong>▼</strong> for notes</div>
         </div>
       </div>
 
@@ -445,19 +436,9 @@
 
       <!-- Audio Coordinator & View Controls -->
       <div class="hub-actions">
-        <div id="audio-status-pill" class="audio-status-pill" title="Cross-app Web Audio monitor — switching tabs automatically suspends inactive apps">
-          <span id="audio-status-dot" class="tab-audio-dot"></span>
-          <span id="audio-status-text">AUDIO STANDBY</span>
-        </div>
-        <button id="btn-silence-all" class="btn-action btn-silence" title="Immediately pause and suspend audio across all 4 simulators">
+        <button id="btn-silence-all" class="btn-action btn-silence" title="Immediately pause and suspend audio across all 5 simulators">
           🔇 Mute All
         </button>
-        <button id="btn-quad" class="btn-action" title="View all 4 simulators side-by-side in a 2x2 grid">
-          2×2 Quad View
-        </button>
-        <a id="btn-popout" class="btn-action" href="/app-3d-acoustics.html" target="_blank" rel="noopener">
-          Full Tab ↗
-        </a>
       </div>
     </header>
 
@@ -616,28 +597,14 @@
 
     const tabs = document.querySelectorAll('.app-tab');
     const iframeDeck = document.getElementById('iframe-deck');
-    const popoutBtn = document.getElementById('btn-popout');
-    const quadBtn = document.getElementById('btn-quad');
-    const quadContainer = document.getElementById('quad-container');
     const silenceAllBtn = document.getElementById('btn-silence-all');
-    const audioStatusPill = document.getElementById('audio-status-pill');
-    const audioStatusText = document.getElementById('audio-status-text');
 
     const guideEraTag = document.getElementById('guide-era-tag');
     const guideHeadline = document.getElementById('guide-headline');
     const guideOverview = document.getElementById('guide-overview');
     const guideExperiments = document.getElementById('guide-experiments');
 
-    const apps = [
-      { id: 'app-3d-acoustics', url: '/app-3d-acoustics.html', title: '3D Acoustic Room Simulator' },
-      { id: 'app-1950s-studio', url: '/app-1950s-studio.html', title: '1950s Recording Studio & Lathe' },
-      { id: 'app-emt140-plate', url: '/app-emt140-plate.html', title: '1960s EMT-140 Plate Reverb' },
-      { id: 'app-vintage-suite', url: '/app-vintage-suite.html', title: '1970s–90s Vintage Studio Suite' },
-      { id: 'app-lexicon-224', url: '/app-lexicon-224.html', title: '1978 Lexicon 224 Digital Reverb' }
-    ];
-
     let activeAppId = 'app-3d-acoustics';
-    let isQuad = false;
     const playingApps = new Set();
 
     function updateCurriculumBar(appId) {
@@ -663,24 +630,6 @@
         const id = tab.getAttribute('data-app-id');
         tab.classList.toggle('is-playing', playingApps.has(id));
       });
-
-      if (playingApps.size > 0) {
-        audioStatusPill.classList.add('active');
-        const activeList = Array.from(playingApps)
-          .map((id) => {
-            if (id === 'app-3d-acoustics') return '3D Room';
-            if (id === 'app-1950s-studio') return '1950s Studio';
-            if (id === 'app-emt140-plate') return 'EMT-140';
-            if (id === 'app-vintage-suite') return '70s–90s Rack';
-            if (id === 'app-lexicon-224') return 'Lexicon 224';
-            return id;
-          })
-          .join(' + ');
-        audioStatusText.textContent = `PLAYING: ${activeList}`;
-      } else {
-        audioStatusPill.classList.remove('active');
-        audioStatusText.textContent = 'AUDIO STANDBY';
-      }
     }
 
     function suspendIframeAudio(iframeEl) {
@@ -693,7 +642,6 @@
 
     function silenceAllSimulators() {
       iframeDeck.querySelectorAll('iframe.app-frame').forEach(suspendIframeAudio);
-      quadContainer.querySelectorAll('iframe').forEach(suspendIframeAudio);
       playingApps.clear();
       updateAudioStatusUI();
     }
@@ -724,10 +672,6 @@
           t.setAttribute('aria-selected', String(isMatch));
         });
 
-        if (isQuad) {
-          toggleQuad(false);
-        }
-
         // Suspend audio in all other frames so switching apps never causes overlapping audio
         iframeDeck.querySelectorAll('iframe.app-frame').forEach((frame) => {
           const frameAppId = frame.getAttribute('data-app-id');
@@ -740,46 +684,21 @@
 
         const activeFrame = getOrCreateAppFrame(targetId, targetUrl);
         activeFrame.classList.add('active');
-        popoutBtn.href = targetUrl;
 
         updateCurriculumBar(targetId);
         updateAudioStatusUI();
       });
     });
 
-    function toggleQuad(forceState) {
-      isQuad = typeof forceState === 'boolean' ? forceState : !isQuad;
-      quadBtn.classList.toggle('quad-active', isQuad);
-
-      if (isQuad) {
-        silenceAllSimulators();
-        iframeDeck.style.display = 'none';
-        quadContainer.classList.add('active');
-        quadContainer.innerHTML = apps
-          .map(
-            (a) => `
-            <div class="quad-cell">
-              <a class="quad-label" href="${a.url}" target="_blank">${a.title} ↗</a>
-              <iframe data-app-id="${a.id}" src="${a.url}" allow="autoplay; microphone"></iframe>
-            </div>
-          `
-          )
-          .join('');
-      } else {
-        quadContainer.querySelectorAll('iframe').forEach(suspendIframeAudio);
-        quadContainer.classList.remove('active');
-        quadContainer.innerHTML = '';
-        iframeDeck.style.display = 'block';
-      }
+    if (silenceAllBtn) {
+      silenceAllBtn.addEventListener('click', () => silenceAllSimulators());
     }
-
-    quadBtn.addEventListener('click', () => toggleQuad());
-    silenceAllBtn.addEventListener('click', () => silenceAllSimulators());
 
     // Listen for live audio state updates from child simulator iframes
     window.addEventListener('message', (e) => {
       if (!e.data || e.data.type !== 'STUDIO_APP_AUDIO_STATE') return;
-      const { appId, playing } = e.data;
+      const playing = Boolean(e.data.playing ?? e.data.isPlaying);
+      const { appId } = e.data;
       if (!appId) return;
       if (playing) {
         playingApps.add(appId);
