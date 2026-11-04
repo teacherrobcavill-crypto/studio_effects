@@ -632,10 +632,12 @@ class PlateReverbApp {
     const downloadBtn = document.getElementById('btn-download-webapp');
 
     const getStandaloneHtml = async () => {
-      try {
-        const res = await fetch('dist/index.html');
-        if (res.ok) return await res.text();
-      } catch (_) {}
+      for (const candidate of ['emt140-webapp.html', 'dist/index.html']) {
+        try {
+          const res = await fetch(candidate);
+          if (res.ok) return await res.text();
+        } catch (_) {}
+      }
       return '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
     };
 

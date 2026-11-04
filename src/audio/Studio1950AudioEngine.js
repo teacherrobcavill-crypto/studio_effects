@@ -10,6 +10,11 @@ import { LiveRoomEngine } from './LiveRoomEngine.js';
 import { ConsoleEngine } from './ConsoleEngine.js';
 import { TapeSystem } from './TapeSystem.js';
 import { CuttingLathe } from './CuttingLathe.js';
+import micWorkletSource from './worklets/MicWorklet.js?raw';
+import variMuWorkletSource from './worklets/VariMuWorklet.js?raw';
+import pultecWorkletSource from './worklets/PultecWorklet.js?raw';
+import tapeWorkletSource from './worklets/TapeWorklet.js?raw';
+import latheWorkletSource from './worklets/LatheWorklet.js?raw';
 
 export class AudioEngine {
   constructor() {
@@ -46,17 +51,27 @@ export class AudioEngine {
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     this.ctx = new AudioCtx({ latencyHint: 'interactive' });
 
-    // Load all 5 dedicated AudioWorklet files
-    const workletPaths = [
-      './src/audio/worklets/MicWorklet.js',
-      './src/audio/worklets/VariMuWorklet.js',
-      './src/audio/worklets/PultecWorklet.js',
-      './src/audio/worklets/TapeWorklet.js',
-      './src/audio/worklets/LatheWorklet.js'
+    // Load all 5 dedicated AudioWorklet files (bundled via Blob URL for Vite dev & production)
+    const workletModules = [
+      { source: micWorkletSource, path: './src/audio/worklets/MicWorklet.js' },
+      { source: variMuWorkletSource, path: './src/audio/worklets/VariMuWorklet.js' },
+      { source: pultecWorkletSource, path: './src/audio/worklets/PultecWorklet.js' },
+      { source: tapeWorkletSource, path: './src/audio/worklets/TapeWorklet.js' },
+      { source: latheWorkletSource, path: './src/audio/worklets/LatheWorklet.js' }
     ];
 
-    for (const path of workletPaths) {
-      await this.ctx.audioWorklet.addModule(path);
+    for (const mod of workletModules) {
+      if (typeof mod.source === 'string' && mod.source.length > 0) {
+        const blob = new Blob([mod.source], { type: 'application/javascript' });
+        const blobUrl = URL.createObjectURL(blob);
+        try {
+          await this.ctx.audioWorklet.addModule(blobUrl);
+        } finally {
+          URL.revokeObjectURL(blobUrl);
+        }
+      } else {
+        await this.ctx.audioWorklet.addModule(mod.path);
+      }
     }
 
     // Instantiate core DSP engines
