@@ -3,10 +3,282 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vintage Studio Technology Interactive Suite (1970s–1990s)</title>
+  <title>Master Studio Simulator Hub — All 4 Acoustic &amp; Vintage Hardware Apps</title>
+  <style>
+    :root {
+      --bg: #0c0d10;
+      --bar: #14161c;
+      --border: rgba(255, 255, 255, 0.1);
+      --cyan: #00f5d4;
+      --amber: #ff922b;
+      --text: #f1f3f5;
+      --muted: #9098a3;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+    .hub-shell {
+      display: grid;
+      grid-template-rows: 50px 1fr;
+      width: 100vw;
+      height: 100vh;
+    }
+    .hub-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      background: var(--bar);
+      border-bottom: 1px solid var(--border);
+      gap: 10px;
+      z-index: 100;
+    }
+    .hub-brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+    .hub-badge {
+      padding: 3px 7px;
+      border-radius: 5px;
+      background: rgba(0, 245, 212, 0.14);
+      border: 1px solid rgba(0, 245, 212, 0.4);
+      color: var(--cyan);
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 11px;
+    }
+    .app-tabs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+    }
+    .app-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .app-tab:hover {
+      color: var(--text);
+      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.07);
+    }
+    .app-tab.active {
+      background: rgba(0, 245, 212, 0.13);
+      border-color: var(--cyan);
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(0, 245, 212, 0.18);
+    }
+    .app-tab .era {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--cyan);
+    }
+    .hub-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .btn-action {
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 146, 43, 0.45);
+      background: rgba(255, 146, 43, 0.13);
+      color: #ffd8a8;
+      font-size: 11.5px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-action:hover {
+      background: rgba(255, 146, 43, 0.25);
+    }
+    .btn-action.quad-active {
+      background: var(--amber);
+      color: #0b0c0e;
+    }
+    .stage-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background: #090a0d;
+    }
+    .single-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+    .quad-grid {
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      width: 100%;
+      height: 100%;
+      gap: 2px;
+      background: #222630;
+    }
+    .quad-grid.active {
+      display: grid;
+    }
+    .quad-cell {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #0c0d10;
+      overflow: hidden;
+    }
+    .quad-cell iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    .quad-label {
+      position: absolute;
+      top: 6px;
+      right: 10px;
+      background: rgba(12, 13, 16, 0.88);
+      border: 1px solid rgba(0, 245, 212, 0.4);
+      color: var(--cyan);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10.5px;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      text-decoration: none;
+      z-index: 10;
+    }
+  </style>
 </head>
-<body style="margin: 0; background: #121418;">
-  <div id="vst-suite-mount"></div>
-  <script type="module" src="/src/main.js"></script>
+<body>
+  <div class="hub-shell">
+    <header class="hub-nav">
+      <div class="hub-brand">
+        <span class="hub-badge">STUDIO SUITE HUB</span>
+        <span>4 Apps Isolated &amp; Ready</span>
+      </div>
+
+      <div class="app-tabs" id="tab-bar">
+        <button class="app-tab active" data-url="/app-3d-acoustics.html">
+          <span class="era">3D DSP</span>
+          <span>3D Acoustic Room Simulator</span>
+        </button>
+        <button class="app-tab" data-url="/app-1950s-studio.html">
+          <span class="era">1950s</span>
+          <span>1950s Console, Tape &amp; Cutting Lathe</span>
+        </button>
+        <button class="app-tab" data-url="/app-emt140-plate.html">
+          <span class="era">1960s</span>
+          <span>EMT-140 Plate Reverb Rack</span>
+        </button>
+        <button class="app-tab" data-url="/app-vintage-suite.html">
+          <span class="era">1970s–90s</span>
+          <span>Gated Reverb · Dolby · SMPTE Suite</span>
+        </button>
+      </div>
+
+      <div class="hub-actions">
+        <button id="btn-quad" class="btn-action" title="View all 4 simulators side-by-side in a 2x2 grid">
+          2×2 Quad View
+        </button>
+        <a id="btn-popout" class="btn-action" href="/app-3d-acoustics.html" target="_blank" rel="noopener">
+          Open Current in New Tab ↗
+        </a>
+        <button id="btn-open-all" class="btn-action" title="Open all 4 apps in separate browser tabs">
+          Launch All 4 Tabs ↗
+        </button>
+      </div>
+    </header>
+
+    <main class="stage-container">
+      <iframe id="main-frame" class="single-frame" src="/app-3d-acoustics.html" allow="autoplay"></iframe>
+      <div id="quad-container" class="quad-grid"></div>
+    </main>
+  </div>
+
+  <script>
+    const tabs = document.querySelectorAll('.app-tab');
+    const mainFrame = document.getElementById('main-frame');
+    const popoutBtn = document.getElementById('btn-popout');
+    const quadBtn = document.getElementById('btn-quad');
+    const quadContainer = document.getElementById('quad-container');
+    const openAllBtn = document.getElementById('btn-open-all');
+
+    const apps = [
+      { url: '/app-3d-acoustics.html', title: '3D Acoustic Room Simulator' },
+      { url: '/app-1950s-studio.html', title: '1950s Recording Studio & Lathe' },
+      { url: '/app-emt140-plate.html', title: '1960s EMT-140 Plate Reverb' },
+      { url: '/app-vintage-suite.html', title: '1970s–90s Vintage Studio Suite' }
+    ];
+
+    let isQuad = false;
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const url = tab.getAttribute('data-url');
+        tabs.forEach((t) => t.classList.toggle('active', t === tab));
+
+        if (isQuad) {
+          toggleQuad(false);
+        }
+        mainFrame.src = url;
+        popoutBtn.href = url;
+      });
+    });
+
+    function toggleQuad(forceState) {
+      isQuad = typeof forceState === 'boolean' ? forceState : !isQuad;
+      quadBtn.classList.toggle('quad-active', isQuad);
+
+      if (isQuad) {
+        mainFrame.style.display = 'none';
+        quadContainer.classList.add('active');
+        quadContainer.innerHTML = apps
+          .map(
+            (a) => `
+            <div class="quad-cell">
+              <a class="quad-label" href="${a.url}" target="_blank">${a.title} ↗</a>
+              <iframe src="${a.url}" allow="autoplay"></iframe>
+            </div>
+          `
+          )
+          .join('');
+      } else {
+        quadContainer.classList.remove('active');
+        quadContainer.innerHTML = '';
+        mainFrame.style.display = 'block';
+      }
+    }
+
+    quadBtn.addEventListener('click', () => toggleQuad());
+
+    openAllBtn.addEventListener('click', () => {
+      apps.forEach((a) => window.open(a.url, '_blank'));
+    });
+  </script>
 </body>
 </html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1960s EMT-140 ST Hallplatten-Nachhallgerät — Physical Plate Reverb Simulator</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Three.js r128 + OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+  <!-- Drag-and-Drop Audio File Overlay -->
+  <div id="drop-overlay" class="drop-overlay">
+    <div class="drop-box">
+      <h2>Drop Audio Tape Stem onto Plate Transducer</h2>
+      <p>Supports .WAV, .MP3, .OGG, .FLAC — Decodes directly into 48 kHz FDN-16 Engine</p>
+    </div>
+  </div>
+
+  <input id="hidden-file-input" type="file" accept=".wav,.mp3,.ogg,.flac,audio/*" style="display:none;" />
+
+  <!-- Top Web-App Embed & Copy-Code Toolbar -->
+  <nav class="webapp-host-bar">
+    <div class="host-bar-left">
+      <span class="host-badge">1960s STUDIO EDITION</span>
+      <span>Self-Contained Zero-GC Web Audio + WebGL Plate Reverb — Ready to Embed or Host</span>
+    </div>
+    <div class="host-bar-actions">
+      <button id="btn-copy-webapp" class="host-btn primary">COPY FULL WEB APP HTML</button>
+      <button id="btn-download-webapp" class="host-btn">DOWNLOAD .HTML BUNDLE</button>
+    </div>
+  </nav>
+
+  <!-- 1960s EMT-140 ST Hammerschlag Enamel Studio Enclosure -->
+  <main class="rack-enclosure">
+    <!-- Left Mahogany & Hammerite Rack Ear -->
+    <aside class="rack-ear">
+      <div class="rack-bolt"></div>
+      <div class="rack-bolt"></div>
+      <div class="rack-handle"></div>
+      <div class="rack-bolt"></div>
+      <div class="rack-bolt"></div>
+    </aside>
+
+    <!-- Main 1960s Hammer-Tone Steel Faceplate -->
+    <section class="rack-faceplate">
+      <!-- Top Header: Riveted EMT Badge + Backlit Gondola Mechanical Scale + Mains Switch -->
+      <header class="rack-header">
+        <div class="brand-plate">
+          <div class="emt-riveted-badge">
+            <span class="emt-logo-main">EMT 140 ST</span>
+            <span class="emt-logo-sub">LAHR / SCHWARZWALD</span>
+          </div>
+          <div class="brand-titles">
+            <h1>Hallplatten-Nachhallgerät — Studio Plate Reverb</h1>
+            <p>WILHELM FRANZ KG • V76 TUBE DRIVER • FDN-16 FLEXURAL DISPERSION NETWORK</p>
+          </div>
+        </div>
+
+        <!-- Iconic 1960s Backlit Mechanical Gondola Damper Scale ("Nachhallzeit") -->
+        <div class="gondola-dial-housing">
+          <div class="gondola-top-labels">
+            <span id="gondola-alloy-val">PLATE: STEEL (EMT 140)</span>
+            <span>NACHHALLZEIT / DÄMPFUNGSPLATTE</span>
+            <span id="gondola-gap-val">PAD GAP: 120 mm</span>
+            <span id="gondola-rt60-val">RT60: 3.2 s</span>
+          </div>
+          <div class="gondola-glass-window">
+            <div class="gondola-scale-marks">
+              <span>0.5s</span>
+              <span>1.0s</span>
+              <span>1.5s</span>
+              <span>2.0s</span>
+              <span>3.0s</span>
+              <span>4.5s</span>
+              <span>6.0s</span>
+              <span>9.0s</span>
+              <span>12s</span>
+            </div>
+            <div id="gondola-needle" class="gondola-needle"></div>
+          </div>
+        </div>
+
+        <!-- Mains Red/Amber Pilot Lamp & Rocker Switch -->
+        <div class="power-cluster">
+          <div id="pilot-jewel" class="pilot-jewel" title="V76 Vacuum Tube Heater & DSP Status"></div>
+          <button id="btn-power" class="power-rocker">MAINS OFF</button>
+        </div>
+      </header>
+
+      <!-- 3D Cutaway Mechanical Plate Crate Viewport -->
+      <div class="viewport-bezel">
+        <div id="plate-canvas-container"></div>
+
+        <div class="viewport-hud-top">
+          <div class="hud-pill">
+            <span>CUTAWAY STUDIO CRATE — 2.0m × 1.0m SUSPENDED SHEET</span>
+            <button id="btn-reset-camera" class="hud-btn">CENTER CAMERA</button>
+          </div>
+          <div class="hud-pill">
+            <span>TUBE AMP: 3× TELEFUNKEN EF804S • SPRINGS: 4-CORNER HELICAL</span>
+          </div>
+        </div>
+
+        <div class="viewport-hud-bottom">
+          <span>ORBIT 360°: LEFT DRAG • PAN: RIGHT DRAG • ZOOM: SCROLL WHEEL</span>
+          <span>DRIVER: MOVING-COIL TRANSDUCER • PICKUPS: DUAL ASYMMETRIC PIEZO</span>
+        </div>
+      </div>
+
+      <!-- Lower 1960s Telefunken/EMT Control Modules -->
+      <div class="control-deck">
+        <!-- MODULE I: Input Amplifier & Studio Tape / Stem Sources -->
+        <div class="hw-bay">
+          <div class="bay-header">
+            <span class="bay-title">I. Tube Driver &amp; Signal Source</span>
+            <span class="bay-subtitle">4-STAGE ALL-PASS DIFFUSER</span>
+          </div>
+
+          <div class="source-toolbar">
+            <div class="source-mode-tabs">
+              <button class="hw-tab-btn active" data-source="impulse">IMPULSE</button>
+              <button class="hw-tab-btn" data-source="stem">TAPE STEMS</button>
+              <button class="hw-tab-btn" data-source="mic">LIVE MIC</button>
+              <button class="hw-tab-btn" data-source="file">DROP FILE</button>
+            </div>
+
+            <div class="source-sub-row">
+              <select id="source-sub-select" class="hw-select"></select>
+              <button id="btn-trigger-impulse" class="hw-action-btn trig-btn">STRIKE PLATE</button>
+              <button id="btn-loop-toggle" class="hw-action-btn loop-btn">PLAY LOOP</button>
+            </div>
+          </div>
+
+          <div class="knobs-row">
+            <div id="knob-input-gain" class="knob-widget"></div>
+            <div id="knob-predelay" class="knob-widget"></div>
+          </div>
+        </div>
+
+        <!-- MODULE II: Plate Metallurgy & Motorized Mechanical Damper -->
+        <div class="hw-bay">
+          <div class="bay-header">
+            <span class="bay-title">II. Plate Metallurgy &amp; Damper Motor</span>
+            <span class="bay-subtitle">16×16 WALSH-HADAMARD MATRIX</span>
+          </div>
+
+          <div class="material-bank">
+            <button class="mat-push-btn active" data-material="0">
+              <span class="mat-led"></span>
+              <span class="mat-name">STEEL</span>
+              <span class="mat-spec">EMT 140 • 4.5kHz</span>
+            </button>
+            <button class="mat-push-btn" data-material="1">
+              <span class="mat-led"></span>
+              <span class="mat-name">GOLD</span>
+              <span class="mat-spec">EMT 240 • 2.8kHz</span>
+            </button>
+            <button class="mat-push-btn" data-material="2">
+              <span class="mat-led"></span>
+              <span class="mat-name">ALUMINIUM</span>
+              <span class="mat-spec">BRIGHT • 7.5kHz</span>
+            </button>
+            <button class="mat-push-btn" data-material="3">
+              <span class="mat-led"></span>
+              <span class="mat-name">TITANIUM</span>
+              <span class="mat-spec">DENSE • 6.2kHz</span>
+            </button>
+          </div>
+
+          <div class="knobs-row">
+            <div id="knob-plate-size" class="knob-widget"></div>
+            <div id="knob-decay" class="knob-widget"></div>
+            <div id="knob-damping" class="knob-widget"></div>
+          </div>
+        </div>
+
+        <!-- MODULE III: Stereo Piezo Pickups & 80 Hz High-Pass Stage -->
+        <div class="hw-bay">
+          <div class="bay-header">
+            <span class="bay-title">III. Stereo Pickup Amplifier</span>
+            <span class="bay-subtitle">EQUAL-POWER BLEND</span>
+          </div>
+
+          <div class="switch-row">
+            <div class="switch-label-group">
+              <span class="switch-title">80 Hz Bass Cut Filter</span>
+              <span class="switch-desc">12 dB/oct Butterworth High-Pass</span>
+            </div>
+            <button id="switch-lowcut" class="toggle-switch active">
+              <span class="sw-dot"></span>
+              <span class="sw-text">80Hz ON</span>
+            </button>
+          </div>
+
+          <div class="knobs-row">
+            <div id="knob-mix" class="knob-widget"></div>
+            <div id="knob-output" class="knob-widget"></div>
+          </div>
+        </div>
+
+        <!-- MODULE IV: Dual 1960s Backlit Analog Needle VU + 12-Segment Peak Ladder -->
+        <div class="vu-meter-bay">
+          <div class="bay-header">
+            <span class="bay-title">VU / PEAK METER</span>
+            <span class="bay-subtitle">IN / OUT</span>
+          </div>
+
+          <!-- Warm Backlit Analog Moving-Coil Dial -->
+          <div class="analog-vu-window">
+            <svg class="analog-vu-svg" viewBox="0 0 210 72">
+              <!-- Left Dial (IN) -->
+              <path d="M 18 58 A 42 42 0 0 1 92 58" fill="none" stroke="#291805" stroke-width="1.5" />
+              <path d="M 72 26 A 42 42 0 0 1 92 58" fill="none" stroke="#b91c1c" stroke-width="2.5" />
+              <text x="55" y="46" text-anchor="middle" font-family="monospace" font-size="8" font-weight="bold" fill="#291805">IN VU</text>
+              <line id="vu-needle-in" x1="55" y1="68" x2="55" y2="14" stroke="#1c1917" stroke-width="1.8" transform="rotate(-42 55 68)" />
+              <circle cx="55" cy="68" r="4" fill="#291805" />
+
+              <!-- Divider -->
+              <line x1="105" y1="6" x2="105" y2="66" stroke="rgba(41,24,5,0.25)" stroke-width="1" />
+
+              <!-- Right Dial (OUT) -->
+              <path d="M 118 58 A 42 42 0 0 1 192 58" fill="none" stroke="#291805" stroke-width="1.5" />
+              <path d="M 172 26 A 42 42 0 0 1 192 58" fill="none" stroke="#b91c1c" stroke-width="2.5" />
+              <text x="155" y="46" text-anchor="middle" font-family="monospace" font-size="8" font-weight="bold" fill="#291805">OUT VU</text>
+              <line id="vu-needle-out" x1="155" y1="68" x2="155" y2="14" stroke="#b91c1c" stroke-width="1.8" transform="rotate(-42 155 68)" />
+              <circle cx="155" cy="68" r="4" fill="#291805" />
+            </svg>
+          </div>
+
+          <div class="vu-columns">
+            <div class="vu-channel">
+              <div id="vu-input-ladder" class="vu-ladder"></div>
+              <span class="vu-ch-label">IN</span>
+            </div>
+
+            <div class="vu-scale">
+              <span>CLIP</span>
+              <span>0dB</span>
+              <span>-3</span>
+              <span>-6</span>
+              <span>-12</span>
+              <span>-24</span>
+            </div>
+
+            <div class="vu-channel">
+              <div id="vu-output-ladder" class="vu-ladder"></div>
+              <span class="vu-ch-label">OUT</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Mahogany & Hammerite Rack Ear -->
+    <aside class="rack-ear">
+      <div class="rack-bolt"></div>
+      <div class="rack-bolt"></div>
+      <div class="rack-handle"></div>
+      <div class="rack-bolt"></div>
+      <div class="rack-bolt"></div>
+    </aside>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

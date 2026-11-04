@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive Physics-Driven Acoustic Room Simulator</title>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- TOP STUDIO TRANSPORT BAR -->
+    <header class="top-bar">
+      <div class="brand-block">
+        <div class="brand-logo">RT60</div>
+        <div class="brand-title">
+          <h1>ACOUSTIC LAB // 1950s STUDIO ROOM SIMULATOR</h1>
+          <p>Real-Time Image-Source Ray Tracing · Sabine &amp; Eyring RT60 · Boundary Loading DSP</p>
+        </div>
+      </div>
+
+      <div class="transport-controls">
+        <button id="btn-play" class="btn-primary-transport">
+          <span class="status-dot"></span> START AUDIO ENGINE
+        </button>
+
+        <button id="btn-clap" class="btn-clap" title="Trigger immediate Dirac impulse clap">
+          IMPULSE CLAP
+        </button>
+
+        <div class="instrument-group" role="group" aria-label="Sound Source">
+          <button class="inst-btn active" data-instrument="guitar">Guitar</button>
+          <button class="inst-btn" data-instrument="bass">Upright Bass</button>
+          <button class="inst-btn" data-instrument="drums">Drum Kit</button>
+          <button class="inst-btn" data-instrument="test_pulse">Dirac / Pink</button>
+        </div>
+
+        <div class="volume-box">
+          <span>OUT</span>
+          <input id="slider-volume" type="range" min="0" max="1.2" step="0.02" value="0.85" />
+          <span id="val-volume">85%</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 3-COLUMN STUDIO WORKSPACE -->
+    <main class="workspace-grid">
+      <!-- LEFT PANEL: SCENARIOS, ROOM GEOMETRY, MATERIALS, COORDINATES -->
+      <aside class="side-panel left-panel">
+        <!-- Guided Educational Scenarios -->
+        <section class="panel-section">
+          <div class="section-header">
+            <h2>Guided Acoustic Presets</h2>
+            <span>4 Scenarios</span>
+          </div>
+          <div id="scenario-buttons" class="scenario-grid"></div>
+        </section>
+
+        <!-- Room Dimensions -->
+        <section class="panel-section">
+          <div class="section-header">
+            <h2>Room Geometry</h2>
+            <span>c = 343 m/s</span>
+          </div>
+          <div class="control-row">
+            <label for="dim-width">Width (X)</label>
+            <input id="dim-width" type="range" min="3.0" max="18.0" step="0.1" value="8.5" />
+            <span id="val-dim-width" class="control-val">8.5 m</span>
+          </div>
+          <div class="control-row">
+            <label for="dim-height">Height (Y)</label>
+            <input id="dim-height" type="range" min="2.4" max="9.0" step="0.1" value="4.2" />
+            <span id="val-dim-height" class="control-val">4.2 m</span>
+          </div>
+          <div class="control-row">
+            <label for="dim-depth">Depth (Z)</label>
+            <input id="dim-depth" type="range" min="3.0" max="20.0" step="0.1" value="10.0" />
+            <span id="val-dim-depth" class="control-val">10.0 m</span>
+          </div>
+        </section>
+
+        <!-- Surface Boundary Materials -->
+        <section class="panel-section">
+          <div class="section-header">
+            <h2>Boundary Absorption α(f)</h2>
+            <span>6 Surfaces</span>
+          </div>
+          <div class="mat-grid">
+            <div class="mat-row">
+              <label><span class="wall-dot" style="background:#4dabf7"></span>Floor</label>
+              <select id="mat-floor"></select>
+            </div>
+            <div class="mat-row">
+              <label><span class="wall-dot" style="background:#9775fa"></span>Ceiling</label>
+              <select id="mat-ceiling"></select>
+            </div>
+            <div class="mat-row">
+              <label><span class="wall-dot" style="background:#ff6b6b"></span>Left (-X)</label>
+              <select id="mat-left"></select>
+            </div>
+            <div class="mat-row">
+              <label><span class="wall-dot" style="background:#f59f00"></span>Right (+X)</label>
+              <select id="mat-right"></select>
+            </div>
+            <div class="mat-row">
+              <label><span class="wall-dot" style="background:#20c997"></span>Front (-Z)</label>
+              <select id="mat-front"></select>
+            </div>
+            <div class="mat-row">
+              <label><span class="wall-dot" style="background:#e64980"></span>Back (+Z)</label>
+              <select id="mat-back"></select>
+            </div>
+          </div>
+
+          <div class="quick-mat-bar">
+            <button class="chip-btn" data-uniform-mat="concrete">All Concrete</button>
+            <button class="chip-btn" data-uniform-mat="wood_oak">All Wood</button>
+            <button class="chip-btn" data-uniform-mat="acoustic_tile">All Celotex</button>
+            <button class="chip-btn" data-uniform-mat="bass_trap">All Trapped</button>
+          </div>
+        </section>
+
+        <!-- Source & Microphone Coordinates + Polar Pattern -->
+        <section class="panel-section">
+          <div class="section-header">
+            <h2>Source Position (Speaker)</h2>
+            <span style="color:#ff922b">● Amber</span>
+          </div>
+          <div class="control-row">
+            <label for="src-x">Source X</label>
+            <input id="src-x" class="src-slider" type="range" min="-4" max="4" step="0.02" value="-0.6" />
+            <span id="val-src-x" class="control-val">-0.60 m</span>
+          </div>
+          <div class="control-row">
+            <label for="src-y">Source Y</label>
+            <input id="src-y" class="src-slider" type="range" min="0.22" max="4" step="0.02" value="1.25" />
+            <span id="val-src-y" class="control-val">1.25 m</span>
+          </div>
+          <div class="control-row">
+            <label for="src-z">Source Z</label>
+            <input id="src-z" class="src-slider" type="range" min="-4.5" max="4.5" step="0.02" value="-2.2" />
+            <span id="val-src-z" class="control-val">-2.20 m</span>
+          </div>
+        </section>
+
+        <section class="panel-section">
+          <div class="section-header">
+            <h2>Microphone &amp; Polar Pattern</h2>
+            <span style="color:#00f5d4">● Cyan</span>
+          </div>
+          <div class="control-row">
+            <label for="select-polar">Polar Lobe</label>
+            <select id="select-polar" style="grid-column: span 2;"></select>
+          </div>
+          <div class="control-row">
+            <label for="mic-yaw">Mic Yaw θ</label>
+            <input id="mic-yaw" type="range" min="-180" max="180" step="1" value="-18" />
+            <span id="val-mic-yaw" class="control-val">-18°</span>
+          </div>
+          <div class="control-row">
+            <label for="mic-x">Mic X</label>
+            <input id="mic-x" type="range" min="-4" max="4" step="0.02" value="0.4" />
+            <span id="val-mic-x" class="control-val">0.40 m</span>
+          </div>
+          <div class="control-row">
+            <label for="mic-y">Mic Y</label>
+            <input id="mic-y" type="range" min="0.22" max="4" step="0.02" value="1.45" />
+            <span id="val-mic-y" class="control-val">1.45 m</span>
+          </div>
+          <div class="control-row">
+            <label for="mic-z">Mic Z</label>
+            <input id="mic-z" type="range" min="-4.5" max="4.5" step="0.02" value="0.9" />
+            <span id="val-mic-z" class="control-val">0.90 m</span>
+          </div>
+        </section>
+      </aside>
+
+      <!-- CENTER STAGE: INTERACTIVE THREE.JS 3D ACOUSTIC VIEWPORT -->
+      <section class="center-stage">
+        <div id="viewport-3d"></div>
+
+        <!-- Floating Path Layer & Ray Toggles -->
+        <div class="viewport-hud-top">
+          <div class="layer-toggles-card">
+            <label class="toggle-pill">
+              <input id="toggle-direct" type="checkbox" checked />
+              <span>Direct Path</span>
+            </label>
+            <label class="toggle-pill">
+              <input id="toggle-early" type="checkbox" checked />
+              <span>Early Reflections (6)</span>
+            </label>
+            <label class="toggle-pill">
+              <input id="toggle-reverb" type="checkbox" checked />
+              <span>Sabine Late Reverb</span>
+            </label>
+            <label class="toggle-pill">
+              <input id="toggle-ghosts" type="checkbox" />
+              <span>Virtual Image Ghosts</span>
+            </label>
+            <label class="toggle-pill">
+              <input id="toggle-wavefronts" type="checkbox" checked />
+              <span>Wavefront Rings</span>
+            </label>
+          </div>
+
+          <div class="interaction-hint">
+            Drag Source/Mic: XZ Plane · Shift+Drag: Height (Y) · Orbit: Left-Click
+          </div>
+        </div>
+
+        <!-- Bottom Educational Scenario Explainer Banner -->
+        <div class="scenario-banner">
+          <div class="scenario-banner-head">
+            <strong id="scenario-title">01 · 1950s Live Tracking Room</strong>
+            <span id="hud-field-regime" class="regime-pill direct-dom">Direct-Field Dominated</span>
+          </div>
+          <p id="scenario-lesson"></p>
+        </div>
+      </section>
+
+      <!-- RIGHT PANEL: REAL-TIME ACOUSTIC TELEMETRY, RT60, REFLECTIONS, BODE & FFT -->
+      <aside class="side-panel right-panel">
+        <!-- Core Acoustic Telemetry Readout -->
+        <section class="panel-section">
+          <div class="section-header">
+            <h2>Acoustic Field Telemetry</h2>
+            <span id="hud-modes">X:20.2Hz · Y:40.8Hz · Z:17.2Hz</span>
+          </div>
+          <div class="telemetry-kpi-grid">
+            <div class="kpi-box">
+              <span class="kpi-label">Direct Dist (d₀)</span>
+              <span id="hud-direct-dist" class="kpi-val cyan">3.26 m</span>
+            </div>
+            <div class="kpi-box">
+              <span class="kpi-label">Arrival (t₀)</span>
+              <span id="hud-direct-delay" class="kpi-val">9.50 ms</span>
+            </div>
+            <div class="kpi-box">
+              <span class="kpi-label">ITDG (Δt₁)</span>
+              <span id="hud-itdg" class="kpi-val amber">2.45 ms</span>
+            </div>
+            <div class="kpi-box">
+              <span class="kpi-label">Critical Dist (dc)</span>
+              <span id="hud-crit-dist" class="kpi-val">1.92 m</span>
+            </div>
+            <div class="kpi-box">
+              <span class="kpi-label">Schroeder (fS)</span>
+              <span id="hud-schroeder" class="kpi-val">102 Hz</span>
+            </div>
+            <div class="kpi-box">
+              <span class="kpi-label">Room Volume</span>
+              <span id="hud-volume" class="kpi-val">357.0 m³</span>
+            </div>
+          </div>
+
+          <div style="margin-top:8px; display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1px solid rgba(255,255,255,0.06);">
+            <span style="font-size:11px; color:var(--text-secondary);">Boundary Loading: <strong id="hud-boundary-regime" style="color:var(--text-primary)">Half-Space</strong></span>
+            <span id="hud-boundary-boost" class="mono" style="color:var(--accent-amber); font-weight:700;">+1.8 dB</span>
+          </div>
+        </section>
+
+        <!-- Sabine & Eyring RT60 Octave Decay -->
+        <section class="panel-section">
+          <div class="section-header">
+            <h2>Sabine &amp; Eyring RT60 Decay</h2>
+            <span>0.161·V / A(f)</span>
+          </div>
+
+          <div class="rt60-row">
+            <div class="rt60-head">
+              <span>125 Hz (Low / Bass Modes)</span>
+              <strong id="rt60-val-125" style="color:#ffa8a8">0.85 s</strong>
+            </div>
+            <div class="rt60-track"><div id="rt60-bar-125" class="rt60-fill b125" style="width:35%"></div></div>
+            <div id="rt60-sub-125" class="rt60-sub">Eyring 0.78s · 67.4 Sabins</div>
+          </div>
+
+          <div class="rt60-row">
+            <div class="rt60-head">
+              <span>1.0 kHz (Mid Reference)</span>
+              <strong id="rt60-val-1000" style="color:#00f5d4">0.62 s</strong>
+            </div>
+            <div class="rt60-track"><div id="rt60-bar-1000" class="rt60-fill b1000" style="width:26%"></div></div>
+            <div id="rt60-sub-1000" class="rt60-sub">Eyring 0.54s · 92.1 Sabins</div>
+          </div>
+
+          <div class="rt60-row" style="margin-bottom:0">
+            <div class="rt60-head">
+              <span>4.0 kHz (High / Air + Tile)</span>
+              <strong id="rt60-val-4000" style="color:#74c0fc">0.51 s</strong>
+            </div>
+            <div class="rt60-track"><div id="rt60-bar-4000" class="rt60-fill b4000" style="width:20%"></div></div>
+            <div id="rt60-sub-4000" class="rt60-sub">Eyring 0.44s · 112.5 Sabins</div>
+          </div>
+        </section>
+
+        <!-- Real-Time Room Transfer Function / Comb Filter Plot -->
+        <section class="panel-section">
+          <div class="section-header">
+            <h2>Room Transfer Function H(f)</h2>
+            <span>Comb Filtering (20Hz–20kHz)</span>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="comb-canvas"></canvas>
+          </div>
+        </section>
+
+        <!-- First-Order Specular Reflection Matrix -->
+        <section class="panel-section">
+          <div class="section-header">
+            <h2>1st-Order Image-Source Paths</h2>
+            <span>6 Boundaries</span>
+          </div>
+          <table class="reflection-table">
+            <thead>
+              <tr>
+                <th>Surface</th>
+                <th>Path</th>
+                <th>Δt Delay</th>
+                <th>Gain₁ₖ</th>
+                <th>1st Notch</th>
+              </tr>
+            </thead>
+            <tbody id="reflection-table-body"></tbody>
+          </table>
+        </section>
+
+        <!-- Real-Time Web Audio FFT + RT60 Decay Envelope -->
+        <section class="panel-section">
+          <div class="section-header">
+            <h2>Live DSP Output Spectrum &amp; RT60</h2>
+            <span>FFT + Oscilloscope</span>
+          </div>
+          <div class="canvas-wrap" style="height:104px;">
+            <canvas id="spectrum-canvas"></canvas>
+          </div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <script type="module" src="/src/main-3d-acoustics.js"></script>
+</body>
+</html>
