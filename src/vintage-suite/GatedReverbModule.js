@@ -435,9 +435,6 @@ export class GatedReverbModule {
           <button type="button" class="vst-suite-chip" data-preset="power-station">Power Station Big Room</button>
           <button type="button" class="vst-suite-chip" data-preset="natural-ungated">Un-Gated Natural Plate</button>
           <button type="button" class="vst-suite-btn vst-suite-btn-trigger" data-action="hit-snare">⚡ HIT SNARE TRANSIENT</button>
-          <button type="button" class="vst-suite-chip vst-suite-chip-expand" data-action="toggle-expand" title="Toggle between single expanded view and all rack units">
-            ${this.contextBag && this.contextBag.isSingleMode && this.contextBag.isSingleMode() ? '🗗 ALL RACK UNITS' : '⛶ EXPAND VIEW'}
-          </button>
         </div>
       </div>
 
@@ -652,22 +649,6 @@ export class GatedReverbModule {
           this.ensureAudioGraph();
           if (this.contextBag.onTriggerSingleHit) {
             this.contextBag.onTriggerSingleHit();
-          }
-        },
-        sig
-      );
-    }
-
-    // Expand / Collapse Single Unit View
-    const expandBtn = this.unitEl.querySelector('[data-action="toggle-expand"]');
-    if (expandBtn) {
-      expandBtn.addEventListener(
-        'click',
-        () => {
-          if (this.contextBag && this.contextBag.isSingleMode && this.contextBag.isSingleMode()) {
-            if (this.contextBag.onShowAllUnits) this.contextBag.onShowAllUnits();
-          } else {
-            if (this.contextBag.onExpandUnit) this.contextBag.onExpandUnit();
           }
         },
         sig

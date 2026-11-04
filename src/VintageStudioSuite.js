@@ -380,14 +380,6 @@ export class VintageStudioSuite {
    */
   mount(moduleName = 'all') {
     this.currentModuleName = moduleName;
-    const isSingleMode = moduleName !== 'all';
-
-    if (this.rootEl) {
-      this.rootEl.classList.toggle('vst-suite-single-mode', isSingleMode);
-    }
-    if (this.rackStackEl) {
-      this.rackStackEl.classList.toggle('vst-suite-single-mode', isSingleMode);
-    }
 
     // Cleanly tear down existing mounted modules
     this.activeModules.forEach((m) => m.destroy());
@@ -407,7 +399,7 @@ export class VintageStudioSuite {
 
     this.activeSlotIndex = 0;
 
-    const createSlotBag = (slotIndex, modKey) => {
+    const createSlotBag = (slotIndex) => {
       let slotObj = null;
       const ensureSlot = () => {
         const ctx = this.ensureAudioContext();
@@ -426,24 +418,21 @@ export class VintageStudioSuite {
         ensureAudioContext: () => this.ensureAudioContext(),
         getInputNode: () => ensureSlot().in,
         getOutputNode: () => ensureSlot().out,
-        onTriggerSingleHit: () => this.triggerSingleSnareHit(),
-        isSingleMode: () => this.currentModuleName !== 'all',
-        onExpandUnit: () => this.mount(modKey),
-        onShowAllUnits: () => this.mount('all')
+        onTriggerSingleHit: () => this.triggerSingleSnareHit()
       };
     };
 
     if (moduleName === 'gated-reverb' || moduleName === 'all') {
       const idx = this.activeModules.length;
-      this.activeModules.push(new GatedReverbModule(this.rackStackEl, createSlotBag(idx, 'gated-reverb')));
+      this.activeModules.push(new GatedReverbModule(this.rackStackEl, createSlotBag(idx)));
     }
     if (moduleName === 'dolby-compander' || moduleName === 'all') {
       const idx = this.activeModules.length;
-      this.activeModules.push(new DolbyCompanderModule(this.rackStackEl, createSlotBag(idx, 'dolby-compander')));
+      this.activeModules.push(new DolbyCompanderModule(this.rackStackEl, createSlotBag(idx)));
     }
     if (moduleName === 'smpte-sync' || moduleName === 'all') {
       const idx = this.activeModules.length;
-      this.activeModules.push(new SmpteSynchronizerModule(this.rackStackEl, createSlotBag(idx, 'smpte-sync')));
+      this.activeModules.push(new SmpteSynchronizerModule(this.rackStackEl, createSlotBag(idx)));
     }
 
     // When all 3 rack units are mounted, automatically switch active audio monitoring
