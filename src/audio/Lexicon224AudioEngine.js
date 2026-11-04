@@ -9,6 +9,9 @@ import { ProceduralStemGenerator } from '../vintage-suite/ProceduralStemGenerato
 
 export class Lexicon224AudioEngine {
   constructor(options = {}) {
+    this.externalCtxGetter = options.ensureAudioContext || null;
+    this.externalDestGetter = options.getOutputNode || null;
+    this.externalSourceGetter = options.getInputNode || null;
     this.externalCtx = options.audioContext || null;
     this.externalDest = options.destination || null;
     this.ctx = this.externalCtx;
@@ -59,6 +62,10 @@ export class Lexicon224AudioEngine {
       return this.ctx;
     }
 
+    if (!this.ctx && this.externalCtxGetter) {
+      this.ctx = this.externalCtxGetter();
+    }
+
     if (!this.ctx) {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       this.ctx = new AudioCtx({ latencyHint: 'interactive' });
@@ -104,6 +111,14 @@ export class Lexicon224AudioEngine {
     this.inputGainNode = this.ctx.createGain();
     this.inputGainNode.gain.value = 1.0;
 
+    // Connect external source if running inside an FX rack
+    if (this.externalSourceGetter) {
+      const srcNode = this.externalSourceGetter();
+      if (srcNode) {
+        try { srcNode.connect(this.inputGainNode); } catch (_) {}
+      }
+    }
+
     this.masterGainNode = this.ctx.createGain();
     this.masterGainNode.gain.value = 0.9;
 
@@ -123,7 +138,7 @@ export class Lexicon224AudioEngine {
     this.workletNode.connect(this.analyserOut);
     this.analyserOut.connect(this.masterGainNode);
 
-    const dest = this.externalDest || this.ctx.destination;
+    const dest = (this.externalDestGetter ? this.externalDestGetter() : null) || this.externalDest || this.ctx.destination;
     this.masterGainNode.connect(dest);
 
     // Preload Procedural Stems

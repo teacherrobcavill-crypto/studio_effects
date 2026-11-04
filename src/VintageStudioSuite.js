@@ -3,6 +3,7 @@ import { ProceduralStemGenerator } from './vintage-suite/ProceduralStemGenerator
 import { GatedReverbModule } from './vintage-suite/GatedReverbModule.js';
 import { DolbyCompanderModule } from './vintage-suite/DolbyCompanderModule.js';
 import { SmpteSynchronizerModule } from './vintage-suite/SmpteSynchronizerModule.js';
+import { Lexicon224Module } from './ui/Lexicon224Module.js';
 import {
   initDeclarativeTips,
   registerHubAudioCoordinator,
@@ -146,10 +147,11 @@ export class VintageStudioSuite {
         </div>
 
         <nav class="vst-suite-module-tabs" aria-label="Rack Module Selector">
-          <button type="button" class="vst-suite-tab-btn" data-mount="all">ALL 3 RACK UNITS</button>
+          <button type="button" class="vst-suite-tab-btn" data-mount="all">ALL RACK UNITS</button>
           <button type="button" class="vst-suite-tab-btn" data-mount="gated-reverb">01 · GATED REVERB</button>
           <button type="button" class="vst-suite-tab-btn" data-mount="dolby-compander">02 · DOLBY A/B + AIR</button>
           <button type="button" class="vst-suite-tab-btn" data-mount="smpte-sync">03 · SMPTE 24-TRK SYNC</button>
+          <button type="button" class="vst-suite-tab-btn" data-mount="lexicon-224">04 · LEXICON 224</button>
         </nav>
 
         <div class="vst-suite-transport-strip">
@@ -433,6 +435,9 @@ export class VintageStudioSuite {
     if (moduleName === 'smpte-sync' || moduleName === 'all') {
       const idx = this.activeModules.length;
       this.activeModules.push(new SmpteSynchronizerModule(this.rackStackEl, createSlotBag(idx)));
+    }
+    if (moduleName === 'lexicon-224' || moduleName === 'all') {
+      this.activeModules.push(new Lexicon224Module(this.rackStackEl, createSlotBag()));
     }
 
     // When all 3 rack units are mounted, automatically switch active audio monitoring

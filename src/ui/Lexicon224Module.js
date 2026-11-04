@@ -1129,6 +1129,10 @@ export class Lexicon224Module {
     this.rafId = requestAnimationFrame(render);
   }
 
+  ensureAudioGraph() {
+    return this.engine.ensureAudioContext();
+  }
+
   suspend() {
     this.engine.suspend();
     this.updatePlayButtonUI(false);
