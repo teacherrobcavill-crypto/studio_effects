@@ -33,7 +33,7 @@ export class SmpteSynchronizerModule {
       masterTimeSec: 3600.0, // Starts at 01:00:00:00 (Standard studio 1-hour pre-roll start)
       slaveTimeSec: 3600.0,
       slaveVarispeedRatio: 1.0, // 1.000 = nominal speed
-      lockStatus: 'HARD LOCK', // 'HARD LOCK' | 'PHASE LOCK' | 'CHASE SLEW' | 'FREEWHEEL (DROPOUT)' | 'UNLOCKED'
+      lockStatus: 'HARD SYNC LOCK', // 'HARD SYNC LOCK' | 'PHASE OFFSET LOCK' | 'PHASE LOCKING' | 'CHASE SLEW' | 'FREEWHEEL (JAM SYNC)' | 'DROPOUT UNLOCK!'
       dropoutRemainingMs: 0,
       masterReelAngle: 0,
       slaveReelAngle: 0,
@@ -214,8 +214,6 @@ export class SmpteSynchronizerModule {
     }
 
     if (this.syncState.transportRunning) {
-      this.syncState.masterTimeSec += dtSec;
-
       // Error between Master TC and Slave TC (in seconds)
       const targetSlaveSec =
         this.syncState.masterTimeSec - this.params.subFramePhaseMs / 1000;
@@ -232,25 +230,30 @@ export class SmpteSynchronizerModule {
           this.syncState.lockStatus = 'DROPOUT UNLOCK!';
           this.syncState.slaveVarispeedRatio = 0.86;
         }
+        this.syncState.masterTimeSec += dtSec;
         this.syncState.slaveTimeSec += dtSec * this.syncState.slaveVarispeedRatio;
       } else if (absErrFrames > 1.5) {
         // CHASE MODE: Fast capstan varispeed slewing
         this.syncState.lockStatus = 'CHASE SLEW';
         const slew = Math.max(-0.42, Math.min(0.42, errorSec * 3.0));
         this.syncState.slaveVarispeedRatio = 1.0 + slew;
+        this.syncState.masterTimeSec += dtSec;
         this.syncState.slaveTimeSec += dtSec * this.syncState.slaveVarispeedRatio;
       } else if (absErrFrames > 0.008) {
         // PHASE LOCK MODE: Brisk proportional-derivative capstan servo pull-in through the flam zone
         this.syncState.lockStatus = 'PHASE LOCKING';
         const fine = Math.max(-0.18, Math.min(0.18, errorSec * 9.5));
         this.syncState.slaveVarispeedRatio = 1.0 + fine;
+        this.syncState.masterTimeSec += dtSec;
         this.syncState.slaveTimeSec += dtSec * this.syncState.slaveVarispeedRatio;
       } else {
         // HARD LOCK (< 0.25 ms error): Snap slave capstan to exact phase lock (zero flam!)
         this.syncState.lockStatus =
           this.params.subFramePhaseMs > 0.1 ? 'PHASE OFFSET LOCK' : 'HARD SYNC LOCK';
         this.syncState.slaveVarispeedRatio = 1.0;
-        this.syncState.slaveTimeSec = targetSlaveSec;
+        this.syncState.masterTimeSec += dtSec;
+        this.syncState.slaveTimeSec =
+          this.syncState.masterTimeSec - this.params.subFramePhaseMs / 1000;
       }
 
       // Rotate 14-inch NAB reels proportional to IPS & varispeed
@@ -666,17 +669,22 @@ export class SmpteSynchronizerModule {
     const eEl = this.unitEl.querySelector('[data-tc="err-frames"]');
     const stEl = this.unitEl.querySelector('[data-tc="status"]');
 
+    const isLocked =
+      this.syncState.lockStatus === 'HARD SYNC LOCK' ||
+      this.syncState.lockStatus === 'PHASE OFFSET LOCK';
+
     if (mEl) mEl.textContent = masterFmt.text;
     if (sEl) sEl.textContent = slaveFmt.text;
     if (vEl)
       vEl.textContent = `CAPSTAN: ${(this.syncState.slaveVarispeedRatio * 100).toFixed(2)}%`;
-    if (eEl) eEl.textContent = `Δ ${errFrames >= 0 ? '+' : ''}${errFrames.toFixed(2)} FR`;
+    if (eEl) {
+      const displayErr = Math.abs(errFrames) < 0.005 ? 0 : errFrames;
+      eEl.textContent = `Δ ${displayErr >= 0 ? '+' : ''}${displayErr.toFixed(2)} FR`;
+    }
     if (stEl) {
       stEl.textContent = this.syncState.lockStatus;
       stEl.className = `vst-suite-tc-digits ${
-        this.syncState.lockStatus === 'HARD SYNC LOCK'
-          ? 'vst-suite-tc-locked'
-          : 'vst-suite-tc-slave'
+        isLocked ? 'vst-suite-tc-locked' : 'vst-suite-tc-slave'
       }`;
     }
 
@@ -718,7 +726,6 @@ export class SmpteSynchronizerModule {
     this.drawNabReel(ctx, 112, 43, rRadius, this.syncState.masterReelAngle, 'TAKEUP', '#ff3b30');
 
     // Lynx Sync connection line between Deck A and Deck B
-    const isLocked = this.syncState.lockStatus === 'HARD SYNC LOCK';
     ctx.strokeStyle = isLocked ? '#30d158' : '#ffb74d';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
