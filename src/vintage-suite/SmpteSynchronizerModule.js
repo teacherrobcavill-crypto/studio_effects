@@ -72,7 +72,7 @@ export class SmpteSynchronizerModule {
     // when Slave Machine B has a sub-frame phase offset!
     // =========================================================================
     this.slaveServoDelay = ctx.createDelay(1.0);
-    this.slaveServoDelay.delayTime.value = 0.0005;
+    this.slaveServoDelay.delayTime.value = 0.0;
 
     this.slaveDeckGain = ctx.createGain();
     this.slaveDeckGain.gain.value = 0.75;
@@ -232,23 +232,26 @@ export class SmpteSynchronizerModule {
           this.syncState.lockStatus = 'DROPOUT UNLOCK!';
           this.syncState.slaveVarispeedRatio = 0.86;
         }
+        this.syncState.slaveTimeSec += dtSec * this.syncState.slaveVarispeedRatio;
       } else if (absErrFrames > 1.5) {
         // CHASE MODE: Fast capstan varispeed slewing
         this.syncState.lockStatus = 'CHASE SLEW';
-        const slew = Math.max(-0.35, Math.min(0.35, errorSec * 2.4));
+        const slew = Math.max(-0.42, Math.min(0.42, errorSec * 3.0));
         this.syncState.slaveVarispeedRatio = 1.0 + slew;
-      } else if (absErrFrames > 0.06) {
-        // PHASE LOCK MODE: Fine proportional-derivative capstan servo
+        this.syncState.slaveTimeSec += dtSec * this.syncState.slaveVarispeedRatio;
+      } else if (absErrFrames > 0.008) {
+        // PHASE LOCK MODE: Brisk proportional-derivative capstan servo pull-in through the flam zone
         this.syncState.lockStatus = 'PHASE LOCKING';
-        const fine = Math.max(-0.06, Math.min(0.06, errorSec * 3.8));
+        const fine = Math.max(-0.18, Math.min(0.18, errorSec * 9.5));
         this.syncState.slaveVarispeedRatio = 1.0 + fine;
+        this.syncState.slaveTimeSec += dtSec * this.syncState.slaveVarispeedRatio;
       } else {
-        // HARD LOCK (< 0.05 frame error)
-        this.syncState.lockStatus = 'HARD SYNC LOCK';
-        this.syncState.slaveVarispeedRatio = 1.0 + errorSec * 1.5;
+        // HARD LOCK (< 0.25 ms error): Snap slave capstan to exact phase lock (zero flam!)
+        this.syncState.lockStatus =
+          this.params.subFramePhaseMs > 0.1 ? 'PHASE OFFSET LOCK' : 'HARD SYNC LOCK';
+        this.syncState.slaveVarispeedRatio = 1.0;
+        this.syncState.slaveTimeSec = targetSlaveSec;
       }
-
-      this.syncState.slaveTimeSec += dtSec * this.syncState.slaveVarispeedRatio;
 
       // Rotate 14-inch NAB reels proportional to IPS & varispeed
       const baseOmega = this.params.tapeSpeedIps === 30 ? 3.2 : 1.6;
@@ -278,12 +281,20 @@ export class SmpteSynchronizerModule {
         0.002
       );
 
-      // Update Slave Machine B variable delay line to produce real audible pitch slewing & comb-filtering!
+      // Update Slave Machine B variable delay line:
+      // In HARD SYNC LOCK with 0.0 ms Sub-Frame Offset, delay is strictly 0.0s (zero flamming / comb filtering).
       const timeDiffSec = Math.abs(
         this.syncState.masterTimeSec - this.syncState.slaveTimeSec
       );
-      const clampedDelay = Math.max(0.0001, Math.min(0.08, timeDiffSec));
-      this.slaveServoDelay.delayTime.setTargetAtTime(clampedDelay, now, 0.025);
+      const isHardZeroLock =
+        this.syncState.lockStatus === 'HARD SYNC LOCK' && this.params.subFramePhaseMs <= 0.05;
+      if (isHardZeroLock) {
+        this.slaveServoDelay.delayTime.cancelScheduledValues(now);
+        this.slaveServoDelay.delayTime.setValueAtTime(0.0, now);
+      } else {
+        const clampedDelay = Math.min(0.08, timeDiffSec);
+        this.slaveServoDelay.delayTime.setTargetAtTime(clampedDelay, now, 0.018);
+      }
     }
   }
 

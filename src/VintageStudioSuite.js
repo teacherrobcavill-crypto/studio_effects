@@ -95,8 +95,9 @@ export class VintageStudioSuite {
   }
 
   /**
-   * Connects active module slots in series between masterSourceBus and masterOutputBus
-   * so single-module mounts and 'all' 3-rack suite mounts both route cleanly.
+   * Routes masterSourceBus through the currently active/focused rack module slot
+   * so each rack unit (Gated Reverb, Dolby Compander, or SMPTE Synchronizer) is
+   * auditioned cleanly without Rack Unit 01's 18ms pre-delay flamming into Rack Unit 03.
    */
   rebuildSeriesRouting() {
     if (!this.audioContext || !this.masterSourceBus || !this.masterOutputBus) return;
@@ -116,12 +117,17 @@ export class VintageStudioSuite {
       return;
     }
 
-    // Connect masterSourceBus -> slot[0].in, slot[0].out -> slot[1].in ... -> masterOutputBus
-    this.masterSourceBus.connect(this.slotBuses[0].in);
-    for (let i = 0; i < this.slotBuses.length - 1; i++) {
-      this.slotBuses[i].out.connect(this.slotBuses[i + 1].in);
+    const idx = Math.min(
+      this.slotBuses.length - 1,
+      Math.max(0, this.activeSlotIndex || 0)
+    );
+    const activeSlot = this.slotBuses[idx];
+    if (activeSlot) {
+      this.masterSourceBus.connect(activeSlot.in);
+      activeSlot.out.connect(this.masterOutputBus);
+    } else {
+      this.masterSourceBus.connect(this.masterOutputBus);
     }
-    this.slotBuses[this.slotBuses.length - 1].out.connect(this.masterOutputBus);
   }
 
   buildShellDOM() {
@@ -391,7 +397,9 @@ export class VintageStudioSuite {
       this.rackStackEl.innerHTML = '';
     }
 
-    const createSlotBag = () => {
+    this.activeSlotIndex = 0;
+
+    const createSlotBag = (slotIndex) => {
       let slotObj = null;
       const ensureSlot = () => {
         const ctx = this.ensureAudioContext();
@@ -400,7 +408,7 @@ export class VintageStudioSuite {
             in: ctx.createGain(),
             out: ctx.createGain()
           };
-          this.slotBuses.push(slotObj);
+          this.slotBuses[slotIndex] = slotObj;
           this.rebuildSeriesRouting();
         }
         return slotObj;
@@ -415,14 +423,36 @@ export class VintageStudioSuite {
     };
 
     if (moduleName === 'gated-reverb' || moduleName === 'all') {
-      this.activeModules.push(new GatedReverbModule(this.rackStackEl, createSlotBag()));
+      const idx = this.activeModules.length;
+      this.activeModules.push(new GatedReverbModule(this.rackStackEl, createSlotBag(idx)));
     }
     if (moduleName === 'dolby-compander' || moduleName === 'all') {
-      this.activeModules.push(new DolbyCompanderModule(this.rackStackEl, createSlotBag()));
+      const idx = this.activeModules.length;
+      this.activeModules.push(new DolbyCompanderModule(this.rackStackEl, createSlotBag(idx)));
     }
     if (moduleName === 'smpte-sync' || moduleName === 'all') {
-      this.activeModules.push(new SmpteSynchronizerModule(this.rackStackEl, createSlotBag()));
+      const idx = this.activeModules.length;
+      this.activeModules.push(new SmpteSynchronizerModule(this.rackStackEl, createSlotBag(idx)));
     }
+
+    // When all 3 rack units are mounted, automatically switch active audio monitoring
+    // to whichever rack unit the user interacts with so Unit 01's 18ms pre-delay
+    // never flams into Unit 03's SMPTE Synchronizer.
+    this.activeModules.forEach((mod, idx) => {
+      if (mod.unitEl) {
+        mod.unitEl.addEventListener(
+          'pointerdown',
+          () => {
+            if (this.activeSlotIndex !== idx) {
+              this.activeSlotIndex = idx;
+              mod.ensureAudioGraph();
+              this.rebuildSeriesRouting();
+            }
+          },
+          { signal: this.abortController.signal }
+        );
+      }
+    });
 
     if (this.audioContext) {
       this.activeModules.forEach((m) => m.ensureAudioGraph());
