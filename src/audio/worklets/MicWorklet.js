@@ -169,17 +169,20 @@ class MicPreampProcessor extends AudioWorkletProcessor {
     const presCoeffs = this._calcPeakingCoeffs(presFreq, presQ, presGainDb);
     const lpCoeffs = this._calcLowPassCoeffs(lpFreq, lpQ);
 
-    // 4. Preamp Gain & Pad
-    const padGain = padEnabled ? 0.1 : 1.0; // -20 dB pad
-    const driveLinear = Math.pow(10, driveDb / 20) * padGain;
-    // Automatic output makeup trim so extreme preamp drive saturates without deafening volume spikes
-    const makeupGain = 1.0 / Math.pow(Math.max(1.0, driveLinear), 0.55);
+    // 4. Preamp Gain & Pad — scaled with generous 1950s tube headroom so -12..+12 dB stays clean and warm,
+    //    and +14..+30 dB introduces progressive, musical triode & transformer saturation without harsh breakup.
+    const padGain = padEnabled ? 0.25 : 1.0; // -12 dB effective pad into saturation stage
+    // Gentle gain scaling: 0 dB knob -> 0.42x internal saturation drive; +15 dB -> 0.88x; +30 dB -> 1.85x
+    const driveLinear = Math.pow(10, (driveDb - 14.0) / 36.0) * padGain;
+    // Output trim keeps perceived volume balanced while still giving a musical level lift as you push PRE DRIVE
+    const levelBoost = Math.pow(10, driveDb / 55.0) * (padEnabled ? 0.35 : 0.85);
+    const makeupGain = levelBoost / Math.pow(Math.max(0.35, driveLinear), 0.72);
 
     // Transformer flux integrator leak factor (models 35 Hz core saturation threshold)
     const fluxLeak = Math.exp((-2.0 * Math.PI * 35.0) / this.fs);
     const dcCoeff = Math.exp((-2.0 * Math.PI * 12.0) / this.fs);
 
-    const biasOffset = Math.tanh(driveLinear * gridBias);
+    const biasOffset = Math.tanh(gridBias);
     let peakOut = 0.0;
     let peakHarmonic = 0.0;
 
@@ -193,9 +196,9 @@ class MicPreampProcessor extends AudioWorkletProcessor {
       for (let i = 0; i < inCh.length; i++) {
         let x = inCh[i];
 
-        // A. Proximity Effect (1st-order low-pass shelf blended with dry signal)
+        // A. Proximity Effect (1st-order low-pass shelf blended with dry signal, gentle headroom scaling)
         state.proxZ1 = (1.0 - proxAlpha) * x + proxAlpha * state.proxZ1;
-        x = x + (proxBoostLinear - 1.0) * state.proxZ1;
+        x = x + Math.min(1.2, (proxBoostLinear - 1.0) * 0.55) * state.proxZ1;
 
         // B. Capsule Presence Biquad
         const pOut =
@@ -211,22 +214,22 @@ class MicPreampProcessor extends AudioWorkletProcessor {
         x = pOut;
 
         // C. Input Transformer Core Hysteresis & Low-Frequency Flux Saturation
-        // Magnetic flux Phi is the time-integral of input voltage; saturates hardest at low frequencies
         state.fluxState = fluxLeak * state.fluxState + (1.0 - fluxLeak) * x * driveLinear;
-        const fluxSat = state.fluxState / (1.0 + transSat * 1.8 * Math.abs(state.fluxState));
-        const transformerSignal = x * driveLinear + transSat * 0.35 * (fluxSat - state.fluxState);
+        const fluxSat = state.fluxState / (1.0 + transSat * 0.9 * Math.abs(state.fluxState));
+        const transformerSignal = x * driveLinear + transSat * 0.18 * (fluxSat - state.fluxState);
 
-        // D. VF14M / 6SJ7 Single-Ended Triode Asymmetric Polynomial Waveshaper
-        // y_tube(v) = (tanh(v - b_grid) + tanh(b_grid)) / (1 + alpha_2 * v^2) + k2 * v^2 + k3 * v^3
+        // D. VF14M / 6SJ7 Single-Ended Triode Asymmetric Soft-Saturation Waveshaper
+        // Uses fixed cathode bias and bounded tanh(v) harmonics so high drive never explodes cubically
         const v = transformerSignal;
-        const vSq = v * v;
-        const gridConductionCompression = 1.0 / (1.0 + 0.08 * vSq);
-        const tubeCore = (Math.tanh(v - driveLinear * gridBias) + biasOffset) * gridConductionCompression;
-        const polyHarmonics = k2 * vSq * Math.sign(v + 0.15) + k3 * (vSq * v);
-        let y = (tubeCore + polyHarmonics * 0.25) * makeupGain;
+        const u = Math.tanh(v);
+        const uSq = u * u;
+        const gridConductionCompression = 1.0 / (1.0 + 0.04 * uSq);
+        const tubeCore = (Math.tanh(v - gridBias) + biasOffset) * gridConductionCompression;
+        const polyHarmonics = k2 * uSq * Math.sign(u + 0.15) + k3 * (uSq * u);
+        let y = (tubeCore + polyHarmonics * 0.18) * makeupGain;
 
         // Track harmonic distortion amount for UI telemetry
-        const harmDiff = Math.abs(y - x);
+        const harmDiff = Math.abs(u - v);
         if (harmDiff > peakHarmonic) peakHarmonic = harmDiff;
 
         // E. High-Frequency Diaphragm & Output Transformer Inductance Roll-off

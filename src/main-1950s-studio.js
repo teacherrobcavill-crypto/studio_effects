@@ -479,20 +479,20 @@ class StudioApp {
       rt60: 0.54,
       bleedEnabled: true,
       sources: [
-        { id: 0, name: 'Upright Bass', x: 9.0, y: 8.5, z: 3.5, color: '#f59e0b' },
-        { id: 1, name: 'Archtop Guitar', x: 25.5, y: 8.5, z: 3.0, color: '#38bdf8' },
-        { id: 2, name: 'Calfskin Kit', x: 17.5, y: 5.5, z: 3.5, color: '#10b981' },
-        { id: 3, name: 'Lead Vocal', x: 17.5, y: 17.5, z: 5.2, color: '#f43f5e' }
+        { id: 0, name: 'Upright Bass', x: 6.2, y: 5.5, z: 3.5, color: '#f59e0b' },
+        { id: 1, name: 'Archtop Guitar', x: 28.8, y: 5.5, z: 3.0, color: '#38bdf8' },
+        { id: 2, name: 'Calfskin Kit', x: 17.5, y: 3.8, z: 3.5, color: '#10b981' },
+        { id: 3, name: 'Lead Vocal', x: 17.5, y: 21.0, z: 5.2, color: '#f43f5e' }
       ],
       mics: [
-        { id: 0, name: 'Mic 1', x: 9.0, y: 11.0, z: 3.5, angle: -Math.PI / 2, micModel: 1 },
-        { id: 1, name: 'Mic 2', x: 25.5, y: 10.8, z: 3.0, angle: -Math.PI / 2, micModel: 2 },
-        { id: 2, name: 'Mic 3', x: 17.5, y: 8.8, z: 6.2, angle: -Math.PI / 2, micModel: 0 },
-        { id: 3, name: 'Mic 4', x: 17.5, y: 15.6, z: 5.2, angle: Math.PI / 2, micModel: 0 }
+        { id: 0, name: 'Mic 1', x: 6.8, y: 9.2, z: 3.5, angle: -Math.PI / 2, micModel: 1 },
+        { id: 1, name: 'Mic 2', x: 28.2, y: 9.0, z: 3.0, angle: -Math.PI / 2, micModel: 2 },
+        { id: 2, name: 'Mic 3', x: 17.5, y: 7.8, z: 6.2, angle: -Math.PI / 2, micModel: 0 },
+        { id: 3, name: 'Mic 4', x: 17.5, y: 17.6, z: 5.2, angle: Math.PI / 2, micModel: 0 }
       ],
       gobos: [
-        { id: 0, name: 'Gobo A', x: 13.2, y: 11.5, angle: 0.35, length: 6.5 },
-        { id: 1, name: 'Gobo B', x: 21.8, y: 11.5, angle: -0.35, length: 6.5 }
+        { id: 0, name: 'Gobo A', x: 11.8, y: 11.2, angle: 0.38, length: 8.5 },
+        { id: 1, name: 'Gobo B', x: 23.2, y: 11.2, angle: -0.38, length: 8.5 }
       ],
       getGoboEndpoints(g) {
         const half = g.length * 0.5;

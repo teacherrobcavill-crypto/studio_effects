@@ -120,24 +120,34 @@
     <div class="lg:col-span-4 flex flex-col gap-3">
 
       <!-- STAGE 1: 35' x 25' x 14' LIVE ROOM ACOUSTIC PLACEMENT -->
-      <div class="rack-unit p-3 flex flex-col gap-2">
+      <div class="rack-unit p-3 flex flex-col gap-2 flex-1">
         <div class="flex items-center justify-between border-b border-stone-700/70 pb-1.5">
           <div class="flex items-center gap-2">
             <span class="rack-screw"></span>
             <span class="nameplate">STAGE 1 // 35'×25'×14' LIVE ROOM ACOUSTICS</span>
+            <button type="button" class="edu-tip-badge edu-amber" data-edu-title="1950s Single-Room Acoustic Bleed & Gobos" data-edu-tip="In 1950s studios (Sun, Chess, RCA Studio B), all musicians played together in one room. Every microphone picks up its primary instrument PLUS delayed, off-axis bleed from the other 3 instruments (inverse-square law 1/d + propagation delay τ = d / 1125 ft/s). Placing wooden/fiberglass Gobos between instruments blocks direct high-frequency bleed!" data-edu-try="Drag Sources (S1–S4), Mics (M1–M4), or Gobo Baffles on the floorplan, and use the mouse wheel to rotate any hovered Mic or Gobo.">?</button>
           </div>
           <button id="btn-bleed-toggle" class="vintage-btn active text-[10px]">
             4×4 MIC BLEED: ON
           </button>
         </div>
 
-        <p class="text-[11px] text-stone-400 leading-tight">
-          Drag <span class="text-amber-300 font-bold">Sources (S1–S4)</span>, <span class="text-amber-300 font-bold">Mics (M1–M4)</span>, aim handles, or <span class="text-amber-300 font-bold">Acoustic Gobos</span>. Mouse-wheel rotates hovered Mic or Gobo.
-        </p>
+        <details class="edu-foldable">
+          <summary>
+            <span class="edu-foldable-title">
+              <span class="edu-foldable-tag">Floorplan Controls</span>
+              <span>How to Drag Sources, Aim Microphones &amp; Position Gobos</span>
+            </span>
+            <span class="edu-foldable-chevron">▼</span>
+          </summary>
+          <div class="edu-foldable-body">
+            Drag <strong class="text-amber-300">Sources (S1–S4)</strong>, <strong class="text-amber-300">Mics (M1–M4)</strong>, yellow aim handles, or <strong class="text-amber-300">Acoustic Gobos</strong>. Scroll the mouse wheel over any Mic or Gobo to rotate its polar axis or baffle angle. Moving a mic closer to its source increases <strong>Proximity Effect bass boost</strong>!
+          </div>
+        </details>
 
-        <!-- Interactive 2D Top-Down Room Canvas -->
-        <div class="relative rounded overflow-hidden border-2 border-stone-800 shadow-inner bg-stone-950">
-          <canvas id="room-canvas" width="520" height="370" class="w-full h-auto block"></canvas>
+        <!-- Interactive 2D Top-Down Room Canvas (Scaled to fill the square) -->
+        <div class="relative rounded overflow-hidden border-2 border-stone-800 shadow-inner bg-stone-950 flex-1 flex items-center justify-center min-h-[380px]">
+          <canvas id="room-canvas" width="520" height="520" class="w-full h-full aspect-square block"></canvas>
         </div>
 
         <!-- Room Wall Absorption & Sabine Chamber Mix Knobs -->
@@ -170,6 +180,7 @@
           <div class="flex items-center gap-2">
             <span class="rack-screw"></span>
             <span class="nameplate">STAGE 0 // 4-TRACK STEM GENERATOR &amp; TAPE LOADER</span>
+            <button type="button" class="edu-tip-badge edu-amber" data-edu-title="Procedural 4-Track Stems & Custom WAV Loader" data-edu-tip="Synthesizes 4 isolated 124 BPM rockabilly/jump-blues instruments in real time (Slap Upright Bass, ES-295 Archtop Guitar, Calfskin Drum Kit, and Formant Lead Vocal) or lets you load your own custom audio files into any of the 4 studio positions." data-edu-try="Click SOLO on S1 (Bass) or S4 (Vocal) to hear how its microphone and room bleed behave in isolation.">?</button>
           </div>
           <span class="text-[10px] text-stone-400">124 BPM ROCKABILLY / BLUES</span>
         </div>
@@ -291,11 +302,11 @@
 
             <!-- Preamp Drive Knob -->
             <div class="knob-wrapper">
-              <div class="bakelite-knob knob-sm" data-id="ch-drive-0" data-min="-12" data-max="30" data-step="1" data-value="8" data-unit="dB">
+              <div class="bakelite-knob knob-sm" data-id="ch-drive-0" data-min="-12" data-max="30" data-step="1" data-value="3" data-unit="dB">
                 <div class="knob-indicator"></div>
               </div>
               <span class="knob-label">PRE DRIVE</span>
-              <span class="knob-readout">+8 dB</span>
+              <span class="knob-readout">+3 dB</span>
             </div>
 
             <!-- Slapback Echo Aux Send -->
@@ -345,11 +356,11 @@
             </div>
 
             <div class="knob-wrapper">
-              <div class="bakelite-knob knob-sm" data-id="ch-drive-1" data-min="-12" data-max="30" data-step="1" data-value="10" data-unit="dB">
+              <div class="bakelite-knob knob-sm" data-id="ch-drive-1" data-min="-12" data-max="30" data-step="1" data-value="4" data-unit="dB">
                 <div class="knob-indicator"></div>
               </div>
               <span class="knob-label">PRE DRIVE</span>
-              <span class="knob-readout">+10 dB</span>
+              <span class="knob-readout">+4 dB</span>
             </div>
 
             <div class="knob-wrapper">
@@ -396,11 +407,11 @@
             </div>
 
             <div class="knob-wrapper">
-              <div class="bakelite-knob knob-sm" data-id="ch-drive-2" data-min="-12" data-max="30" data-step="1" data-value="6" data-unit="dB">
+              <div class="bakelite-knob knob-sm" data-id="ch-drive-2" data-min="-12" data-max="30" data-step="1" data-value="2" data-unit="dB">
                 <div class="knob-indicator"></div>
               </div>
               <span class="knob-label">PRE DRIVE</span>
-              <span class="knob-readout">+6 dB</span>
+              <span class="knob-readout">+2 dB</span>
             </div>
 
             <div class="knob-wrapper">
@@ -447,11 +458,11 @@
             </div>
 
             <div class="knob-wrapper">
-              <div class="bakelite-knob knob-sm" data-id="ch-drive-3" data-min="-12" data-max="30" data-step="1" data-value="11" data-unit="dB">
+              <div class="bakelite-knob knob-sm" data-id="ch-drive-3" data-min="-12" data-max="30" data-step="1" data-value="4" data-unit="dB">
                 <div class="knob-indicator"></div>
               </div>
               <span class="knob-label">PRE DRIVE</span>
-              <span class="knob-readout">+11 dB</span>
+              <span class="knob-readout">+4 dB</span>
             </div>
 
             <div class="knob-wrapper">

@@ -24,7 +24,7 @@ export class RoomCanvas {
   }
 
   _ftToPx(xFt, yFt) {
-    const pad = 24;
+    const pad = 6;
     const availW = this.canvas.width - pad * 2;
     const availH = this.canvas.height - pad * 2;
     return {
@@ -35,7 +35,7 @@ export class RoomCanvas {
   }
 
   _pxToFt(px, py) {
-    const pad = 24;
+    const pad = 6;
     const availW = this.canvas.width - pad * 2;
     const availH = this.canvas.height - pad * 2;
     const xFt = ((px - pad) / availW) * this.room.roomDims.width;
@@ -145,9 +145,9 @@ export class RoomCanvas {
     for (let i = 0; i < this.room.mics.length; i++) {
       const m = this.room.mics[i];
       const pos = this._ftToPx(m.x, m.y);
-      const aimX = pos.px + Math.cos(m.angle) * 20;
-      const aimY = pos.py + Math.sin(m.angle) * 20;
-      if (Math.hypot(px - aimX, py - aimY) < 9) {
+      const aimX = pos.px + Math.cos(m.angle) * 28;
+      const aimY = pos.py + Math.sin(m.angle) * 28;
+      if (Math.hypot(px - aimX, py - aimY) < 12) {
         return { type: 'micAim', index: i };
       }
     }
@@ -156,7 +156,7 @@ export class RoomCanvas {
     for (let i = 0; i < this.room.mics.length; i++) {
       const m = this.room.mics[i];
       const pos = this._ftToPx(m.x, m.y);
-      if (Math.hypot(px - pos.px, py - pos.py) < 15) {
+      if (Math.hypot(px - pos.px, py - pos.py) < 19) {
         return { type: shiftKey ? 'micAim' : 'mic', index: i };
       }
     }
@@ -165,7 +165,7 @@ export class RoomCanvas {
     for (let i = 0; i < this.room.sources.length; i++) {
       const s = this.room.sources[i];
       const pos = this._ftToPx(s.x, s.y);
-      if (Math.hypot(px - pos.px, py - pos.py) < 17) {
+      if (Math.hypot(px - pos.px, py - pos.py) < 22) {
         return { type: 'source', index: i };
       }
     }
@@ -178,10 +178,10 @@ export class RoomCanvas {
       const p2 = this._ftToPx(seg.x2, seg.y2);
       const pc = this._ftToPx(g.x, g.y);
 
-      if (Math.hypot(px - p1.px, py - p1.py) < 11 || Math.hypot(px - p2.px, py - p2.py) < 11) {
+      if (Math.hypot(px - p1.px, py - p1.py) < 14 || Math.hypot(px - p2.px, py - p2.py) < 14) {
         return { type: 'goboEnd', index: i };
       }
-      if (Math.hypot(px - pc.px, py - pc.py) < 18) {
+      if (Math.hypot(px - pc.px, py - pc.py) < 24) {
         return { type: 'gobo', index: i };
       }
     }
@@ -200,7 +200,7 @@ export class RoomCanvas {
 
     ctx.clearRect(0, 0, w, h);
 
-    // 1. Studio Hardwood Floor & Acoustic Grid (5 ft squares)
+    // 1. Studio Hardwood Floor & Acoustic Grid (5 ft squares filling the entire square canvas)
     ctx.fillStyle = '#121518';
     ctx.fillRect(0, 0, w, h);
 
@@ -210,14 +210,14 @@ export class RoomCanvas {
     const roomH = botRight.py - topLeft.py;
 
     // Warm studio floor tint
-    const floorGrad = ctx.createRadialGradient(w * 0.5, h * 0.5, 20, w * 0.5, h * 0.5, w * 0.6);
-    floorGrad.addColorStop(0, '#1e2226');
-    floorGrad.addColorStop(1, '#131619');
+    const floorGrad = ctx.createRadialGradient(w * 0.5, h * 0.5, 25, w * 0.5, h * 0.5, w * 0.68);
+    floorGrad.addColorStop(0, '#20252a');
+    floorGrad.addColorStop(1, '#121518');
     ctx.fillStyle = floorGrad;
     ctx.fillRect(topLeft.px, topLeft.py, roomW, roomH);
 
     // 5-foot acoustic grid lines
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
     ctx.lineWidth = 1;
     for (let x = 0; x <= 35; x += 5) {
       const p = this._ftToPx(x, 0);
@@ -235,15 +235,15 @@ export class RoomCanvas {
     }
 
     // Acoustic Tile Studio Walls Border
-    ctx.strokeStyle = '#5c646d';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#68727c';
+    ctx.lineWidth = 3.5;
     ctx.strokeRect(topLeft.px, topLeft.py, roomW, roomH);
 
     // Scale legend
-    ctx.fillStyle = '#8b929a';
-    ctx.font = '10px "Courier Prime", monospace';
+    ctx.fillStyle = '#9ca3af';
+    ctx.font = 'bold 11px "Courier Prime", monospace';
     ctx.textAlign = 'left';
-    ctx.fillText(`35' x 25' x 14' LIVE ROOM  |  RT60: ${this.room.rt60.toFixed(2)}s`, topLeft.px + 6, topLeft.py + 13);
+    ctx.fillText(`35' × 25' × 14' LIVE ROOM  |  RT60: ${this.room.rt60.toFixed(2)}s`, topLeft.px + 10, topLeft.py + 18);
 
     // 2. Draw 4x4 Direct & Cross-Bleed Acoustic Ray-Cast Paths
     for (let s = 0; s < 4; s++) {
@@ -262,17 +262,17 @@ export class RoomCanvas {
         ctx.lineTo(mp.px, mp.py);
 
         if (cell.occludedByGobo) {
-          ctx.setLineDash([4, 4]);
-          ctx.strokeStyle = 'rgba(239, 68, 68, 0.45)';
-          ctx.lineWidth = 1.2;
+          ctx.setLineDash([5, 5]);
+          ctx.strokeStyle = 'rgba(239, 68, 68, 0.55)';
+          ctx.lineWidth = 1.6;
         } else if (s === m) {
           ctx.strokeStyle = src.color;
-          ctx.globalAlpha = 0.65;
-          ctx.lineWidth = 2.0;
+          ctx.globalAlpha = 0.75;
+          ctx.lineWidth = 2.6;
         } else {
-          ctx.setLineDash([2, 4]);
-          ctx.strokeStyle = 'rgba(226, 223, 215, 0.22)';
-          ctx.lineWidth = 1.0;
+          ctx.setLineDash([3, 5]);
+          ctx.strokeStyle = 'rgba(226, 223, 215, 0.25)';
+          ctx.lineWidth = 1.2;
         }
         ctx.stroke();
         ctx.restore();
@@ -281,10 +281,10 @@ export class RoomCanvas {
         if (s === m) {
           const midX = (sp.px + mp.px) * 0.5;
           const midY = (sp.py + mp.py) * 0.5;
-          ctx.fillStyle = '#0e1012';
-          ctx.fillRect(midX - 28, midY - 7, 56, 14);
+          ctx.fillStyle = 'rgba(14, 16, 18, 0.9)';
+          ctx.fillRect(midX - 34, midY - 9, 68, 17);
           ctx.fillStyle = cell.occludedByGobo ? '#f87171' : '#fcd34d';
-          ctx.font = '9px "Courier Prime", monospace';
+          ctx.font = 'bold 10.5px "Courier Prime", monospace';
           ctx.textAlign = 'center';
           ctx.fillText(`${cell.distanceFt.toFixed(1)}' (${cell.delayMs.toFixed(1)}ms)`, midX, midY + 3);
         }
@@ -295,7 +295,7 @@ export class RoomCanvas {
     for (let m = 0; m < 4; m++) {
       const mic = this.room.mics[m];
       const mp = this._ftToPx(mic.x, mic.y);
-      const lobeRadiusPx = 38;
+      const lobeRadiusPx = 56;
       const beta = mic.micModel === 1 ? 1.0 : mic.micModel === 2 ? 0.63 : 0.5;
 
       // Positive Polarity Front Lobe
@@ -311,9 +311,9 @@ export class RoomCanvas {
         else ctx.lineTo(x, y);
       }
       ctx.closePath();
-      ctx.fillStyle = 'rgba(255, 184, 77, 0.11)';
-      ctx.strokeStyle = 'rgba(255, 184, 77, 0.48)';
-      ctx.lineWidth = 1.2;
+      ctx.fillStyle = 'rgba(255, 184, 77, 0.13)';
+      ctx.strokeStyle = 'rgba(255, 184, 77, 0.55)';
+      ctx.lineWidth = 1.6;
       ctx.fill();
       ctx.stroke();
 
@@ -330,9 +330,9 @@ export class RoomCanvas {
           else ctx.lineTo(x, y);
         }
         ctx.closePath();
-        ctx.fillStyle = 'rgba(56, 189, 248, 0.10)';
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
-        ctx.lineWidth = 1.1;
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.12)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.52)';
+        ctx.lineWidth = 1.4;
         ctx.fill();
         ctx.stroke();
       }
@@ -349,7 +349,7 @@ export class RoomCanvas {
 
       ctx.save();
       ctx.strokeStyle = '#d97706';
-      ctx.lineWidth = 7;
+      ctx.lineWidth = 9;
       ctx.lineCap = 'round';
       ctx.beginPath();
       ctx.moveTo(p1.px, p1.py);
@@ -357,7 +357,7 @@ export class RoomCanvas {
       ctx.stroke();
 
       ctx.strokeStyle = '#fef3c7';
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(p1.px, p1.py);
       ctx.lineTo(p2.px, p2.py);
@@ -366,14 +366,14 @@ export class RoomCanvas {
       // Rotation end handles
       ctx.fillStyle = '#fbbf24';
       ctx.beginPath();
-      ctx.arc(p1.px, p1.py, 4.5, 0, Math.PI * 2);
-      ctx.arc(p2.px, p2.py, 4.5, 0, Math.PI * 2);
+      ctx.arc(p1.px, p1.py, 6, 0, Math.PI * 2);
+      ctx.arc(p2.px, p2.py, 6, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.fillStyle = '#fde68a';
-      ctx.font = 'bold 9px "Courier Prime", monospace';
+      ctx.font = 'bold 11px "Courier Prime", monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(gobo.name, pc.px, pc.py - 9);
+      ctx.fillText(gobo.name, pc.px, pc.py - 12);
       ctx.restore();
     }
 
@@ -384,10 +384,10 @@ export class RoomCanvas {
       const level = Math.min(1.0, channelPeaks[s] || 0.25);
 
       // Animated sound wave ring
-      const waveR = 14 + ((this.pulsePhase * 4 + s * 3) % 16) * (0.4 + level);
+      const waveR = 18 + ((this.pulsePhase * 5 + s * 3) % 24) * (0.45 + level);
       ctx.strokeStyle = src.color;
-      ctx.globalAlpha = Math.max(0.1, 0.55 - waveR / 40);
-      ctx.lineWidth = 1.5;
+      ctx.globalAlpha = Math.max(0.1, 0.6 - waveR / 55);
+      ctx.lineWidth = 2.0;
       ctx.beginPath();
       ctx.arc(sp.px, sp.py, waveR, 0, Math.PI * 2);
       ctx.stroke();
@@ -396,21 +396,21 @@ export class RoomCanvas {
       // Source icon circle
       ctx.fillStyle = '#181b1e';
       ctx.strokeStyle = src.color;
-      ctx.lineWidth = 2.5;
+      ctx.lineWidth = 3.0;
       ctx.beginPath();
-      ctx.arc(sp.px, sp.py, 12, 0, Math.PI * 2);
+      ctx.arc(sp.px, sp.py, 17, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
 
       ctx.fillStyle = src.color;
-      ctx.font = 'bold 9.5px "Courier Prime", monospace';
+      ctx.font = 'bold 12px "Courier Prime", monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(`S${s + 1}`, sp.px, sp.py);
 
-      ctx.fillStyle = '#e2dfd7';
-      ctx.font = 'bold 9.5px "Courier Prime", monospace';
-      ctx.fillText(src.name.split(' ')[1] || src.name, sp.px, sp.py - 19);
+      ctx.fillStyle = '#f3f4f6';
+      ctx.font = 'bold 11px "Courier Prime", monospace';
+      ctx.fillText(src.name.split(' ')[1] || src.name, sp.px, sp.py - 25);
     }
 
     // 6. Draw 4 Microphones & Orientation Aim Handles
@@ -418,12 +418,12 @@ export class RoomCanvas {
     for (let m = 0; m < 4; m++) {
       const mic = this.room.mics[m];
       const mp = this._ftToPx(mic.x, mic.y);
-      const aimX = mp.px + Math.cos(mic.angle) * 20;
-      const aimY = mp.py + Math.sin(mic.angle) * 20;
+      const aimX = mp.px + Math.cos(mic.angle) * 28;
+      const aimY = mp.py + Math.sin(mic.angle) * 28;
 
       // Aim vector line & handle
       ctx.strokeStyle = '#fbbf24';
-      ctx.lineWidth = 1.8;
+      ctx.lineWidth = 2.2;
       ctx.beginPath();
       ctx.moveTo(mp.px, mp.py);
       ctx.lineTo(aimX, aimY);
@@ -431,27 +431,27 @@ export class RoomCanvas {
 
       ctx.fillStyle = '#fbbf24';
       ctx.beginPath();
-      ctx.arc(aimX, aimY, 4.2, 0, Math.PI * 2);
+      ctx.arc(aimX, aimY, 5.5, 0, Math.PI * 2);
       ctx.fill();
 
       // Mic body capsule
       ctx.fillStyle = '#292d32';
       ctx.strokeStyle = '#f59e0b';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.arc(mp.px, mp.py, 9.5, 0, Math.PI * 2);
+      ctx.arc(mp.px, mp.py, 13.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
 
       ctx.fillStyle = '#fef3c7';
-      ctx.font = 'bold 8.5px "Courier Prime", monospace';
+      ctx.font = 'bold 10.5px "Courier Prime", monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(`M${m + 1}`, mp.px, mp.py);
 
       ctx.fillStyle = '#fcd34d';
-      ctx.font = '8.5px "Courier Prime", monospace';
-      ctx.fillText(micCodes[mic.micModel] || 'U47', mp.px, mp.py + 16);
+      ctx.font = 'bold 10px "Courier Prime", monospace';
+      ctx.fillText(micCodes[mic.micModel] || 'U47', mp.px, mp.py + 22);
     }
   }
 }

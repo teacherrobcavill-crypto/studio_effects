@@ -17,27 +17,27 @@ export class LiveRoomEngine {
     this.roomDims = { width: 35.0, depth: 25.0, height: 14.0 };
     this.speedOfSoundFtSec = 1125.0;
 
-    // 4 Sound Sources (Upright Bass, Archtop Guitar, Calfskin Kit, Lead Vocal)
+    // 4 Sound Sources spread across the full 35' x 25' studio floorplan
     this.sources = [
-      { id: 0, name: 'Upright Bass', x: 9.0, y: 8.5, z: 3.5, color: '#f59e0b' },
-      { id: 1, name: 'Archtop Guitar', x: 25.5, y: 8.5, z: 3.0, color: '#38bdf8' },
-      { id: 2, name: 'Calfskin Kit', x: 17.5, y: 5.5, z: 3.5, color: '#10b981' },
-      { id: 3, name: 'Lead Vocal', x: 17.5, y: 17.5, z: 5.2, color: '#f43f5e' }
+      { id: 0, name: 'Upright Bass', x: 6.5, y: 7.0, z: 3.5, color: '#f59e0b' },
+      { id: 1, name: 'Archtop Guitar', x: 28.5, y: 7.0, z: 3.0, color: '#38bdf8' },
+      { id: 2, name: 'Calfskin Kit', x: 17.5, y: 4.2, z: 3.5, color: '#10b981' },
+      { id: 3, name: 'Lead Vocal', x: 17.5, y: 20.8, z: 5.2, color: '#f43f5e' }
     ];
 
     // 4 Studio Microphones (initially placed near each respective source, with orientation angle in radians)
     // micModel: 0 = Neumann U47 (Cardioid), 1 = RCA 44-BX (Figure-8), 2 = Shure 55SH (Supercardioid)
     this.mics = [
-      { id: 0, name: 'Mic 1 (Bass)', x: 9.0, y: 11.0, z: 3.5, angle: -Math.PI / 2, micModel: 1 },
-      { id: 1, name: 'Mic 2 (Guitar)', x: 25.5, y: 10.8, z: 3.0, angle: -Math.PI / 2, micModel: 2 },
-      { id: 2, name: 'Mic 3 (Drums OH)', x: 17.5, y: 8.8, z: 6.2, angle: -Math.PI / 2, micModel: 0 },
-      { id: 3, name: 'Mic 4 (Vocal)', x: 17.5, y: 15.6, z: 5.2, angle: Math.PI / 2, micModel: 0 }
+      { id: 0, name: 'Mic 1 (Bass)', x: 7.2, y: 10.5, z: 3.5, angle: -Math.PI / 2, micModel: 1 },
+      { id: 1, name: 'Mic 2 (Guitar)', x: 27.8, y: 10.5, z: 3.0, angle: -Math.PI / 2, micModel: 2 },
+      { id: 2, name: 'Mic 3 (Drums OH)', x: 17.5, y: 8.6, z: 6.2, angle: -Math.PI / 2, micModel: 0 },
+      { id: 3, name: 'Mic 4 (Vocal)', x: 17.5, y: 17.2, z: 5.2, angle: Math.PI / 2, micModel: 0 }
     ];
 
-    // 2 Movable Wood/Fiberglass Acoustic Baffles (Gobos) defined by center (x, y), angle, and width (6 ft)
+    // 2 Movable Wood/Fiberglass Acoustic Baffles (Gobos) defined by center (x, y), angle, and width (8.5 ft)
     this.gobos = [
-      { id: 0, name: 'Gobo A', x: 13.2, y: 11.5, angle: 0.35, length: 6.5 },
-      { id: 1, name: 'Gobo B', x: 21.8, y: 11.5, angle: -0.35, length: 6.5 }
+      { id: 0, name: 'Gobo A', x: 11.8, y: 13.0, angle: 0.38, length: 8.5 },
+      { id: 1, name: 'Gobo B', x: 23.2, y: 13.0, angle: -0.38, length: 8.5 }
     ];
 
     // Room acoustic parameters

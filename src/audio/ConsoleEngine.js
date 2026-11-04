@@ -34,12 +34,12 @@ export class ConsoleEngine {
   }
 
   _initConsoleGraph() {
-    // Default initial settings per channel strip
+    // Default initial settings per channel strip (clean, warm tube headroom out of the box)
     const defaults = [
-      { micModel: 1, driveDb: 8.0, faderDb: 0.0, panPos: 0.0, auxSend: 0.08, distFt: 2.5 },  // Ch 1: Bass (RCA 44-BX, Center)
-      { micModel: 2, driveDb: 10.0, faderDb: -1.5, panPos: -0.55, auxSend: 0.28, distFt: 2.3 }, // Ch 2: Guitar (Shure 55SH, Left-ish)
-      { micModel: 0, driveDb: 6.0, faderDb: -1.0, panPos: 0.55, auxSend: 0.12, distFt: 4.2 },  // Ch 3: Drums (U47, Right-ish)
-      { micModel: 0, driveDb: 11.0, faderDb: 1.5, panPos: 0.0, auxSend: 0.52, distFt: 1.9 }   // Ch 4: Vocal (U47, Center + Slapback send)
+      { micModel: 1, driveDb: 3.0, faderDb: 0.0, panPos: 0.0, auxSend: 0.08, distFt: 2.5 },  // Ch 1: Bass (RCA 44-BX, Center)
+      { micModel: 2, driveDb: 4.0, faderDb: -1.5, panPos: -0.55, auxSend: 0.28, distFt: 2.3 }, // Ch 2: Guitar (Shure 55SH, Left-ish)
+      { micModel: 0, driveDb: 2.0, faderDb: -1.0, panPos: 0.55, auxSend: 0.12, distFt: 4.2 },  // Ch 3: Drums (U47, Right-ish)
+      { micModel: 0, driveDb: 4.0, faderDb: 1.5, panPos: 0.0, auxSend: 0.52, distFt: 1.9 }   // Ch 4: Vocal (U47, Center + Slapback send)
     ];
 
     for (let i = 0; i < 4; i++) {
