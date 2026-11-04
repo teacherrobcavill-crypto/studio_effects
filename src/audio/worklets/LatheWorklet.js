@@ -76,11 +76,12 @@ class CuttingLatheProcessor extends AudioWorkletProcessor {
    * (T1 = 3180 us, T2 = 318 us, T3 = 75 us) and its exact inverse for RIAA Record Pre-Emphasis.
    */
   _computeRIAACoeffs() {
-    // Analog transfer function of RIAA playback de-emphasis:
-    // H_de(s) = (1 + s * T2) / ((1 + s * T1) * (1 + s * T3))
-    const T1 = 0.003180; // 50.05 Hz pole
-    const T2 = 0.000318; // 500.5 Hz zero
-    const T3 = 0.000075; // 2122.1 Hz pole
+    // Analog transfer function of RIAA playback de-emphasis with Neumann ultrasonic pole T4:
+    // H_de(s) = ((1 + s * T2) * (1 + s * T4)) / ((1 + s * T1) * (1 + s * T3))
+    const T1 = 0.003180; // 50.05 Hz bass pole
+    const T2 = 0.000318; // 500.5 Hz midrange zero
+    const T3 = 0.000075; // 2122.1 Hz treble pole
+    const T4 = 0.000015; // 15 us Neumann cutterhead ultrasonic pole (prevents z = -1 Nyquist pole in H_pre)
 
     const c = 2.0 * this.fs; // Bilinear transform constant 2/T
 
@@ -89,10 +90,10 @@ class CuttingLatheProcessor extends AudioWorkletProcessor {
     const A1 = T1 + T3;
     const A2 = T1 * T3;
 
-    // Numerator (1 + s*T2) padded with a high-frequency Nyquist pole compensation
+    // Numerator (1 + s*T2)(1 + s*T4) = 1 + s*(T2+T4) + s^2*(T2*T4)
     const B0 = 1.0;
-    const B1 = T2;
-    const B2 = 0.0;
+    const B1 = T2 + T4;
+    const B2 = T2 * T4;
 
     const a0 = A0 + A1 * c + A2 * c * c;
     const a1 = 2.0 * A0 - 2.0 * A2 * c * c;
