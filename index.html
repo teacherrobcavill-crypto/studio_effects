@@ -3,16 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Master Studio Simulator Hub — All 4 Acoustic &amp; Vintage Hardware Apps</title>
+  <title>Studio Evolution &amp; Acoustic Physics Interactive Learning Lab (1950s–1990s)</title>
   <style>
     :root {
-      --bg: #0c0d10;
-      --bar: #14161c;
+      --bg: #0a0b0e;
+      --bar: #12151c;
+      --bar-sub: #161a24;
       --border: rgba(255, 255, 255, 0.1);
       --cyan: #00f5d4;
       --amber: #ff922b;
-      --text: #f1f3f5;
-      --muted: #9098a3;
+      --emerald: #30d158;
+      --crimson: #ff453a;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
@@ -24,84 +27,167 @@
       overflow: hidden;
     }
     .hub-shell {
-      display: grid;
-      grid-template-rows: 50px 1fr;
+      display: flex;
+      flex-direction: column;
       width: 100vw;
       height: 100vh;
     }
+
+    /* ── Top Master App Switcher Bar ── */
     .hub-nav {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 14px;
-      background: var(--bar);
+      padding: 6px 14px;
+      background: linear-gradient(180deg, #171b24 0%, #101319 100%);
       border-bottom: 1px solid var(--border);
-      gap: 10px;
+      gap: 12px;
       z-index: 100;
+      flex-shrink: 0;
     }
     .hub-brand {
       display: flex;
       align-items: center;
-      gap: 9px;
-      font-size: 12.5px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
+      gap: 10px;
       white-space: nowrap;
     }
     .hub-badge {
-      padding: 3px 7px;
+      padding: 4px 8px;
       border-radius: 5px;
       background: rgba(0, 245, 212, 0.14);
-      border: 1px solid rgba(0, 245, 212, 0.4);
+      border: 1px solid rgba(0, 245, 212, 0.45);
       color: var(--cyan);
       font-family: ui-monospace, SFMono-Regular, monospace;
-      font-size: 11px;
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
     }
+    .hub-brand-titles {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .hub-brand-main {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .hub-brand-sub {
+      font-size: 10.5px;
+      color: var(--muted);
+    }
+
+    /* ── 4-Module Selector Cards ── */
     .app-tabs {
       display: flex;
       align-items: center;
       gap: 6px;
       overflow-x: auto;
+      padding: 2px 0;
     }
     .app-tab {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 6px 12px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.03);
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      white-space: nowrap;
-    }
-    .app-tab:hover {
-      color: var(--text);
-      border-color: rgba(255, 255, 255, 0.25);
-      background: rgba(255, 255, 255, 0.07);
-    }
-    .app-tab.active {
-      background: rgba(0, 245, 212, 0.13);
-      border-color: var(--cyan);
-      color: #ffffff;
-      box-shadow: 0 0 12px rgba(0, 245, 212, 0.18);
-    }
-    .app-tab .era {
-      font-family: ui-monospace, SFMono-Regular, monospace;
-      font-size: 10px;
-      padding: 1px 5px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--cyan);
-    }
-    .hub-actions {
       display: flex;
       align-items: center;
       gap: 8px;
+      padding: 6px 11px;
+      border-radius: 7px;
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.16s ease;
       white-space: nowrap;
+      text-align: left;
+      position: relative;
+    }
+    .app-tab:hover {
+      color: var(--text);
+      border-color: rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.07);
+    }
+    .app-tab.active {
+      background: linear-gradient(180deg, rgba(0, 245, 212, 0.16) 0%, rgba(0, 245, 212, 0.06) 100%);
+      border-color: var(--cyan);
+      color: #ffffff;
+      box-shadow: 0 0 14px rgba(0, 245, 212, 0.16);
+    }
+    .app-tab .era {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 9.5px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(0, 245, 212, 0.14);
+      color: var(--cyan);
+      border: 1px solid rgba(0, 245, 212, 0.3);
+      letter-spacing: 0.04em;
+    }
+    .app-tab.active .era {
+      background: var(--cyan);
+      color: #071013;
+    }
+    .tab-text-col {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+    .tab-name {
+      font-size: 11.8px;
+      font-weight: 700;
+      color: inherit;
+    }
+    .tab-desc {
+      font-size: 9.8px;
+      color: #7c8798;
+    }
+    .app-tab.active .tab-desc {
+      color: #b4f8ec;
+    }
+    .tab-audio-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #334155;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+    .app-tab.is-playing .tab-audio-dot {
+      background: var(--emerald);
+      box-shadow: 0 0 8px var(--emerald);
+      animation: pulseLed 1.2s infinite alternate;
+    }
+    @keyframes pulseLed {
+      from { transform: scale(0.92); opacity: 0.8; }
+      to { transform: scale(1.18); opacity: 1; }
+    }
+
+    /* ── Right Action Toolbar ── */
+    .hub-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+    }
+    .audio-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      border-radius: 5px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 10.5px;
+      color: var(--muted);
+    }
+    .audio-status-pill.active {
+      border-color: rgba(48, 209, 88, 0.5);
+      color: #86efac;
+      background: rgba(20, 83, 45, 0.3);
     }
     .btn-action {
       padding: 5px 10px;
@@ -109,29 +195,140 @@
       border: 1px solid rgba(255, 146, 43, 0.45);
       background: rgba(255, 146, 43, 0.13);
       color: #ffd8a8;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 600;
       text-decoration: none;
       cursor: pointer;
       transition: all 0.15s;
     }
     .btn-action:hover {
-      background: rgba(255, 146, 43, 0.25);
+      background: rgba(255, 146, 43, 0.26);
     }
     .btn-action.quad-active {
       background: var(--amber);
       color: #0b0c0e;
     }
+    .btn-silence {
+      border-color: rgba(255, 69, 58, 0.45);
+      background: rgba(255, 69, 58, 0.12);
+      color: #fca5a5;
+    }
+    .btn-silence:hover {
+      background: rgba(255, 69, 58, 0.26);
+    }
+
+    /* ── Foldable Learning Guide & Quick Experiments Bar ── */
+    .hub-guide-drawer {
+      background: var(--bar-sub);
+      border-bottom: 1px solid rgba(0, 245, 212, 0.22);
+      flex-shrink: 0;
+      z-index: 95;
+    }
+    .hub-guide-drawer > summary {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 16px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 11.5px;
+      color: #cbd5e1;
+      gap: 12px;
+    }
+    .hub-guide-drawer > summary::-webkit-details-marker {
+      display: none;
+    }
+    .guide-summary-left {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+    }
+    .guide-pill-tag {
+      padding: 1px 7px;
+      border-radius: 4px;
+      background: rgba(0, 245, 212, 0.15);
+      border: 1px solid rgba(0, 245, 212, 0.4);
+      color: var(--cyan);
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 9.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+    .guide-summary-headline {
+      font-weight: 700;
+      color: #f8fafc;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .guide-summary-hint {
+      font-size: 10.5px;
+      color: var(--amber);
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      flex-shrink: 0;
+    }
+    .guide-body {
+      padding: 8px 16px 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      display: grid;
+      grid-template-columns: 1.2fr 2fr;
+      gap: 14px;
+      background: rgba(9, 12, 18, 0.92);
+      font-size: 11.5px;
+      line-height: 1.45;
+    }
+    .guide-overview-box {
+      color: #cbd5e1;
+    }
+    .guide-overview-box strong {
+      color: #ffffff;
+    }
+    .guide-experiments {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .exp-card {
+      padding: 6px 9px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-left: 3px solid var(--amber);
+      font-size: 11px;
+      color: #dbeafe;
+    }
+    .exp-card strong {
+      display: block;
+      color: #ffd8a8;
+      font-size: 10.5px;
+      margin-bottom: 2px;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+
+    /* ── Stage & Persistent Iframe Deck ── */
     .stage-container {
       width: 100%;
-      height: 100%;
+      flex: 1;
+      min-height: 0;
       position: relative;
       background: #090a0d;
     }
-    .single-frame {
+    .iframe-deck {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    .app-frame {
       width: 100%;
       height: 100%;
       border: none;
+      display: none;
+    }
+    .app-frame.active {
       display: block;
     }
     .quad-grid {
@@ -162,8 +359,8 @@
       position: absolute;
       top: 6px;
       right: 10px;
-      background: rgba(12, 13, 16, 0.88);
-      border: 1px solid rgba(0, 245, 212, 0.4);
+      background: rgba(12, 13, 16, 0.9);
+      border: 1px solid rgba(0, 245, 212, 0.45);
       color: var(--cyan);
       padding: 3px 8px;
       border-radius: 4px;
@@ -172,81 +369,350 @@
       text-decoration: none;
       z-index: 10;
     }
+
+    @media (max-width: 1180px) {
+      .guide-body {
+        grid-template-columns: 1fr;
+      }
+      .guide-experiments {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="hub-shell">
+    <!-- Top Master Navigation & Era Selector -->
     <header class="hub-nav">
       <div class="hub-brand">
-        <span class="hub-badge">STUDIO SUITE HUB</span>
-        <span>4 Apps Isolated &amp; Ready</span>
+        <span class="hub-badge">STUDIO ACOUSTICS LAB</span>
+        <div class="hub-brand-titles">
+          <div class="hub-brand-main">
+            <span>4-Era Interactive Audio Engineering Suite</span>
+            <button type="button" class="edu-tip-badge" data-edu-title="How to Use This Interactive Learning Suite" data-edu-tip="Choose any of the 4 historical studio & acoustic simulators across the top bar. Throughout every simulator, click or hover over any '?' badge for pop-up physics & engineering breakdowns, or click any '▼ Unfold' bar to reveal deep-dive notes without cluttering the hardware controls. Switching tabs automatically pauses audio in the previous simulator so audio never overlaps!" data-edu-try="Click the foldable 'Interactive Learning Guide' bar right below the header to view 3 guided listening experiments for the active simulator.">?</button>
+          </div>
+          <div class="hub-brand-sub">Click any <strong>?</strong> badge for pop-up tips • Unfold <strong>▼</strong> drawers for deep notes</div>
+        </div>
       </div>
 
-      <div class="app-tabs" id="tab-bar">
-        <button class="app-tab active" data-url="/app-3d-acoustics.html">
-          <span class="era">3D DSP</span>
-          <span>3D Acoustic Room Simulator</span>
+      <!-- 4 Clear Simulator Selector Tabs -->
+      <div class="app-tabs" id="tab-bar" role="tablist" aria-label="Simulator Selection">
+        <button class="app-tab active" data-app-id="app-3d-acoustics" data-url="/app-3d-acoustics.html" role="tab" aria-selected="true">
+          <span class="era">MODULE 1 · 3D DSP</span>
+          <div class="tab-text-col">
+            <span class="tab-name">3D Room Acoustics Simulator</span>
+            <span class="tab-desc">RT60 · Image-Source Rays · Comb Filtering</span>
+          </div>
+          <span class="tab-audio-dot" title="Audio Status"></span>
         </button>
-        <button class="app-tab" data-url="/app-1950s-studio.html">
-          <span class="era">1950s</span>
-          <span>1950s Console, Tape &amp; Cutting Lathe</span>
+
+        <button class="app-tab" data-app-id="app-1950s-studio" data-url="/app-1950s-studio.html" role="tab" aria-selected="false">
+          <span class="era">MODULE 2 · 1950s</span>
+          <div class="tab-text-col">
+            <span class="tab-name">1950s Studio, Tape &amp; Lathe</span>
+            <span class="tab-desc">Live Bleed · Pultec · Fairchild · 15 IPS · 78/LP</span>
+          </div>
+          <span class="tab-audio-dot" title="Audio Status"></span>
         </button>
-        <button class="app-tab" data-url="/app-emt140-plate.html">
-          <span class="era">1960s</span>
-          <span>EMT-140 Plate Reverb Rack</span>
+
+        <button class="app-tab" data-app-id="app-emt140-plate" data-url="/app-emt140-plate.html" role="tab" aria-selected="false">
+          <span class="era">MODULE 3 · 1960s</span>
+          <div class="tab-text-col">
+            <span class="tab-name">EMT-140 ST Plate Reverb</span>
+            <span class="tab-desc">3D Flexural Sheet · Damper Pad · FDN-16</span>
+          </div>
+          <span class="tab-audio-dot" title="Audio Status"></span>
         </button>
-        <button class="app-tab" data-url="/app-vintage-suite.html">
-          <span class="era">1970s–90s</span>
-          <span>Gated Reverb · Dolby · SMPTE Suite</span>
+
+        <button class="app-tab" data-app-id="app-vintage-suite" data-url="/app-vintage-suite.html" role="tab" aria-selected="false">
+          <span class="era">MODULE 4 · 1970s–90s</span>
+          <div class="tab-text-col">
+            <span class="tab-name">Gated Reverb · Dolby · SMPTE</span>
+            <span class="tab-desc">SSL/Drawmer Gate · Dolby Air Trick · 24-Trk Sync</span>
+          </div>
+          <span class="tab-audio-dot" title="Audio Status"></span>
         </button>
       </div>
 
+      <!-- Audio Coordinator & View Controls -->
       <div class="hub-actions">
+        <div id="audio-status-pill" class="audio-status-pill" title="Cross-app Web Audio monitor — switching tabs automatically suspends inactive apps">
+          <span id="audio-status-dot" class="tab-audio-dot"></span>
+          <span id="audio-status-text">AUDIO STANDBY</span>
+        </div>
+        <button id="btn-silence-all" class="btn-action btn-silence" title="Immediately pause and suspend audio across all 4 simulators">
+          🔇 Mute All
+        </button>
         <button id="btn-quad" class="btn-action" title="View all 4 simulators side-by-side in a 2x2 grid">
           2×2 Quad View
         </button>
         <a id="btn-popout" class="btn-action" href="/app-3d-acoustics.html" target="_blank" rel="noopener">
-          Open Current in New Tab ↗
+          Full Tab ↗
         </a>
-        <button id="btn-open-all" class="btn-action" title="Open all 4 apps in separate browser tabs">
-          Launch All 4 Tabs ↗
-        </button>
       </div>
     </header>
 
+    <!-- Foldable Context-Aware Learning Guide & 3 Quick Experiments -->
+    <details id="hub-guide-drawer" class="hub-guide-drawer">
+      <summary>
+        <div class="guide-summary-left">
+          <span id="guide-era-tag" class="guide-pill-tag">MODULE 1 · ACOUSTIC PHYSICS</span>
+          <span id="guide-headline" class="guide-summary-headline">3D Room Acoustics Simulator — Sabine/Eyring RT60, 1st-Order Specular Reflections, Boundary Loading &amp; Comb Filtering</span>
+        </div>
+        <span class="guide-summary-hint">▼ Click to Fold / Unfold Guided Experiments</span>
+      </summary>
+      <div class="guide-body">
+        <div id="guide-overview" class="guide-overview-box">
+          <strong>What You Are Learning:</strong> Before sound ever hits a microphone preamp or tape machine, the physical geometry and surface absorption of the room shape its tone, stereo image, and decay time ($RT_{60}$). Explore how direct sound ($d_0$), early specular reflections (ITDG $\Delta t_1$), low-frequency standing room modes, and microphone polar patterns interact in 3D space.
+        </div>
+        <div id="guide-experiments" class="guide-experiments">
+          <div class="exp-card">
+            <strong>🎧 Experiment 1: Comb Filtering</strong>
+            Click <em>START AUDIO</em>, select <em>White Noise</em>, and drag the green Receiver sphere close to a wall to hear hollow phase notches and see $H(f)$ ripples.
+          </div>
+          <div class="exp-card">
+            <strong>🏛️ Experiment 2: Sabine vs. Eyring RT60</strong>
+            Change all 6 surface materials from <em>Poured Concrete</em> to <em>6" Fiberglass</em> and watch the $RT_{60}$ curve collapse from cathedral boom to anechoic tight.
+          </div>
+          <div class="exp-card">
+            <strong>🎙️ Experiment 3: Polar Pattern Reject</strong>
+            Switch the receiver from <em>Omnidirectional</em> to <em>Figure-8 (Blumlein)</em> and rotate Azimuth so the null rejects strong side-wall reflections.
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- Main Interactive Stage (Persistent Iframe Deck preserves WebGL & Audio state) -->
     <main class="stage-container">
-      <iframe id="main-frame" class="single-frame" src="/app-3d-acoustics.html" allow="autoplay"></iframe>
+      <div id="iframe-deck" class="iframe-deck">
+        <iframe
+          class="app-frame active"
+          data-app-id="app-3d-acoustics"
+          src="/app-3d-acoustics.html"
+          allow="autoplay; microphone"
+          title="3D Acoustic Room Simulator"
+        ></iframe>
+      </div>
       <div id="quad-container" class="quad-grid"></div>
     </main>
   </div>
 
-  <script>
+  <script type="module">
+    import { initDeclarativeTips } from '/src/ui/LearningTooltips.js';
+
+    initDeclarativeTips(document.body);
+
+    const CURRICULUM = {
+      'app-3d-acoustics': {
+        tag: 'MODULE 1 · ACOUSTIC PHYSICS',
+        headline: '3D Room Acoustics Simulator — Sabine/Eyring RT60, 1st-Order Specular Reflections, Boundary Loading & Comb Filtering',
+        overview:
+          '<strong>What You Are Learning:</strong> Before sound ever reaches a microphone capsule, the physical room dimensions and surface absorption coefficients shape its frequency response, clarity, and decay time (RT60). Explore how direct path (d0), Initial Time Delay Gap (ITDG), standing room modes below the Schroeder frequency, and mic polar patterns interact in 3D space.',
+        experiments: [
+          {
+            title: '🎧 1. Hear Wall Comb Filtering',
+            body: 'Click START AUDIO, choose White Noise or Snare, and drag the green Receiver sphere near any wall to hear hollow phase cancellation notches.'
+          },
+          {
+            title: '🏛️ 2. Compare Concrete vs. Treated Studio',
+            body: 'Use the Preset selector at top-left to jump between Reverberant Concrete Vault and Vocal Isolation Booth while listening to the decay tail.'
+          },
+          {
+            title: '🎙️ 3. Aim Directional Polar Nulls',
+            body: 'Switch the receiver pattern to Cardioid or Figure-8 and rotate Azimuth/Elevation in the right panel to reject early wall reflections.'
+          }
+        ]
+      },
+      'app-1950s-studio': {
+        tag: 'MODULE 2 · 1950s ANALOG CHAIN',
+        headline: '1950s Single-Room Studio — Live Acoustic Bleed, RCA 76-D Tube Pre, Pultec EQP-1A3, Fairchild 660, 15 IPS Slapback & Scully Lathe',
+        overview:
+          '<strong>What You Are Learning:</strong> In the 1950s (Sun Records, Capitol Tower, Columbia 30th St.), bands recorded live in one room with acoustic bleed between microphones, mixed through rotary tube consoles into 15 IPS magnetic tape, and cut directly onto 78 RPM shellac or 33⅓ RPM microgroove vinyl masters.',
+        experiments: [
+          {
+            title: '🎸 1. Live Room Microphone Bleed',
+            body: 'Press PLAY 4-TRACK SESSION and drag the Vocals and Drums closer together on the Stage 1 floorplan to hear real-time inverse-square bleed and phase comb filtering.'
+          },
+          {
+            title: '🎛️ 2. The Pultec Low-End Trick',
+            body: 'In Stage 2B, set Low Freq to 60 Hz and turn up BOTH Boost (6) and Atten (5) simultaneously for tight bass thump with zero mud.'
+          },
+          {
+            title: '💿 3. 15 IPS Slapback & 78 RPM Shellac',
+            body: 'Engage Stage 3 Tape Slapback at 15 IPS (133 ms Sun Records echo), then switch Stage 4 Lathe between 33⅓ LP and 78 RPM Shellac.'
+          }
+        ]
+      },
+      'app-emt140-plate': {
+        tag: 'MODULE 3 · 1960s PLATE REVERB',
+        headline: '1960s EMT-140 ST Hallplatten-Nachhallgerät — 2m × 1m Tensioned Steel Sheet, Flexural Dispersion & Motorized Gondola Damper',
+        overview:
+          '<strong>What You Are Learning:</strong> Introduced in 1957, the EMT-140 replaced concrete echo chambers with a 0.5 mm sheet of cold-rolled steel suspended by 4 corner springs. Because bending waves in metal travel faster at high frequencies than low frequencies (dispersion), plate reverb wraps vocals and drums in an immediate, silky high-frequency halo.',
+        experiments: [
+          {
+            title: '⚡ 1. Strike Plate & Watch Flexural Waves',
+            body: 'Click STRIKE PLATE in Module I and watch the 3D flexural standing wave ripple across the suspended steel sheet while listening to the dispersive chirp.'
+          },
+          {
+            title: '🥇 2. Steel (EMT 140) vs. Gold Foil (EMT 240)',
+            body: 'Switch Module I to TAPE STEMS -> PLAY LOOP, then compare STEEL (bright 4.5 kHz sheen) against GOLD (warm 24k gold foil 2.8 kHz decay) in Module II.'
+          },
+          {
+            title: '⚙️ 3. Motorized Damper Pad Gap',
+            body: 'Turn the NACHHALL T60 and DAMPER PAD knobs to move the 3D fiberglass damping plate from 120 mm down to 4 mm and choke the tail.'
+          }
+        ]
+      },
+      'app-vintage-suite': {
+        tag: 'MODULE 4 · 1970s–1990s RACK SUITE',
+        headline: 'Vintage Rack Suite — 1981 SSL/Drawmer Gated Reverb, Dolby A Cat. 22 Compander ("Air Trick") & Dual 24-Track SMPTE Tape Sync',
+        overview:
+          '<strong>What You Are Learning:</strong> Explore three landmark studio technologies that defined 1970s–1990s record production: non-linear gated drum reverb (SSL 4000E Listen Mic Compressor + Drawmer DS201), 4-band bilateral tape noise reduction & vocal exciter (Dolby A-Type Cat. 22), and 46-track dual-machine SMPTE timecode synchronization (Studer A800 + Adams Smith Zeta-Three).',
+        experiments: [
+          {
+            title: '🥁 1. 1981 Townhouse Gated Snare',
+            body: 'Click ⚡ HIT SNARE TRANSIENT or START TEST SIGNAL in Rack 01, crank SSL LMC Smash, and watch the Drawmer DS201 Hold/Release chop the reverb tail.'
+          },
+          {
+            title: '✨ 2. The "Dolby A Air Trick" on Vocals',
+            body: 'Select Stem 2 (Breathy Vocal) in the top transport bar, then click ✨ "Dolby A Air Trick" in Rack 02 to boost quiet 3kHz/9kHz breathiness by +15 dB!'
+          },
+          {
+            title: '📼 3. Trigger Slave Capstan Chase',
+            body: 'In Rack 03, click ⏪ TRIGGER SLAVE CHASE (-12 FRAMES) while audio plays to hear Slave Machine B pitch-slew and lock back to Master Machine A.'
+          }
+        ]
+      }
+    };
+
     const tabs = document.querySelectorAll('.app-tab');
-    const mainFrame = document.getElementById('main-frame');
+    const iframeDeck = document.getElementById('iframe-deck');
     const popoutBtn = document.getElementById('btn-popout');
     const quadBtn = document.getElementById('btn-quad');
     const quadContainer = document.getElementById('quad-container');
-    const openAllBtn = document.getElementById('btn-open-all');
+    const silenceAllBtn = document.getElementById('btn-silence-all');
+    const audioStatusPill = document.getElementById('audio-status-pill');
+    const audioStatusText = document.getElementById('audio-status-text');
+
+    const guideEraTag = document.getElementById('guide-era-tag');
+    const guideHeadline = document.getElementById('guide-headline');
+    const guideOverview = document.getElementById('guide-overview');
+    const guideExperiments = document.getElementById('guide-experiments');
 
     const apps = [
-      { url: '/app-3d-acoustics.html', title: '3D Acoustic Room Simulator' },
-      { url: '/app-1950s-studio.html', title: '1950s Recording Studio & Lathe' },
-      { url: '/app-emt140-plate.html', title: '1960s EMT-140 Plate Reverb' },
-      { url: '/app-vintage-suite.html', title: '1970s–90s Vintage Studio Suite' }
+      { id: 'app-3d-acoustics', url: '/app-3d-acoustics.html', title: '3D Acoustic Room Simulator' },
+      { id: 'app-1950s-studio', url: '/app-1950s-studio.html', title: '1950s Recording Studio & Lathe' },
+      { id: 'app-emt140-plate', url: '/app-emt140-plate.html', title: '1960s EMT-140 Plate Reverb' },
+      { id: 'app-vintage-suite', url: '/app-vintage-suite.html', title: '1970s–90s Vintage Studio Suite' }
     ];
 
+    let activeAppId = 'app-3d-acoustics';
     let isQuad = false;
+    const playingApps = new Set();
+
+    function updateCurriculumBar(appId) {
+      const data = CURRICULUM[appId];
+      if (!data) return;
+      guideEraTag.textContent = data.tag;
+      guideHeadline.textContent = data.headline;
+      guideOverview.innerHTML = data.overview;
+      guideExperiments.innerHTML = data.experiments
+        .map(
+          (exp) => `
+          <div class="exp-card">
+            <strong>${exp.title}</strong>
+            ${exp.body}
+          </div>
+        `
+        )
+        .join('');
+    }
+
+    function updateAudioStatusUI() {
+      tabs.forEach((tab) => {
+        const id = tab.getAttribute('data-app-id');
+        tab.classList.toggle('is-playing', playingApps.has(id));
+      });
+
+      if (playingApps.size > 0) {
+        audioStatusPill.classList.add('active');
+        const activeList = Array.from(playingApps)
+          .map((id) => {
+            if (id === 'app-3d-acoustics') return '3D Room';
+            if (id === 'app-1950s-studio') return '1950s Studio';
+            if (id === 'app-emt140-plate') return 'EMT-140';
+            if (id === 'app-vintage-suite') return '70s–90s Rack';
+            return id;
+          })
+          .join(' + ');
+        audioStatusText.textContent = `PLAYING: ${activeList}`;
+      } else {
+        audioStatusPill.classList.remove('active');
+        audioStatusText.textContent = 'AUDIO STANDBY';
+      }
+    }
+
+    function suspendIframeAudio(iframeEl) {
+      if (iframeEl && iframeEl.contentWindow) {
+        try {
+          iframeEl.contentWindow.postMessage({ type: 'STUDIO_HUB_SUSPEND_AUDIO' }, '*');
+        } catch (_) {}
+      }
+    }
+
+    function silenceAllSimulators() {
+      iframeDeck.querySelectorAll('iframe.app-frame').forEach(suspendIframeAudio);
+      quadContainer.querySelectorAll('iframe').forEach(suspendIframeAudio);
+      playingApps.clear();
+      updateAudioStatusUI();
+    }
+
+    function getOrCreateAppFrame(appId, url) {
+      let frame = iframeDeck.querySelector(`iframe.app-frame[data-app-id="${appId}"]`);
+      if (!frame) {
+        frame = document.createElement('iframe');
+        frame.className = 'app-frame';
+        frame.setAttribute('data-app-id', appId);
+        frame.setAttribute('allow', 'autoplay; microphone');
+        frame.setAttribute('title', appId);
+        frame.src = url;
+        iframeDeck.appendChild(frame);
+      }
+      return frame;
+    }
 
     tabs.forEach((tab) => {
       tab.addEventListener('click', () => {
-        const url = tab.getAttribute('data-url');
-        tabs.forEach((t) => t.classList.toggle('active', t === tab));
+        const targetId = tab.getAttribute('data-app-id');
+        const targetUrl = tab.getAttribute('data-url');
+        activeAppId = targetId;
+
+        tabs.forEach((t) => {
+          const isMatch = t === tab;
+          t.classList.toggle('active', isMatch);
+          t.setAttribute('aria-selected', String(isMatch));
+        });
 
         if (isQuad) {
           toggleQuad(false);
         }
-        mainFrame.src = url;
-        popoutBtn.href = url;
+
+        // Suspend audio in all other frames so switching apps never causes overlapping audio
+        iframeDeck.querySelectorAll('iframe.app-frame').forEach((frame) => {
+          const frameAppId = frame.getAttribute('data-app-id');
+          if (frameAppId !== targetId) {
+            suspendIframeAudio(frame);
+            playingApps.delete(frameAppId);
+            frame.classList.remove('active');
+          }
+        });
+
+        const activeFrame = getOrCreateAppFrame(targetId, targetUrl);
+        activeFrame.classList.add('active');
+        popoutBtn.href = targetUrl;
+
+        updateCurriculumBar(targetId);
+        updateAudioStatusUI();
       });
     });
 
@@ -255,29 +721,41 @@
       quadBtn.classList.toggle('quad-active', isQuad);
 
       if (isQuad) {
-        mainFrame.style.display = 'none';
+        silenceAllSimulators();
+        iframeDeck.style.display = 'none';
         quadContainer.classList.add('active');
         quadContainer.innerHTML = apps
           .map(
             (a) => `
             <div class="quad-cell">
               <a class="quad-label" href="${a.url}" target="_blank">${a.title} ↗</a>
-              <iframe src="${a.url}" allow="autoplay"></iframe>
+              <iframe data-app-id="${a.id}" src="${a.url}" allow="autoplay; microphone"></iframe>
             </div>
           `
           )
           .join('');
       } else {
+        quadContainer.querySelectorAll('iframe').forEach(suspendIframeAudio);
         quadContainer.classList.remove('active');
         quadContainer.innerHTML = '';
-        mainFrame.style.display = 'block';
+        iframeDeck.style.display = 'block';
       }
     }
 
     quadBtn.addEventListener('click', () => toggleQuad());
+    silenceAllBtn.addEventListener('click', () => silenceAllSimulators());
 
-    openAllBtn.addEventListener('click', () => {
-      apps.forEach((a) => window.open(a.url, '_blank'));
+    // Listen for live audio state updates from child simulator iframes
+    window.addEventListener('message', (e) => {
+      if (!e.data || e.data.type !== 'STUDIO_APP_AUDIO_STATE') return;
+      const { appId, playing } = e.data;
+      if (!appId) return;
+      if (playing) {
+        playingApps.add(appId);
+      } else {
+        playingApps.delete(appId);
+      }
+      updateAudioStatusUI();
     });
   </script>
 </body>

@@ -422,7 +422,10 @@ export class GatedReverbModule {
         <div class="vst-suite-unit-title-group">
           <span class="vst-suite-unit-tag">RACK UNIT 01 · 1981 TOWNHOUSE CHAIN</span>
           <div>
-            <div class="vst-suite-unit-name">GATED REVERB SIMULATOR // SSL 4000E LMC + AMS RMX16 + DRAWMER DS201</div>
+            <div class="vst-suite-unit-name">
+              GATED REVERB SIMULATOR // SSL 4000E LMC + AMS RMX16 + DRAWMER DS201
+              <button type="button" class="edu-tip-badge edu-amber" data-edu-title="1981 Townhouse Studio 2 Gated Reverb" data-edu-tip="Accidentally discovered by Hugh Padgham and Phil Collins during Peter Gabriel's 'Intruder' sessions: the SSL 4000B/E console had a built-in Listen Mic Compressor (LMC) with a brickwall 20:1 ratio designed so engineers could hear musicians talking across the live room. Routing the room mic through the LMC and chopping its tail with a Drawmer DS201 noise gate keyed from the dry snare close-mic created the explosive 1980s drum sound!" data-edu-try="Click '⚡ HIT SNARE TRANSIENT' or 'START TEST SIGNAL' above, then compare '1981 Townhouse Snare' vs. 'Un-Gated Natural Plate'.">?</button>
+            </div>
             <div class="vst-suite-unit-model">Close-Mic Key Sidechain Trigger · Non-Linear Truncated Room Decay · Brickwall Listen-Mic Smash</div>
           </div>
         </div>
@@ -439,7 +442,10 @@ export class GatedReverbModule {
         <!-- COLUMN 1: ROOM ACOUSTICS & SSL 4000 E LISTEN MIC COMPRESSOR -->
         <div class="vst-suite-subpanel">
           <div class="vst-suite-subpanel-head">
-            <span>1. Room Chamber &amp; SSL 4000E LMC</span>
+            <span>
+              1. Room Chamber &amp; SSL 4000E LMC
+              <button type="button" class="edu-tip-badge edu-amber" data-edu-title="SSL 4000E Listen Mic Compressor (LMC)" data-edu-tip="Natural room reverb decays exponentially (-60 dB over RT60). By crushing the room mics through the SSL LMC before the gate, quiet reverb reflections are pulled up to full volume so the room sounds like a sustained plateau of energy right until the gate closes." data-edu-try="Crank 'SSL LMC Smash' from 10% up to 90% and watch the amber envelope plateau flatten in the oscilloscope!">?</button>
+            </span>
             <span class="vst-suite-subpanel-tag">Pre-Gate Smash</span>
           </div>
 
@@ -491,15 +497,27 @@ export class GatedReverbModule {
             </button>
           </div>
 
-          <div class="vst-suite-tech-note">
-            <strong>SSL Listen Mic Secret:</strong> Crushing the Stone Room mic at 20:1 raises the diffuse reverb tail to 0 VU so the room stays explosively loud right until the Drawmer gate chops it off.
-          </div>
+          <details class="edu-foldable" style="margin-top:4px;">
+            <summary>
+              <span class="edu-foldable-title">
+                <span class="edu-foldable-tag">Studio Secret</span>
+                <span>Why External Key Triggering + SSL Smash Is Essential</span>
+              </span>
+              <span class="edu-foldable-chevron">▼</span>
+            </summary>
+            <div class="edu-foldable-body">
+              Crushing the Stone Room mic at 20:1 raises the diffuse reverb tail to 0 VU so the room stays explosively loud right until the Drawmer DS201 gate chops it off. Triggering the gate's <strong>Key Input</strong> from the dry snare close-mic prevents the loud reverb tail from holding its own gate open!
+            </div>
+          </details>
         </div>
 
         <!-- COLUMN 2: DRAWMER DS201 DUAL NOISE GATE & EXTERNAL KEY SIDECHAIN -->
         <div class="vst-suite-subpanel">
           <div class="vst-suite-subpanel-head">
-            <span>2. Drawmer DS201 Sidechain Gate</span>
+            <span>
+              2. Drawmer DS201 Sidechain Gate
+              <button type="button" class="edu-tip-badge edu-amber" data-edu-title="Drawmer DS201 Attack / Hold / Release Envelope" data-edu-tip="The Drawmer DS201 made gated reverb repeatable thanks to independent HOLD (how long the reverb stays wide open at 0 dB) and RELEASE (how abruptly it slams shut), plus built-in High-Pass/Low-Pass Key Filters to reject kick drum and hi-hat bleed." data-edu-try="Switch 'Key Trigger Source' to 'INT SELF: Smashed Reverb Tail' to hear why gating without an external dry snare key chatters and fails!">?</button>
+            </span>
             <span class="vst-suite-subpanel-tag">Key Trigger + Envelope</span>
           </div>
 
@@ -580,7 +598,10 @@ export class GatedReverbModule {
         <!-- COLUMN 3: REAL-TIME NON-LINEAR ENVELOPE & SIDECHAIN OSCILLOSCOPE -->
         <div class="vst-suite-subpanel">
           <div class="vst-suite-subpanel-head">
-            <span>3. Non-Linear Gate Envelope vs. Exponential Decay</span>
+            <span>
+              3. Non-Linear Gate Envelope vs. Exponential Decay
+              <button type="button" class="edu-tip-badge edu-amber" data-edu-title="Reading the Gate Envelope Scope" data-edu-tip="The dashed curve shows how an un-gated room decays naturally. The solid amber curve shows the non-linear gated envelope (Attack → Hold Plateau → Abrupt Release Cutoff) alongside live audio waveform peaks." data-edu-try="Adjust 'Hold Time' (15–750 ms) and 'Release' (10–1000 ms) to reshape the amber gate trapezoid in real time.">?</button>
+            </span>
             <span class="vst-suite-subpanel-tag">60 FPS Telemetry</span>
           </div>
 

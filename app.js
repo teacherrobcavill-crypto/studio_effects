@@ -6,6 +6,11 @@
 
 import { AudioEngine } from './AudioEngine.js';
 import { PlateVisualizer } from './PlateVisualizer.js';
+import {
+  initDeclarativeTips,
+  registerHubAudioCoordinator,
+  notifyHubAudioState
+} from './src/ui/LearningTooltips.js';
 
 const KNOB_DEFINITIONS = [
   {
@@ -102,6 +107,20 @@ class PlateReverbApp {
     this._bindDragAndDrop();
     this._bindWebAppExportButtons();
     this._updateGondolaScale();
+    initDeclarativeTips();
+    registerHubAudioCoordinator(() => {
+      if (this.audioEngine && this.audioEngine.isInitialized) {
+        if (this.audioEngine.isLoopPlaying) {
+          this.audioEngine.stopLoop();
+          this._syncTransportButtons();
+        }
+        if (this.audioEngine.isPowered) {
+          this.audioEngine.setPower(false);
+          this._updatePowerUI(false);
+        }
+        notifyHubAudioState('app-emt140-plate', false);
+      }
+    });
     this._startRenderLoop();
   }
 
@@ -583,6 +602,7 @@ class PlateReverbApp {
     if (this.pilotJewel) {
       this.pilotJewel.classList.toggle('active', powered);
     }
+    notifyHubAudioState('app-emt140-plate', Boolean(powered && this.audioEngine && this.audioEngine.isLoopPlaying));
   }
 
   // ---------------------------------------------------------------------------

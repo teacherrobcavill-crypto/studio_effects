@@ -306,7 +306,10 @@ export class SmpteSynchronizerModule {
         <div class="vst-suite-unit-title-group">
           <span class="vst-suite-unit-tag">RACK UNIT 03 · 46-TRACK SMPTE LINK</span>
           <div>
-            <div class="vst-suite-unit-name">DUAL 24-TRACK SMPTE SYNCHRONIZER // 2x STUDER A800 MKIII + ADAMS SMITH ZETA-THREE</div>
+            <div class="vst-suite-unit-name">
+              DUAL 24-TRACK SMPTE SYNCHRONIZER // 2x STUDER A800 MKIII + ADAMS SMITH ZETA-THREE
+              <button type="button" class="edu-tip-badge edu-amber" data-edu-title="Dual 24-Track SMPTE Tape Synchronization (46 Tracks)" data-edu-tip="When 24 tracks on a 2-inch Studer A800 weren't enough for late-1970s/1980s productions (Queen, Toto, Michael Jackson's 'Thriller'), engineers locked two 24-track machines together using an Adams Smith Zeta-Three or Lynx synchronizer. It compares 80-bit SMPTE Longitudinal Timecode (LTC) on Track 24 of both reels and continuously adjusts the Slave machine's DC capstan motor speed via a Phase-Locked Loop (PLL)." data-edu-try="Click '⏪ TRIGGER SLAVE CHASE (-12 FRAMES)' while audio is playing to hear the Slave machine pitch-slew and lock back in!">?</button>
+            </div>
             <div class="vst-suite-unit-model">80-Bit Longitudinal Timecode (LTC) on Track 24 · Track 23 Guard-Band · PLL Capstan Varispeed Servo</div>
           </div>
         </div>
@@ -348,7 +351,10 @@ export class SmpteSynchronizerModule {
         <!-- COLUMN 1: SYNCHRONIZER & GUARD-BAND CONTROLS -->
         <div class="vst-suite-subpanel">
           <div class="vst-suite-subpanel-head">
-            <span>1. SMPTE LTC Standard, Guard Band &amp; Capstan Phase</span>
+            <span>
+              1. SMPTE LTC Standard, Guard Band &amp; Capstan Phase
+              <button type="button" class="edu-tip-badge edu-amber" data-edu-title="Track 23 Guard Band, Sub-Frame Phase & Jam Sync" data-edu-tip="SMPTE LTC is an aggressive 1200/2400 Hz square-wave audio signal printed on Track 24. Without leaving Track 23 empty as a Guard Band, capacitive head crosstalk bleeds timecode whine into Track 23 audio! Meanwhile, JAM SYNC regenerates fresh timecode during tape oxide dropouts so the slave machine doesn't lose lock." data-edu-try="Disengage 'TRK 23 GUARD BAND' to hear 2.4 kHz LTC crosstalk bleed into the mix, or click 'SOLO TRK 24 SMPTE BI-PHASE AUDIO' to hear raw timecode!">?</button>
+            </span>
             <span class="vst-suite-subpanel-tag">46 Usable Audio Tracks</span>
           </div>
 
@@ -402,15 +408,27 @@ export class SmpteSynchronizerModule {
             </button>
           </div>
 
-          <div class="vst-suite-tech-note">
-            <strong>Why 2x 24-Track = 46 Tracks:</strong> Track 24 on both machines carries 2400 Hz Manchester Bi-Phase SMPTE timecode. Track 23 is left blank as a <em>Guard Band</em> so the loud square-wave timecode whine cannot bleed into adjacent vocal or acoustic tracks!
-          </div>
+          <details class="edu-foldable" style="margin-top:4px;">
+            <summary>
+              <span class="edu-foldable-title">
+                <span class="edu-foldable-tag">Studio Math</span>
+                <span>Why 2× 24-Track Machines Equal 46 Usable Audio Tracks</span>
+              </span>
+              <span class="edu-foldable-chevron">▼</span>
+            </summary>
+            <div class="edu-foldable-body">
+              Track 24 on both machines is dedicated to 2400 Hz Manchester Bi-Phase SMPTE timecode (leaving 23 tracks per machine). Because the edge-track timecode signal is a steep square wave, Track 23 is left blank as a <strong>Guard Band</strong> so timecode whine cannot bleed into adjacent vocal or acoustic guitar tracks—yielding $22 + 22 = 44$ (or up to 46) clean audio tracks!
+            </div>
+          </details>
         </div>
 
         <!-- COLUMN 2: DUAL STUDER A800 TRANSPORTS + 80-BIT MANCHESTER BI-PHASE SCOPE -->
         <div class="vst-suite-subpanel">
           <div class="vst-suite-subpanel-head">
-            <span>2. Studer A800 Dual Transports &amp; 80-Bit Bi-Phase Mark Scope</span>
+            <span>
+              2. Studer A800 Dual Transports &amp; 80-Bit Bi-Phase Mark Scope
+              <button type="button" class="edu-tip-badge edu-amber" data-edu-title="80-Bit Manchester Bi-Phase Mark Encoding" data-edu-tip="Each video/audio frame contains 80 bits encoding Hours:Minutes:Seconds:Frames in Binary-Coded Decimal (BCD) plus a 16-bit Sync Word (0011 1111 1111 1101) at bits 64–79 so the reader knows tape direction and frame boundaries even during fast wind!" data-edu-try="Watch the spinning Studer A800 reels and live 80-bit Manchester square wave below.">?</button>
+            </span>
             <span class="vst-suite-subpanel-tag">Sync Word: 0011 1111 1111 1101</span>
           </div>
 

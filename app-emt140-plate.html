@@ -53,16 +53,19 @@
             <span class="emt-logo-sub">LAHR / SCHWARZWALD</span>
           </div>
           <div class="brand-titles">
-            <h1>Hallplatten-Nachhallgerät — Studio Plate Reverb</h1>
+            <h1>
+              Hallplatten-Nachhallgerät — Studio Plate Reverb
+              <button type="button" class="edu-tip-badge edu-amber" data-edu-title="1957 EMT-140 Plate Reverb Physics" data-edu-tip="Introduced in 1957 by Wilhelm Franz KG (engineered by Dr. Walter Kuhl), the EMT-140 replaced echo chambers with a 0.5mm cold-rolled steel sheet (2m × 1m) tensioned by 4 corner springs inside a 600 lb wooden crate. Unlike air, bending waves in metal exhibit Dispersion: high frequencies travel faster than low frequencies, producing an instant, silky transient halo!" data-edu-try="Click 'STRIKE PLATE' or 'PLAY LOOP' below and watch the 3D flexural standing waves ripple across the suspended metal sheet.">?</button>
+            </h1>
             <p>WILHELM FRANZ KG • V76 TUBE DRIVER • FDN-16 FLEXURAL DISPERSION NETWORK</p>
           </div>
         </div>
 
         <!-- Iconic 1960s Backlit Mechanical Gondola Damper Scale ("Nachhallzeit") -->
-        <div class="gondola-dial-housing">
+        <div class="gondola-dial-housing" data-edu-title="Gondola Mechanical Damper ('Nachhallzeit')" data-edu-tip="Real EMT-140 plates had no electronic decay knob—instead, a motorized porous fiberglass damping plate moved closer to or farther from the vibrating steel sheet (4 mm to 120 mm air gap) to absorb acoustic energy and vary RT60 from 0.5s to 12s." data-edu-try="Turn the 'NACHHALL T60' or 'DAMPER PAD' knobs below and watch the backlit Gondola needle and 3D damper plate move!">
           <div class="gondola-top-labels">
             <span id="gondola-alloy-val">PLATE: STEEL (EMT 140)</span>
-            <span>NACHHALLZEIT / DÄMPFUNGSPLATTE</span>
+            <span>NACHHALLZEIT / DÄMPFUNGSPLATTE ?</span>
             <span id="gondola-gap-val">PAD GAP: 120 mm</span>
             <span id="gondola-rt60-val">RT60: 3.2 s</span>
           </div>
@@ -89,6 +92,23 @@
         </div>
       </header>
 
+      <!-- Foldable Engineering Guide Drawer -->
+      <details class="edu-foldable" style="margin: 0 2px 6px;">
+        <summary>
+          <span class="edu-foldable-title">
+            <span class="edu-foldable-tag">1960s Engineering Guide</span>
+            <span>How Flexural Plate Dispersion, Damper Gap &amp; Dual Piezo Pickups Work</span>
+          </span>
+          <span class="edu-foldable-chevron">▼ Unfold Guide</span>
+        </summary>
+        <div class="edu-foldable-body">
+          A moving-coil driver mounted slightly off-center excites 2D bending waves in the tensioned metal sheet. Because flexural phase velocity increases with frequency ($v_p \propto \sqrt{\omega}$), high-frequency transients reach the two asymmetric piezo contact pickups <strong>before</strong> low frequencies—creating the unmistakable dense "whip" that made the EMT-140 famous on Abbey Road, Pink Floyd, and Motown vocals.
+          <div class="edu-foldable-try">
+            <strong>🎧 Quick Experiment:</strong> Click <strong>PLAY LOOP</strong> (Module I), switch between <strong>STEEL (EMT 140)</strong> and <strong>GOLD (EMT 240)</strong> in Module II, and toggle the <strong>80 Hz Bass Cut Filter</strong> in Module III to hear how low-end rumble is cleaned up.
+          </div>
+        </div>
+      </details>
+
       <!-- 3D Cutaway Mechanical Plate Crate Viewport -->
       <div class="viewport-bezel">
         <div id="plate-canvas-container"></div>
@@ -114,7 +134,10 @@
         <!-- MODULE I: Input Amplifier & Studio Tape / Stem Sources -->
         <div class="hw-bay">
           <div class="bay-header">
-            <span class="bay-title">I. Tube Driver &amp; Signal Source</span>
+            <span class="bay-title">
+              I. Tube Driver &amp; Signal Source
+              <button type="button" class="edu-tip-badge edu-amber" data-edu-title="V76 Tube Driver & 4-Stage All-Pass Diffuser" data-edu-tip="Sums stereo input to mono, passes through 4 series all-pass diffusers (prime delays 83, 149, 231, 353 samples) to model initial driver coupling, and excites the 16-channel Feedback Delay Network. PRE-DELAY adds up to 250ms of tape pre-delay before hitting the plate." data-edu-try="Switch between IMPULSE ('STRIKE PLATE') and TAPE STEMS ('PLAY LOOP'), or drag any .WAV/.MP3 file onto the window!">?</button>
+            </span>
             <span class="bay-subtitle">4-STAGE ALL-PASS DIFFUSER</span>
           </div>
 
@@ -142,7 +165,10 @@
         <!-- MODULE II: Plate Metallurgy & Motorized Mechanical Damper -->
         <div class="hw-bay">
           <div class="bay-header">
-            <span class="bay-title">II. Plate Metallurgy &amp; Damper Motor</span>
+            <span class="bay-title">
+              II. Plate Metallurgy &amp; Damper Motor
+              <button type="button" class="edu-tip-badge edu-amber" data-edu-title="Metallurgy Dispersion & Walsh-Hadamard FDN-16" data-edu-tip="Different alloys alter wave dispersion (all-pass coefficient a) and high-frequency damping cutoff: STEEL (EMT 140, 4.5kHz classic vocal sheen), GOLD (EMT 240, 24k gold foil, warm dark 2.8kHz tail), ALUMINIUM (bright 7.5kHz sizzle), and TITANIUM (dense 6.2kHz modal ring)." data-edu-try="Compare STEEL vs. GOLD while a vocal or drum stem is looping, and sweep PLATE TENSION!">?</button>
+            </span>
             <span class="bay-subtitle">16×16 WALSH-HADAMARD MATRIX</span>
           </div>
 
@@ -179,7 +205,10 @@
         <!-- MODULE III: Stereo Piezo Pickups & 80 Hz High-Pass Stage -->
         <div class="hw-bay">
           <div class="bay-header">
-            <span class="bay-title">III. Stereo Pickup Amplifier</span>
+            <span class="bay-title">
+              III. Stereo Pickup Amplifier
+              <button type="button" class="edu-tip-badge edu-amber" data-edu-title="Dual Piezo Pickups & 80 Hz Bass Cut" data-edu-tip="The EMT-140 ST added a second barium-titanate piezo pickup at an asymmetric node on the steel sheet to produce true stereo reverb from a mono send. Engaging the 80 Hz 2nd-order Butterworth high-pass filter removes low-frequency plate thunder." data-edu-try="Toggle '80Hz ON' to 'LINEAR' on a drum loop to hear how low kick energy booms on an unfiltered plate.">?</button>
+            </span>
             <span class="bay-subtitle">EQUAL-POWER BLEND</span>
           </div>
 

@@ -386,7 +386,10 @@ export class DolbyCompanderModule {
         <div class="vst-suite-unit-title-group">
           <span class="vst-suite-unit-tag">RACK UNIT 02 · DOLBY CAT. 22 / 361 FRAME</span>
           <div>
-            <div class="vst-suite-unit-name">DOLBY A-TYPE &amp; B-TYPE COMPANDER // + "AIR TRICK" VOCAL EXCITER</div>
+            <div class="vst-suite-unit-name">
+              DOLBY A-TYPE &amp; B-TYPE COMPANDER // + "AIR TRICK" VOCAL EXCITER
+              <button type="button" class="edu-tip-badge edu-amber" data-edu-title="1965 Ray Dolby A-Type Bilateral Compander" data-edu-tip="Analog magnetic tape generates continuous high-frequency oxide hiss around -50 dB. Ray Dolby's Cat. 22 card solved this without pumping artifacts by splitting only quiet signals (below -20 dB) into 4 independent frequency bands, boosting them +10 to +15 dB before hitting tape (Encode), and applying an exact mirror-image cut on playback (Decode)." data-edu-try="Switch the top stem selector to 'Stem 2: Breathy Vocal & Synth Pad', then click between 'Raw Analog Tape (No NR)', 'Full Compander', and '✨ Dolby A Air Trick'!">?</button>
+            </div>
             <div class="vst-suite-unit-model">4-Band Low-Level Differential Network (80Hz · 80–3kHz · 3kHz · 9kHz) · 850Hz FM Calibration Tone</div>
           </div>
         </div>
@@ -402,7 +405,10 @@ export class DolbyCompanderModule {
         <!-- COLUMN 1: COMPANDER TOPOLOGY, TAPE HISS & CALIBRATION -->
         <div class="vst-suite-subpanel">
           <div class="vst-suite-subpanel-head">
-            <span>1. Compander Mode &amp; Tape Alignment</span>
+            <span>
+              1. Compander Mode &amp; Tape Alignment
+              <button type="button" class="edu-tip-badge edu-amber" data-edu-title="Dolby Level (185 nWb/m) & Calibration Mistracking" data-edu-tip="Because Dolby A expanders are level-sensitive (-20 dB threshold), playback tape flux must match the recording level within ±0.5 dB using the built-in 850 Hz frequency-modulated 'Dolby Tone'. If tape level drops on playback, the decoder over-expands and dulls quiet high frequencies!" data-edu-try="Click 'Miscalibrated Tape (-6.5 dB Error)' or drag 'Tape Flux Cal Trim' away from 0.0 dB to hear mistracking dullness.">?</button>
+            </span>
             <span class="vst-suite-subpanel-tag">Dolby Level 0 VU</span>
           </div>
 
@@ -441,15 +447,27 @@ export class DolbyCompanderModule {
             </button>
           </div>
 
-          <div class="vst-suite-tech-note">
-            <strong>The "Dolby A Air Trick":</strong> Producers discovered that routing vocals through a Dolby A Cat. 22 in <em>Encode-Only</em> mode (with Bands 1 &amp; 2 bypassed) dynamically boosts quiet high-frequency breathiness by up to +15 dB without harsh static EQ peaks!
-          </div>
+          <details class="edu-foldable" style="margin-top:4px;">
+            <summary>
+              <span class="edu-foldable-title">
+                <span class="edu-foldable-tag">Studio Secret</span>
+                <span>How the "Dolby A Air Trick" Exciter Works on Vocals</span>
+              </span>
+              <span class="edu-foldable-chevron">▼</span>
+            </summary>
+            <div class="edu-foldable-body">
+              Producers (like Mutt Lange and Johnlier) discovered that routing a lead vocal through a Dolby 361 in <strong>Encode-Only</strong> mode—while Physically unclipping or bypassing Bands 1 &amp; 2—dynamically boosts quiet high-frequency breathiness (3 kHz &amp; 9 kHz+) by up to +15 dB while leaving loud sibilant peaks untouched!
+            </div>
+          </details>
         </div>
 
         <!-- COLUMN 2: CAT. 22 4-BAND DIFFERENTIAL FILTER MATRIX -->
         <div class="vst-suite-subpanel">
           <div class="vst-suite-subpanel-head">
-            <span>2. Cat. 22 4-Band Differential Matrix</span>
+            <span>
+              2. Cat. 22 4-Band Differential Matrix
+              <button type="button" class="edu-tip-badge edu-amber" data-edu-title="4-Band Low-Level Differential Filter Bank" data-edu-tip="Band 1 (<80Hz LP) removes hum/rumble; Band 2 (80Hz–3kHz BP) reduces broadband tape modulation noise; Band 3 (>3kHz HP) and Band 4 (>9kHz HP) stack together above 9kHz to yield 15 dB of high-frequency hiss reduction." data-edu-try="Click the 'IN' button on B1–B4 cards to bypass individual bands and hear how B3 + B4 create the Air Trick!">?</button>
+            </span>
             <span class="vst-suite-subpanel-tag">Click Band to Toggle</span>
           </div>
 
@@ -489,7 +507,10 @@ export class DolbyCompanderModule {
         <!-- COLUMN 3: BILINEAR COMPANDER TRANSFER CURVE & SPECTRUM -->
         <div class="vst-suite-subpanel">
           <div class="vst-suite-subpanel-head">
-            <span>3. Bilinear Transfer Characteristic &amp; Noise Floor</span>
+            <span>
+              3. Bilinear Transfer Characteristic &amp; Noise Floor
+              <button type="button" class="edu-tip-badge edu-amber" data-edu-title="Bilinear Encode/Decode Transfer Curve" data-edu-tip="Shows Input dB (horizontal) vs. Output dB (vertical). Below -40 dB, the green Encode curve lifts quiet details +10 dB above the tape hiss floor; above -20 dB it merges smoothly back to 1:1 unity gain so loud peaks never saturate the tape." data-edu-try="Watch the live signal dot ride along the green Encode curve when 'Dolby A Air Trick' is selected!">?</button>
+            </span>
             <span class="vst-suite-subpanel-tag">Encode / Decode Law</span>
           </div>
 

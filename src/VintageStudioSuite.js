@@ -3,6 +3,11 @@ import { ProceduralStemGenerator } from './vintage-suite/ProceduralStemGenerator
 import { GatedReverbModule } from './vintage-suite/GatedReverbModule.js';
 import { DolbyCompanderModule } from './vintage-suite/DolbyCompanderModule.js';
 import { SmpteSynchronizerModule } from './vintage-suite/SmpteSynchronizerModule.js';
+import {
+  initDeclarativeTips,
+  registerHubAudioCoordinator,
+  notifyHubAudioState
+} from './ui/LearningTooltips.js';
 
 /**
  * Vintage Studio Technology Interactive Suite (1970s–1990s)
@@ -43,6 +48,18 @@ export class VintageStudioSuite {
     injectScopedStyles(this.containerElement);
     this.buildShellDOM();
     this.mount(this.currentModuleName);
+
+    registerHubAudioCoordinator(() => {
+      if (this.isPlaying) {
+        this.stopStemLoop();
+        this.isPlaying = false;
+        this.syncShellUI();
+      }
+      if (this.audioContext && this.audioContext.state === 'running') {
+        this.audioContext.suspend().catch(() => {});
+      }
+      notifyHubAudioState('app-vintage-suite', false);
+    });
   }
 
   /**
@@ -277,6 +294,7 @@ export class VintageStudioSuite {
       this.restartStemLoop();
     }
     this.syncShellUI();
+    notifyHubAudioState('app-vintage-suite', this.isPlaying);
   }
 
   stopStemLoop() {
@@ -321,6 +339,10 @@ export class VintageStudioSuite {
     hitSrc.connect(this.masterSourceBus);
     hitSrc.start();
     this.scheduledSources.push(hitSrc);
+    notifyHubAudioState('app-vintage-suite', true);
+    setTimeout(() => {
+      if (!this.isPlaying) notifyHubAudioState('app-vintage-suite', false);
+    }, 900);
   }
 
   syncShellUI() {
@@ -408,6 +430,7 @@ export class VintageStudioSuite {
     }
 
     this.syncShellUI();
+    initDeclarativeTips(this.rootEl);
   }
 
   /**

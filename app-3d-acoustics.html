@@ -48,7 +48,10 @@
         <!-- Guided Educational Scenarios -->
         <section class="panel-section">
           <div class="section-header">
-            <h2>Guided Acoustic Presets</h2>
+            <h2>
+              Guided Acoustic Presets
+              <button type="button" class="edu-tip-badge" data-edu-title="Guided Acoustic Scenarios" data-edu-tip="Each scenario reconfigures the 3D room dimensions, 6 boundary materials, source/mic coordinates, and polar pattern to demonstrate a landmark recording studio phenomenon." data-edu-try="Click Scenarios 01 through 04 while audio is playing to hear the room transform in real time.">?</button>
+            </h2>
             <span>4 Scenarios</span>
           </div>
           <div id="scenario-buttons" class="scenario-grid"></div>
@@ -57,7 +60,10 @@
         <!-- Room Dimensions -->
         <section class="panel-section">
           <div class="section-header">
-            <h2>Room Geometry</h2>
+            <h2>
+              Room Geometry
+              <button type="button" class="edu-tip-badge" data-edu-title="Room Dimensions & Axial Modes" data-edu-tip="Room dimensions govern total Volume (V = W×H×D), reverberation time (RT60 ∝ V), and low-frequency Axial Standing Waves at f = c / (2·L), where c = 343 m/s." data-edu-try="Shrink Width & Depth to ~4m to hear tight, boxy early reflections and higher bass mode frequencies.">?</button>
+            </h2>
             <span>c = 343 m/s</span>
           </div>
           <div class="control-row">
@@ -80,7 +86,10 @@
         <!-- Surface Boundary Materials -->
         <section class="panel-section">
           <div class="section-header">
-            <h2>Boundary Absorption α(f)</h2>
+            <h2>
+              Boundary Absorption α(f)
+              <button type="button" class="edu-tip-badge" data-edu-title="Absorption Coefficient α(f)" data-edu-tip="Materials absorb different amounts of energy at Low (125 Hz), Mid (1 kHz), and High (4 kHz) frequencies. α = 0.02 (Concrete) reflects 98% of sound energy; α = 0.95 (Anechoic/Bass Trap) absorbs 95%." data-edu-try="Compare 'All Concrete' (boomy, long RT60) against 'All Celotex' (classic 1950s high-frequency damping).">?</button>
+            </h2>
             <span>6 Surfaces</span>
           </div>
           <div class="mat-grid">
@@ -121,7 +130,10 @@
         <!-- Source & Microphone Coordinates + Polar Pattern -->
         <section class="panel-section">
           <div class="section-header">
-            <h2>Source Position (Speaker)</h2>
+            <h2>
+              Source Position (Speaker)
+              <button type="button" class="edu-tip-badge edu-amber" data-edu-title="Sound Source & Boundary Loading" data-edu-tip="Placing a sound source within 1 meter of hard walls concentrates low-frequency radiation into a smaller solid angle: 1 wall = Half-Space (+3 dB bass), 2 walls = Quarter-Space (+6 dB), 3 walls (corner) = Eighth-Space (+9 dB)." data-edu-try="Drag the Amber Speaker into a room corner in the 3D view and watch the 'Boundary Loading' dB boost climb!">?</button>
+            </h2>
             <span style="color:#ff922b">● Amber</span>
           </div>
           <div class="control-row">
@@ -143,7 +155,10 @@
 
         <section class="panel-section">
           <div class="section-header">
-            <h2>Microphone &amp; Polar Pattern</h2>
+            <h2>
+              Microphone &amp; Polar Pattern
+              <button type="button" class="edu-tip-badge" data-edu-title="Directional Polar Patterns: G(θ) = a + (1-a)cos(θ)" data-edu-tip="Directional mics reject room reflections arriving at their null angles: Cardioid rejects from 180° behind; Figure-8 (Ribbon) has deep dead nulls at ±90° to the sides." data-edu-try="Select 'Figure-8 (Ribbon)' and rotate Mic Yaw θ so the side nulls point at the side walls!">?</button>
+            </h2>
             <span style="color:#00f5d4">● Cyan</span>
           </div>
           <div class="control-row">
@@ -180,23 +195,23 @@
         <!-- Floating Path Layer & Ray Toggles -->
         <div class="viewport-hud-top">
           <div class="layer-toggles-card">
-            <label class="toggle-pill">
+            <label class="toggle-pill" data-edu-title="Direct Sound Path (d₀)" data-edu-tip="The unobstructed line-of-sight acoustic wave from Source to Microphone. Attenuates by the inverse-distance law (1/d, or -6 dB per doubling of distance).">
               <input id="toggle-direct" type="checkbox" checked />
               <span>Direct Path</span>
             </label>
-            <label class="toggle-pill">
+            <label class="toggle-pill" data-edu-title="1st-Order Early Reflections" data-edu-tip="The first 6 specular bounces off the Floor, Ceiling, and 4 Walls. Early reflections within 1–30 ms fuse with the direct sound to define room size, width, and comb filtering.">
               <input id="toggle-early" type="checkbox" checked />
               <span>Early Reflections (6)</span>
             </label>
-            <label class="toggle-pill">
+            <label class="toggle-pill" data-edu-title="Sabine / Eyring Late Reverb Tail" data-edu-tip="Dense, exponentially decaying diffuse reflections modeled by a 3-band statistical impulse response driven by the room's Sabine/Eyring RT60.">
               <input id="toggle-reverb" type="checkbox" checked />
               <span>Sabine Late Reverb</span>
             </label>
-            <label class="toggle-pill">
+            <label class="toggle-pill" data-edu-title="Virtual Image-Source Ghosts" data-edu-tip="Visualizes the 6 virtual mirror-image speakers outside the room boundaries used to solve exact reflection bounce points via Snell's Law.">
               <input id="toggle-ghosts" type="checkbox" />
               <span>Virtual Image Ghosts</span>
             </label>
-            <label class="toggle-pill">
+            <label class="toggle-pill" data-edu-title="3D Expanding Wavefront Rings" data-edu-tip="Spawns spherical acoustic pressure wavefronts propagating outward at c = 343 m/s on every musical transient.">
               <input id="toggle-wavefronts" type="checkbox" checked />
               <span>Wavefront Rings</span>
             </label>
@@ -207,14 +222,22 @@
           </div>
         </div>
 
-        <!-- Bottom Educational Scenario Explainer Banner -->
-        <div class="scenario-banner">
-          <div class="scenario-banner-head">
-            <strong id="scenario-title">01 · 1950s Live Tracking Room</strong>
-            <span id="hud-field-regime" class="regime-pill direct-dom">Direct-Field Dominated</span>
+        <!-- Foldable Bottom Educational Scenario Explainer Drawer -->
+        <details class="edu-foldable edu-cyan scenario-banner" open style="pointer-events:auto;">
+          <summary>
+            <span class="edu-foldable-title">
+              <span class="edu-foldable-tag">Acoustic Lesson</span>
+              <strong id="scenario-title" style="color:var(--accent-cyan);">01 · 1950s Live Tracking Room</strong>
+            </span>
+            <span style="display:inline-flex; align-items:center; gap:8px;">
+              <span id="hud-field-regime" class="regime-pill direct-dom">Direct-Field Dominated</span>
+              <span class="edu-foldable-chevron">▼ Fold</span>
+            </span>
+          </summary>
+          <div class="edu-foldable-body">
+            <p id="scenario-lesson"></p>
           </div>
-          <p id="scenario-lesson"></p>
-        </div>
+        </details>
       </section>
 
       <!-- RIGHT PANEL: REAL-TIME ACOUSTIC TELEMETRY, RT60, REFLECTIONS, BODE & FFT -->
@@ -222,37 +245,40 @@
         <!-- Core Acoustic Telemetry Readout -->
         <section class="panel-section">
           <div class="section-header">
-            <h2>Acoustic Field Telemetry</h2>
-            <span id="hud-modes">X:20.2Hz · Y:40.8Hz · Z:17.2Hz</span>
+            <h2>
+              Acoustic Field Telemetry
+              <button type="button" class="edu-tip-badge" data-edu-title="Key Acoustic Metrics" data-edu-tip="Hover or click any of the 6 metric boxes below (d₀, t₀, ITDG, Critical Distance dc, Schroeder Frequency fS, or Room Volume) for its formula and studio meaning!" data-edu-try="Drag the Microphone closer and farther from the Speaker to watch d₀ vs. Critical Distance dc.">?</button>
+            </h2>
+            <span id="hud-modes" data-edu-title="Fundamental Axial Room Modes" data-edu-tip="The lowest resonant standing-wave frequencies along Width (X), Height (Y), and Depth (Z): f₁ = 343 / (2·L).">X:20.2Hz · Y:40.8Hz · Z:17.2Hz</span>
           </div>
           <div class="telemetry-kpi-grid">
-            <div class="kpi-box">
-              <span class="kpi-label">Direct Dist (d₀)</span>
+            <div class="kpi-box" data-edu-title="Direct Distance (d₀)" data-edu-tip="Straight-line Euclidean distance between the Sound Source and Microphone. Sound pressure drops by 6 dB every time d₀ doubles.">
+              <span class="kpi-label">Direct Dist (d₀) ?</span>
               <span id="hud-direct-dist" class="kpi-val cyan">3.26 m</span>
             </div>
-            <div class="kpi-box">
-              <span class="kpi-label">Arrival (t₀)</span>
+            <div class="kpi-box" data-edu-title="Direct Arrival Time (t₀)" data-edu-tip="Time taken for the direct wavefront to travel from Source to Mic at 343 m/s: t₀ = d₀ / 343 (~2.9 ms per meter).">
+              <span class="kpi-label">Arrival (t₀) ?</span>
               <span id="hud-direct-delay" class="kpi-val">9.50 ms</span>
             </div>
-            <div class="kpi-box">
-              <span class="kpi-label">ITDG (Δt₁)</span>
+            <div class="kpi-box" data-edu-title="Initial Time Delay Gap (ITDG · Δt₁)" data-edu-tip="Time gap between the Direct Sound arrival and the very first boundary reflection. Small ITDG (<5 ms) sounds intimate or comb-filtered; larger ITDG (15–35 ms) creates a grand concert hall sense of scale.">
+              <span class="kpi-label">ITDG (Δt₁) ?</span>
               <span id="hud-itdg" class="kpi-val amber">2.45 ms</span>
             </div>
-            <div class="kpi-box">
-              <span class="kpi-label">Critical Dist (dc)</span>
+            <div class="kpi-box" data-edu-title="Critical Distance (dc)" data-edu-tip="The distance where Direct Sound energy equals Reverberant Field energy: dc = 0.057 · √(γ · V / RT60). Inside dc (d₀ < dc) the recording sounds dry and present; beyond dc (d₀ > dc) room reverb dominates.">
+              <span class="kpi-label">Critical Dist (dc) ?</span>
               <span id="hud-crit-dist" class="kpi-val">1.92 m</span>
             </div>
-            <div class="kpi-box">
-              <span class="kpi-label">Schroeder (fS)</span>
+            <div class="kpi-box" data-edu-title="Schroeder Frequency (fS)" data-edu-tip="Crossover frequency fS = 2000 · √(RT60 / V) separating discrete low-frequency standing-wave room modes (below fS) from smooth, statistical diffuse reverberation (above fS).">
+              <span class="kpi-label">Schroeder (fS) ?</span>
               <span id="hud-schroeder" class="kpi-val">102 Hz</span>
             </div>
-            <div class="kpi-box">
-              <span class="kpi-label">Room Volume</span>
+            <div class="kpi-box" data-edu-title="Room Volume (V)" data-edu-tip="Total enclosed cubic volume V = Width × Height × Depth. Larger volume increases RT60 and lowers the Schroeder frequency.">
+              <span class="kpi-label">Room Volume ?</span>
               <span id="hud-volume" class="kpi-val">357.0 m³</span>
             </div>
           </div>
 
-          <div style="margin-top:8px; display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1px solid rgba(255,255,255,0.06);">
+          <div style="margin-top:8px; display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1px solid rgba(255,255,255,0.06);" data-edu-title="Boundary Loading Bass Boost" data-edu-tip="When a speaker is placed near reflective walls, bass wavelengths constructively sum in phase: Free-Space (0 dB), Half-Space (+3 dB), Quarter-Space (+6 dB), Eighth-Space Corner (+9 dB).">
             <span style="font-size:11px; color:var(--text-secondary);">Boundary Loading: <strong id="hud-boundary-regime" style="color:var(--text-primary)">Half-Space</strong></span>
             <span id="hud-boundary-boost" class="mono" style="color:var(--accent-amber); font-weight:700;">+1.8 dB</span>
           </div>
@@ -261,7 +287,10 @@
         <!-- Sabine & Eyring RT60 Octave Decay -->
         <section class="panel-section">
           <div class="section-header">
-            <h2>Sabine &amp; Eyring RT60 Decay</h2>
+            <h2>
+              Sabine &amp; Eyring RT60 Decay
+              <button type="button" class="edu-tip-badge" data-edu-title="Sabine vs. Eyring RT60 Equations" data-edu-tip="RT60 is the time required for reverberant energy to decay by 60 dB. Wallace Clement Sabine's formula RT60 = 0.161·V / A(f) works well for live rooms, while Carl Eyring's formula -0.161·V / [S·ln(1 - ᾱ)] corrects for highly absorptive dead rooms." data-edu-try="Switch all walls to 'All Trapped' and notice how Eyring RT60 drops faster than Sabine.">?</button>
+            </h2>
             <span>0.161·V / A(f)</span>
           </div>
 
@@ -296,7 +325,10 @@
         <!-- Real-Time Room Transfer Function / Comb Filter Plot -->
         <section class="panel-section">
           <div class="section-header">
-            <h2>Room Transfer Function H(f)</h2>
+            <h2>
+              Room Transfer Function H(f)
+              <button type="button" class="edu-tip-badge" data-edu-title="Comb Filtering & Phase Cancellation" data-edu-tip="When a wall reflection arrives Δt seconds after the direct sound, they interfere constructively and destructively across frequency, carving deep notches at f_notch = (2n+1) / (2·Δt)." data-edu-try="Click Scenario 02 (Boundary Comb Filter Trap) and drag the Mic near a hard wall to watch the notches sweep!">?</button>
+            </h2>
             <span>Comb Filtering (20Hz–20kHz)</span>
           </div>
           <div class="canvas-wrap">
@@ -304,30 +336,38 @@
           </div>
         </section>
 
-        <!-- First-Order Specular Reflection Matrix -->
-        <section class="panel-section">
-          <div class="section-header">
-            <h2>1st-Order Image-Source Paths</h2>
-            <span>6 Boundaries</span>
+        <!-- Foldable First-Order Specular Reflection Matrix -->
+        <details class="edu-foldable edu-cyan" open>
+          <summary>
+            <span class="edu-foldable-title">
+              <span class="edu-foldable-tag">6 Paths</span>
+              <span>1st-Order Image-Source Reflections</span>
+            </span>
+            <span class="edu-foldable-chevron">▼</span>
+          </summary>
+          <div class="edu-foldable-body" style="padding:6px 8px;">
+            <table class="reflection-table">
+              <thead>
+                <tr>
+                  <th>Surface</th>
+                  <th>Path</th>
+                  <th>Δt Delay</th>
+                  <th>Gain₁ₖ</th>
+                  <th>1st Notch</th>
+                </tr>
+              </thead>
+              <tbody id="reflection-table-body"></tbody>
+            </table>
           </div>
-          <table class="reflection-table">
-            <thead>
-              <tr>
-                <th>Surface</th>
-                <th>Path</th>
-                <th>Δt Delay</th>
-                <th>Gain₁ₖ</th>
-                <th>1st Notch</th>
-              </tr>
-            </thead>
-            <tbody id="reflection-table-body"></tbody>
-          </table>
-        </section>
+        </details>
 
         <!-- Real-Time Web Audio FFT + RT60 Decay Envelope -->
         <section class="panel-section">
           <div class="section-header">
-            <h2>Live DSP Output Spectrum &amp; RT60</h2>
+            <h2>
+              Live DSP Output Spectrum &amp; RT60
+              <button type="button" class="edu-tip-badge" data-edu-title="Real-Time FFT & Oscilloscope" data-edu-tip="Displays the live Web Audio output spectrum (cyan bars), time-domain waveform (amber trace), and theoretical Sabine RT60 decay slope." data-edu-try="Click 'IMPULSE CLAP' in the top bar to watch the impulse excite the room and decay along the RT60 curve.">?</button>
+            </h2>
             <span>FFT + Oscilloscope</span>
           </div>
           <div class="canvas-wrap" style="height:104px;">

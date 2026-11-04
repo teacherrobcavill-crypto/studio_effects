@@ -9,6 +9,11 @@ import { RackController } from './ui/RackController.js';
 import { VUMeterCanvas } from './ui/VUMeterCanvas.js';
 import { RoomCanvas } from './ui/RoomCanvas.js';
 import { SignalFlowCanvas } from './ui/SignalFlowCanvas.js';
+import {
+  initDeclarativeTips,
+  registerHubAudioCoordinator,
+  notifyHubAudioState
+} from './ui/LearningTooltips.js';
 
 class StudioApp {
   constructor() {
@@ -50,6 +55,14 @@ class StudioApp {
     };
 
     this._initUI();
+    initDeclarativeTips();
+    registerHubAudioCoordinator(() => {
+      if (this.audio && this.audio.isInitialized && this.audio.stemGenerator && this.audio.stemGenerator.isPlaying) {
+        this.audio.stemGenerator.stop();
+        this._updateTransportUI(false);
+        notifyHubAudioState('app-1950s-studio', false);
+      }
+    });
     this._startRenderLoop();
   }
 
@@ -64,9 +77,11 @@ class StudioApp {
       if (this.audio.stemGenerator.isPlaying) {
         this.audio.stemGenerator.stop();
         this._updateTransportUI(false);
+        notifyHubAudioState('app-1950s-studio', false);
       } else {
         this.audio.stemGenerator.start();
         this._updateTransportUI(true);
+        notifyHubAudioState('app-1950s-studio', true);
       }
     });
 

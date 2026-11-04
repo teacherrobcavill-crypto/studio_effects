@@ -4,6 +4,11 @@ import { AudioEngine } from './audio/Room3DAudioEngine.js';
 import { SceneManager } from './visualizer/SceneManager.js';
 import { UIManager } from './ui/UIManager.js';
 import { SCENARIOS } from './ui/Scenarios.js';
+import {
+  initDeclarativeTips,
+  registerHubAudioCoordinator,
+  notifyHubAudioState
+} from './ui/LearningTooltips.js';
 
 // Initial Studio State (defaults to Scenario 01: 1950s Live Tracking Room)
 const initialScenario = SCENARIOS[0];
@@ -61,6 +66,7 @@ window.addEventListener('DOMContentLoaded', () => {
   uiManager = new UIManager(appState, {
     onTogglePlay: async () => {
       const playing = await audioEngine.togglePlay(currentSolution, appState.instrument);
+      notifyHubAudioState('app-3d-acoustics', playing);
       return playing;
     },
     onTriggerClap: async () => {
@@ -69,6 +75,7 @@ window.addEventListener('DOMContentLoaded', () => {
     onInstrumentChanged: async (inst) => {
       const playing = await audioEngine.startWithInstrument(inst, currentSolution);
       uiManager.setPlayingUI(playing);
+      notifyHubAudioState('app-3d-acoustics', playing);
     },
     onVolumeChanged: (val) => {
       audioEngine.setMasterVolume(val);
@@ -123,12 +130,23 @@ window.addEventListener('DOMContentLoaded', () => {
       audioEngine.setLayerEnabled('earlyReflections', appState.layers.earlyReflections);
       audioEngine.setLayerEnabled('lateReverb', appState.layers.lateReverb);
       uiManager.setPlayingUI(playing);
+      notifyHubAudioState('app-3d-acoustics', playing);
     }
   });
 
   // Sync initial UI state & compute initial room acoustics
   uiManager.syncControlsFromState(initialScenario);
   recomputeAcoustics(true);
+  initDeclarativeTips();
+
+  registerHubAudioCoordinator(() => {
+    if (audioEngine && audioEngine.isPlaying) {
+      audioEngine.togglePlay(currentSolution, appState.instrument).then((playing) => {
+        if (uiManager) uiManager.setPlayingUI(playing);
+        notifyHubAudioState('app-3d-acoustics', playing);
+      });
+    }
+  });
 
   // 3. Start 60fps Live Audio FFT & Sabine Decay Visualizer Loop
   const renderAudioHUD = () => {
