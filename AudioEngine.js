@@ -1,6 +1,7 @@
 /**
- * @fileoverview Stage 2: Web Audio Routing, Source Manager, Parameter Ramping Bridge & Analyser Interface.
- * Includes automatic inline Blob AudioWorklet fallback so the simulator runs cleanly over HTTP or file://.
+ * @fileoverview Stage 2: Web Audio Routing, Source Manager, Parameter Ramping Bridge & Analyser Interface
+ * for Module 3: Electro-Mechanical Reverbs (EMT-140 Plate Reverb & Classic Tube-Driven Spring Reverb Tank).
+ * Includes automatic inline Blob AudioWorklet fallbacks so both simulators run cleanly over HTTP or file://.
  */
 
 const WORKLET_PROCESSOR_SOURCE = `
@@ -362,17 +363,373 @@ class PlateReverbProcessor extends AudioWorkletProcessor {
 registerProcessor('plate-reverb-processor', PlateReverbProcessor);
 `;
 
+const SPRING_WORKLET_PROCESSOR_SOURCE = `
+class SpringReverbProcessor extends AudioWorkletProcessor {
+  static get parameterDescriptors() {
+    return [
+      { name: 'topology', defaultValue: 0, minValue: 0, maxValue: 1, automationRate: 'k-rate' },
+      { name: 'tankEra', defaultValue: 0, minValue: 0, maxValue: 2, automationRate: 'k-rate' },
+      { name: 'wireRadiusMm', defaultValue: 0.25, minValue: 0.12, maxValue: 0.50, automationRate: 'k-rate' },
+      { name: 'helixRadiusMm', defaultValue: 3.0, minValue: 1.5, maxValue: 6.0, automationRate: 'k-rate' },
+      { name: 'wireLengthM', defaultValue: 2.65, minValue: 1.0, maxValue: 5.5, automationRate: 'k-rate' },
+      { name: 'dwell', defaultValue: 0.65, minValue: 0.0, maxValue: 1.0, automationRate: 'k-rate' },
+      { name: 'tone', defaultValue: 0.62, minValue: 0.0, maxValue: 1.0, automationRate: 'k-rate' },
+      { name: 'mix', defaultValue: 0.55, minValue: 0.0, maxValue: 1.0, automationRate: 'k-rate' },
+      { name: 'acousticFeedback', defaultValue: 0.28, minValue: 0.0, maxValue: 0.95, automationRate: 'k-rate' }
+    ];
+  }
+
+  constructor() {
+    super();
+    this.fs = typeof sampleRate !== 'undefined' ? sampleRate : 48000;
+    this.rho = 7800.0;
+    this.E = 200.0e9;
+    this.waveSpeedSteel = Math.sqrt(this.E / this.rho);
+    this.springLengthRatios = new Float32Array([1.0, 0.8728]);
+
+    this.delayBufSize = 32768;
+    this.delayBufMask = 32767;
+    this.springDelayBuf1 = new Float32Array(this.delayBufSize);
+    this.springDelayBuf2 = new Float32Array(this.delayBufSize);
+    this.delayWritePtr = 0;
+
+    this.curDelay1 = 3300.0;
+    this.curDelay2 = 2880.0;
+
+    this.numDispStages = 32;
+    this.dispX1_S1 = new Float32Array(this.numDispStages);
+    this.dispY1_S1 = new Float32Array(this.numDispStages);
+    this.dispX2_S1 = new Float32Array(this.numDispStages);
+    this.dispY2_S1 = new Float32Array(this.numDispStages);
+
+    this.dispX1_S2 = new Float32Array(this.numDispStages);
+    this.dispY1_S2 = new Float32Array(this.numDispStages);
+    this.dispX2_S2 = new Float32Array(this.numDispStages);
+    this.dispY2_S2 = new Float32Array(this.numDispStages);
+
+    this.scatBufSize = 512;
+    this.scatBufMask = 511;
+    this.scatBuf1 = new Float32Array(4 * this.scatBufSize);
+    this.scatBuf2 = new Float32Array(4 * this.scatBufSize);
+    this.scatWritePtr = 0;
+    this.scatDelays1 = new Int32Array([29, 67, 113, 179]);
+    this.scatDelays2 = new Int32Array([37, 79, 131, 197]);
+
+    this.vState1 = 0.0;
+    this.vState2 = 0.0;
+    this.lpState1 = 0.0;
+    this.lpState2 = 0.0;
+    this.dcX1 = 0.0;
+    this.dcY1 = 0.0;
+    this.dcX2 = 0.0;
+    this.dcY2 = 0.0;
+
+    this.xfmrFlux = 0.0;
+    this.xfmrHpX = 0.0;
+    this.xfmrHpY = 0.0;
+
+    this.toneLpL = 0.0;
+    this.toneLpR = 0.0;
+
+    this.acoustBufSize = 4096;
+    this.acoustBufMask = 4095;
+    this.acoustBuf = new Float32Array(this.acoustBufSize);
+    this.acoustWritePtr = 0;
+    this.acoustBpY1 = 0.0;
+    this.acoustBpY2 = 0.0;
+
+    this.kickExciteAmp = 0.0;
+    this.kickPhase = 0.0;
+
+    this.overrideTopology = -1;
+    this.overrideTankEra = -1;
+
+    this.port.onmessage = (event) => {
+      const data = event.data;
+      if (!data) return;
+      if (data.type === 'SET_TOPOLOGY' && typeof data.value === 'number') {
+        this.overrideTopology = data.value | 0;
+      } else if (data.type === 'SET_TANK_ERA' && typeof data.value === 'number') {
+        this.overrideTankEra = data.value | 0;
+      } else if (data.type === 'KICK_TANK') {
+        this.kickExciteAmp = 1.0;
+        this.kickPhase = 0.0;
+      } else if (data.type === 'RESET') {
+        this.springDelayBuf1.fill(0);
+        this.springDelayBuf2.fill(0);
+        this.dispX1_S1.fill(0);
+        this.dispY1_S1.fill(0);
+        this.dispX2_S1.fill(0);
+        this.dispY2_S1.fill(0);
+        this.dispX1_S2.fill(0);
+        this.dispY1_S2.fill(0);
+        this.dispX2_S2.fill(0);
+        this.dispY2_S2.fill(0);
+        this.acoustBuf.fill(0);
+      }
+    };
+  }
+
+  process(inputs, outputs, parameters) {
+    const output = outputs[0];
+    if (!output || output.length === 0) return true;
+    const outL = output[0];
+    const outR = output.length > 1 ? output[1] : output[0];
+    const blockSize = outL.length;
+
+    const input = inputs[0];
+    const hasInput = input && input.length > 0 && input[0] && input[0].length > 0;
+    const inL = hasInput ? input[0] : null;
+    const inR = hasInput && input.length > 1 ? input[1] : null;
+
+    const topology = this.overrideTopology >= 0
+      ? this.overrideTopology
+      : Math.round(parameters.topology[0]);
+    const tankEra = this.overrideTankEra >= 0
+      ? this.overrideTankEra
+      : Math.round(parameters.tankEra[0]);
+
+    const r_m = Math.max(0.12e-3, Math.min(0.50e-3, parameters.wireRadiusMm[0] * 1e-3));
+    const R_m = Math.max(1.5e-3, Math.min(6.0e-3, parameters.helixRadiusMm[0] * 1e-3));
+    const L_m = Math.max(1.0, Math.min(5.5, parameters.wireLengthM[0]));
+
+    const T_D = ((4.0 * L_m * R_m) / r_m) / this.waveSpeedSteel;
+    const F_c = ((3.0 * r_m) / (16.0 * Math.sqrt(5.0) * Math.PI * R_m * R_m)) * this.waveSpeedSteel;
+    const kappa = Math.min(0.45, r_m / (R_m * 1.25));
+
+    const dispGroupDelaySamples = this.numDispStages * 2.2;
+    const rawSamples1 = Math.max(128.0, Math.min(30000.0, T_D * this.fs * this.springLengthRatios[0] - dispGroupDelaySamples));
+    const rawSamples2 = Math.max(128.0, Math.min(30000.0, T_D * this.fs * this.springLengthRatios[1] - dispGroupDelaySamples));
+
+    let baseFeedback = 0.855;
+    let dampCutoffHz = 3900.0;
+    let dualSpringMix = 1.0;
+
+    if (tankEra === 1) {
+      baseFeedback = 0.72;
+      dampCutoffHz = 1850.0;
+      dualSpringMix = 0.85;
+    } else if (tankEra === 2) {
+      baseFeedback = 0.78;
+      dampCutoffHz = 3100.0;
+      dualSpringMix = 0.0;
+    }
+
+    const effectiveDwell = topology === 0 ? parameters.dwell[0] : 0.60;
+    const effectiveTone = topology === 0 ? parameters.tone[0] : 0.58;
+    const mixParam = parameters.mix[0];
+    const acoustFbParam = topology === 1
+      ? Math.max(0.18, parameters.acousticFeedback[0])
+      : parameters.acousticFeedback[0] * 0.25;
+
+    const fcClamped = Math.max(600.0, Math.min(7500.0, F_c));
+    const wFc = (2.0 * Math.PI * fcClamped) / this.fs;
+    const apRadius = 0.86;
+    const a1Disp = -2.0 * apRadius * Math.cos(wFc * 0.68);
+    const a2Disp = apRadius * apRadius;
+
+    const lpPole = Math.exp((-2.0 * Math.PI * dampCutoffHz) / this.fs);
+    const oneMinusLp = 1.0 - lpPole;
+
+    const toneFreq = 1100.0 + effectiveTone * effectiveTone * 6800.0;
+    const toneAlpha = 1.0 - Math.exp((-2.0 * Math.PI * toneFreq) / this.fs);
+
+    const wAcoust = (2.0 * Math.PI * 125.0) / this.fs;
+    const rAcoust = 0.965;
+    const b1Acoust = -2.0 * rAcoust * Math.cos(wAcoust);
+    const b2Acoust = rAcoust * rAcoust;
+
+    const springDelayBuf1 = this.springDelayBuf1;
+    const springDelayBuf2 = this.springDelayBuf2;
+    const delayMask = this.delayBufMask;
+
+    const dispX1_S1 = this.dispX1_S1;
+    const dispY1_S1 = this.dispY1_S1;
+    const dispX2_S1 = this.dispX2_S1;
+    const dispY2_S1 = this.dispY2_S1;
+
+    const dispX1_S2 = this.dispX1_S2;
+    const dispY1_S2 = this.dispY1_S2;
+    const dispX2_S2 = this.dispX2_S2;
+    const dispY2_S2 = this.dispY2_S2;
+
+    const scatBuf1 = this.scatBuf1;
+    const scatBuf2 = this.scatBuf2;
+    const scatMask = this.scatBufMask;
+    const scatDelays1 = this.scatDelays1;
+    const scatDelays2 = this.scatDelays2;
+
+    let delayWritePtr = this.delayWritePtr;
+    let scatWritePtr = this.scatWritePtr;
+    let acoustWritePtr = this.acoustWritePtr;
+
+    for (let s = 0; s < blockSize; s++) {
+      let dryMono = 0.0;
+      if (inL !== null) {
+        dryMono = inR !== null ? (inL[s] + inR[s]) * 0.5 : inL[s];
+      }
+
+      const dwellGain = 0.25 + effectiveDwell * 2.65;
+      const gridSignal = dryMono * dwellGain;
+
+      let transducerDrive = 0.0;
+      if (topology === 0) {
+        const biased = gridSignal + 0.14 * gridSignal * gridSignal;
+        const plateCurrent = Math.tanh(biased * 1.45) * 0.88;
+        this.xfmrFlux = 0.992 * this.xfmrFlux + 0.008 * plateCurrent;
+        const xfmrOut = plateCurrent - 0.35 * Math.tanh(this.xfmrFlux * 3.2);
+        const hp = xfmrOut - this.xfmrHpX + 0.985 * this.xfmrHpY;
+        this.xfmrHpX = xfmrOut;
+        this.xfmrHpY = hp;
+        transducerDrive = hp * 0.95;
+      } else {
+        const triodeOut = (gridSignal / (1.0 + 0.42 * Math.abs(gridSignal))) * 0.92;
+        const hp = triodeOut - this.xfmrHpX + 0.991 * this.xfmrHpY;
+        this.xfmrHpX = triodeOut;
+        this.xfmrHpY = hp;
+        transducerDrive = hp * 0.90;
+      }
+
+      if (this.kickExciteAmp > 0.0001) {
+        this.kickPhase += (2.0 * Math.PI * (85.0 + 950.0 * this.kickExciteAmp)) / this.fs;
+        const crash = (Math.sin(this.kickPhase) * 0.7 + (Math.random() * 2.0 - 1.0) * 0.6) * this.kickExciteAmp;
+        transducerDrive += crash * 1.65;
+        this.kickExciteAmp *= 0.9988;
+      }
+
+      const acoustDelayed = this.acoustBuf[(acoustWritePtr - 640) & this.acoustBufMask];
+      const acoustRes = acoustDelayed * 0.035 - b1Acoust * this.acoustBpY1 - b2Acoust * this.acoustBpY2;
+      this.acoustBpY2 = this.acoustBpY1;
+      this.acoustBpY1 = Math.tanh(acoustRes * 0.95);
+      transducerDrive += this.acoustBpY1 * acoustFbParam * 0.42;
+
+      this.curDelay1 += (rawSamples1 - this.curDelay1) * 0.001;
+      this.curDelay2 += (rawSamples2 - this.curDelay2) * 0.001;
+
+      const d1Int = this.curDelay1 | 0;
+      const d1Frac = this.curDelay1 - d1Int;
+      const rIdx1_0 = (delayWritePtr - d1Int) & delayMask;
+      const rIdx1_1 = (rIdx1_0 - 1) & delayMask;
+      let wave1 = springDelayBuf1[rIdx1_0] + d1Frac * (springDelayBuf1[rIdx1_1] - springDelayBuf1[rIdx1_0]);
+
+      const d2Int = this.curDelay2 | 0;
+      const d2Frac = this.curDelay2 - d2Int;
+      const rIdx2_0 = (delayWritePtr - d2Int) & delayMask;
+      const rIdx2_1 = (rIdx2_0 - 1) & delayMask;
+      let wave2 = springDelayBuf2[rIdx2_0] + d2Frac * (springDelayBuf2[rIdx2_1] - springDelayBuf2[rIdx2_0]);
+
+      for (let st = 0; st < this.numDispStages; st++) {
+        const y1 = a2Disp * wave1 + a1Disp * dispX1_S1[st] + dispX2_S1[st]
+          - a1Disp * dispY1_S1[st] - a2Disp * dispY2_S1[st];
+        dispX2_S1[st] = dispX1_S1[st];
+        dispX1_S1[st] = wave1;
+        dispY2_S1[st] = dispY1_S1[st];
+        dispY1_S1[st] = y1;
+        wave1 = y1;
+
+        const y2 = a2Disp * wave2 + a1Disp * dispX1_S2[st] + dispX2_S2[st]
+          - a1Disp * dispY1_S2[st] - a2Disp * dispY2_S2[st];
+        dispX2_S2[st] = dispX1_S2[st];
+        dispX1_S2[st] = wave2;
+        dispY2_S2[st] = dispY1_S2[st];
+        dispY1_S2[st] = y2;
+        wave2 = y2;
+      }
+
+      const scatG = -0.52;
+      for (let k = 0; k < 4; k++) {
+        const off = k << 9;
+        const idx1 = (scatWritePtr - scatDelays1[k]) & scatMask;
+        const del1 = scatBuf1[off + idx1];
+        const v1 = wave1 - scatG * del1;
+        wave1 = del1 + scatG * v1;
+        scatBuf1[off + scatWritePtr] = v1;
+
+        const idx2 = (scatWritePtr - scatDelays2[k]) & scatMask;
+        const del2 = scatBuf2[off + idx2];
+        const v2 = wave2 - scatG * del2;
+        wave2 = del2 + scatG * v2;
+        scatBuf2[off + scatWritePtr] = v2;
+      }
+      scatWritePtr = (scatWritePtr + 1) & scatMask;
+
+      const coupled1 = wave1 - kappa * (wave1 - this.vState1);
+      this.vState1 = 0.85 * this.vState1 + 0.15 * wave1;
+
+      const coupled2 = wave2 - kappa * (wave2 - this.vState2);
+      this.vState2 = 0.85 * this.vState2 + 0.15 * wave2;
+
+      this.lpState1 = oneMinusLp * coupled1 + lpPole * this.lpState1;
+      this.lpState2 = oneMinusLp * coupled2 + lpPole * this.lpState2;
+
+      const dcOut1 = this.lpState1 - this.dcX1 + 0.996 * this.dcY1;
+      this.dcX1 = this.lpState1;
+      this.dcY1 = dcOut1;
+
+      const dcOut2 = this.lpState2 - this.dcX2 + 0.996 * this.dcY2;
+      this.dcX2 = this.lpState2;
+      this.dcY2 = dcOut2;
+
+      const endBlockCross = 0.08 * dualSpringMix;
+      const fb1 = dcOut1 + endBlockCross * dcOut2;
+      const fb2 = dcOut2 - endBlockCross * dcOut1;
+
+      springDelayBuf1[delayWritePtr] = Math.tanh(transducerDrive + fb1 * baseFeedback);
+      springDelayBuf2[delayWritePtr] = Math.tanh(transducerDrive * 0.94 - fb2 * baseFeedback * 0.985);
+      delayWritePtr = (delayWritePtr + 1) & delayMask;
+
+      const rawPickupL = dcOut1 + 0.35 * dualSpringMix * dcOut2;
+      const rawPickupR = dualSpringMix > 0.01 ? (dcOut2 + 0.35 * dcOut1) : dcOut1;
+
+      const recL = Math.tanh(rawPickupL * 1.55);
+      const recR = Math.tanh(rawPickupR * 1.55);
+
+      this.toneLpL += toneAlpha * (recL - this.toneLpL);
+      this.toneLpR += toneAlpha * (recR - this.toneLpR);
+
+      const wetL = this.toneLpL;
+      const wetR = this.toneLpR;
+
+      const monoOut = (dryMono * (1.0 - mixParam * 0.45) + (wetL + wetR) * 0.5 * mixParam);
+      this.acoustBuf[acoustWritePtr] = monoOut;
+      acoustWritePtr = (acoustWritePtr + 1) & this.acoustBufMask;
+
+      const dryGain = topology === 1 ? 0.85 : Math.cos(mixParam * 0.5 * Math.PI);
+      const wetGain = topology === 1 ? (mixParam * 1.15) : Math.sin(mixParam * 0.5 * Math.PI) * 1.25;
+
+      const dryL = inL !== null ? inL[s] : 0.0;
+      const dryR = inR !== null ? inR[s] : dryL;
+
+      outL[s] = Math.tanh(dryL * dryGain + wetL * wetGain);
+      outR[s] = Math.tanh(dryR * dryGain + wetR * wetGain);
+    }
+
+    this.delayWritePtr = delayWritePtr;
+    this.scatWritePtr = scatWritePtr;
+    this.acoustWritePtr = acoustWritePtr;
+    return true;
+  }
+}
+registerProcessor('spring-reverb-processor', SpringReverbProcessor);
+`;
+
 export class AudioEngine {
   constructor() {
     this.ctx = null;
     this.isInitialized = false;
     this.isPowered = false;
 
+    // Active Unit Mode: 'plate' (EMT-140 Plate) | 'spring' (Classic Tube Spring Reverb)
+    this.activeUnit = 'plate';
+
     // Audio Graph Nodes
     this.inputGainNode = null;
     this.inputAnalyser = null;
     this.preDelayNode = null;
     this.reverbWorkletNode = null;
+    this.springWorkletNode = null;
+    this.platePathGain = null;
+    this.springPathGain = null;
     this.wetGainNode = null;
     this.dryGainNode = null;
     this.outputGainNode = null;
@@ -381,7 +738,7 @@ export class AudioEngine {
     // Active Source State
     this.sourceType = 'impulse'; // 'mic' | 'impulse' | 'stem' | 'file'
     this.impulseSubType = 'rimshot'; // 'click' | 'noise' | 'rimshot'
-    this.stemSubType = 'drums'; // 'drums' | 'guitar' | 'vocal'
+    this.stemSubType = 'drums'; // 'drums' | 'guitar' | 'vocal' | 'surf'
     this.activeBufferSource = null;
     this.micStream = null;
     this.micSourceNode = null;
@@ -396,12 +753,13 @@ export class AudioEngine {
     this.stemBuffers = {
       drums: null,
       guitar: null,
-      vocal: null
+      vocal: null,
+      surf: null
     };
     this.customFileBuffer = null;
     this.customFileName = '';
 
-    // Current DSP Parameter State
+    // Current Plate DSP Parameter State
     this.params = {
       inputGainDb: 0.0,
       preDelayMs: 18.0,
@@ -412,6 +770,19 @@ export class AudioEngine {
       lowCut: true,
       wetDryMix: 0.50,
       outputGainDb: 0.0
+    };
+
+    // Current Spring Reverb Physical & Electrical Topology Parameters
+    this.springParams = {
+      topology: 0,           // 0 = Version A (1961 Fender 6G15 Standalone 6K6), 1 = Version B (1963 AB763 Twin Reverb 12AT7)
+      tankEra: 0,            // 0 = 1960 Accutronics Type 4, 1 = 1939 Hammond Oil-Damped, 2 = 1930s Bell Labs Delay Line
+      wireRadiusMm: 0.25,    // r (mm)
+      helixRadiusMm: 3.0,    // R (mm)
+      wireLengthM: 2.65,     // L (m)
+      dwell: 0.65,           // 0..1 (Driver Tube Grid Drive)
+      tone: 0.62,            // 0..1 (Recovery Low-Pass Filter)
+      mix: 0.55,             // 0..1 (Wet/Dry Mixer or AB763 Reverb Return)
+      acousticFeedback: 0.28 // 0..0.95 (Speaker-to-Spring Sympathetic Coupling)
     };
 
     // Pre-allocated typed arrays for zero-GC telemetry polling
@@ -431,6 +802,31 @@ export class AudioEngine {
     };
   }
 
+  /**
+   * Computes exact Wittrick Helical Spring Dispersion Physics Telemetry:
+   *  - T_D = (4 * L * R / r) * sqrt(rho / E)
+   *  - F_c = (3 * r / (16 * sqrt(5) * pi * R^2)) * sqrt(E / rho)
+   */
+  getSpringPhysicsMetrics() {
+    const rho = 7800.0;
+    const E = 200.0e9;
+    const cSteel = Math.sqrt(E / rho); // ~5063.7 m/s
+    const r = this.springParams.wireRadiusMm * 1e-3;
+    const R = this.springParams.helixRadiusMm * 1e-3;
+    const L = this.springParams.wireLengthM;
+
+    const TdSeconds = ((4.0 * L * R) / r) / cSteel;
+    const FcHertz = ((3.0 * r) / (16.0 * Math.sqrt(5.0) * Math.PI * R * R)) * cSteel;
+    const kappa = 1.0 / R;
+
+    return {
+      TdMs: TdSeconds * 1000.0,
+      FcHz: FcHertz,
+      kappaInvM: kappa,
+      cSteelMs: cSteel
+    };
+  }
+
   async init() {
     if (this.isInitialized) {
       if (this.ctx.state === 'suspended') {
@@ -445,18 +841,28 @@ export class AudioEngine {
       sampleRate: 48000
     });
 
-    // Load AudioWorklet module with automatic inline Blob fallback
+    // Load PlateReverbProcessor AudioWorklet
     try {
       await this.ctx.audioWorklet.addModule('plate-reverb-processor.js');
-    } catch (err) {
+    } catch (_) {
       const blob = new Blob([WORKLET_PROCESSOR_SOURCE], { type: 'application/javascript' });
       const blobUrl = URL.createObjectURL(blob);
       await this.ctx.audioWorklet.addModule(blobUrl);
       URL.revokeObjectURL(blobUrl);
     }
 
+    // Load SpringReverbProcessor AudioWorklet
+    try {
+      await this.ctx.audioWorklet.addModule('spring-reverb-processor.js');
+    } catch (_) {
+      const blob = new Blob([SPRING_WORKLET_PROCESSOR_SOURCE], { type: 'application/javascript' });
+      const blobUrl = URL.createObjectURL(blob);
+      await this.ctx.audioWorklet.addModule(blobUrl);
+      URL.revokeObjectURL(blobUrl);
+    }
+
     // -------------------------------------------------------------------------
-    // Build Web Audio Signal Graph
+    // Build Dual Electro-Mechanical Reverb Signal Graph
     // -------------------------------------------------------------------------
     this.inputGainNode = this.ctx.createGain();
     this.inputAnalyser = this.ctx.createAnalyser();
@@ -470,6 +876,15 @@ export class AudioEngine {
       outputChannelCount: [2]
     });
 
+    this.springWorkletNode = new AudioWorkletNode(this.ctx, 'spring-reverb-processor', {
+      numberOfInputs: 1,
+      numberOfOutputs: 1,
+      outputChannelCount: [2]
+    });
+
+    this.platePathGain = this.ctx.createGain();
+    this.springPathGain = this.ctx.createGain();
+
     this.wetGainNode = this.ctx.createGain();
     this.dryGainNode = this.ctx.createGain();
     this.outputGainNode = this.ctx.createGain();
@@ -478,18 +893,24 @@ export class AudioEngine {
     this.outputAnalyser.fftSize = 1024;
     this.outputAnalyser.smoothingTimeConstant = 0.75;
 
-    // Connect Wet Path: Input Gain -> Input Analyser -> Pre-Delay -> PlateReverbWorklet -> Wet Gain
+    // Input Analyser
     this.inputGainNode.connect(this.inputAnalyser);
+
+    // Path A: EMT-140 Plate Reverb (Wet + Dry routed via platePathGain)
     this.inputGainNode.connect(this.preDelayNode);
     this.preDelayNode.connect(this.reverbWorkletNode);
     this.reverbWorkletNode.connect(this.wetGainNode);
-
-    // Connect Dry Path: Input Gain -> Dry Gain
     this.inputGainNode.connect(this.dryGainNode);
+    this.wetGainNode.connect(this.platePathGain);
+    this.dryGainNode.connect(this.platePathGain);
+    this.platePathGain.connect(this.outputGainNode);
 
-    // Sum Wet + Dry -> Output Gain -> Output Analyser -> Destination
-    this.wetGainNode.connect(this.outputGainNode);
-    this.dryGainNode.connect(this.outputGainNode);
+    // Path B: Classic Tube-Driven Spring Reverb (Internal Tube Driver + Recovery Mixer routed via springPathGain)
+    this.inputGainNode.connect(this.springWorkletNode);
+    this.springWorkletNode.connect(this.springPathGain);
+    this.springPathGain.connect(this.outputGainNode);
+
+    // Master Output -> Analyser -> Destination
     this.outputGainNode.connect(this.outputAnalyser);
     this.outputAnalyser.connect(this.ctx.destination);
 
@@ -508,8 +929,115 @@ export class AudioEngine {
     this.setWetDry(this.params.wetDryMix);
     this.setOutputLevel(this.params.outputGainDb);
 
+    // Apply initial Spring Reverb parameters
+    this.setSpringTopology(this.springParams.topology);
+    this.setSpringTankEra(this.springParams.tankEra);
+    this.setSpringWireRadius(this.springParams.wireRadiusMm);
+    this.setSpringHelixRadius(this.springParams.helixRadiusMm);
+    this.setSpringWireLength(this.springParams.wireLengthM);
+    this.setSpringDwell(this.springParams.dwell);
+    this.setSpringTone(this.springParams.tone);
+    this.setSpringMix(this.springParams.mix);
+    this.setSpringAcousticFeedback(this.springParams.acousticFeedback);
+
+    this.setActiveUnit(this.activeUnit);
+
     this.isInitialized = true;
     this.isPowered = true;
+  }
+
+  setActiveUnit(unitName) {
+    this.activeUnit = unitName === 'spring' ? 'spring' : 'plate';
+    if (!this.isInitialized) return;
+    const now = this.ctx.currentTime;
+    if (this.activeUnit === 'spring') {
+      this.platePathGain.gain.setTargetAtTime(0.0, now, 0.015);
+      this.springPathGain.gain.setTargetAtTime(1.0, now, 0.015);
+    } else {
+      this.platePathGain.gain.setTargetAtTime(1.0, now, 0.015);
+      this.springPathGain.gain.setTargetAtTime(0.0, now, 0.015);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Spring Reverb Parameter Setters
+  // ---------------------------------------------------------------------------
+  setSpringTopology(topologyIdx) {
+    const idx = topologyIdx ? 1 : 0;
+    this.springParams.topology = idx;
+    if (!this.isInitialized) return;
+    this.springWorkletNode.parameters.get('topology').setValueAtTime(idx, this.ctx.currentTime);
+    this.springWorkletNode.port.postMessage({ type: 'SET_TOPOLOGY', value: idx });
+  }
+
+  setSpringTankEra(eraIdx) {
+    const idx = Math.max(0, Math.min(2, eraIdx | 0));
+    this.springParams.tankEra = idx;
+    if (!this.isInitialized) return;
+    this.springWorkletNode.parameters.get('tankEra').setValueAtTime(idx, this.ctx.currentTime);
+    this.springWorkletNode.port.postMessage({ type: 'SET_TANK_ERA', value: idx });
+  }
+
+  setSpringWireRadius(rMm) {
+    this.springParams.wireRadiusMm = Math.max(0.12, Math.min(0.50, rMm));
+    if (!this.isInitialized) return;
+    this.springWorkletNode.parameters
+      .get('wireRadiusMm')
+      .setTargetAtTime(this.springParams.wireRadiusMm, this.ctx.currentTime, 0.015);
+  }
+
+  setSpringHelixRadius(RMm) {
+    this.springParams.helixRadiusMm = Math.max(1.5, Math.min(6.0, RMm));
+    if (!this.isInitialized) return;
+    this.springWorkletNode.parameters
+      .get('helixRadiusMm')
+      .setTargetAtTime(this.springParams.helixRadiusMm, this.ctx.currentTime, 0.015);
+  }
+
+  setSpringWireLength(LM) {
+    this.springParams.wireLengthM = Math.max(1.0, Math.min(5.5, LM));
+    if (!this.isInitialized) return;
+    this.springWorkletNode.parameters
+      .get('wireLengthM')
+      .setTargetAtTime(this.springParams.wireLengthM, this.ctx.currentTime, 0.015);
+  }
+
+  setSpringDwell(normVal) {
+    this.springParams.dwell = Math.max(0.0, Math.min(1.0, normVal));
+    if (!this.isInitialized) return;
+    this.springWorkletNode.parameters
+      .get('dwell')
+      .setTargetAtTime(this.springParams.dwell, this.ctx.currentTime, 0.015);
+  }
+
+  setSpringTone(normVal) {
+    this.springParams.tone = Math.max(0.0, Math.min(1.0, normVal));
+    if (!this.isInitialized) return;
+    this.springWorkletNode.parameters
+      .get('tone')
+      .setTargetAtTime(this.springParams.tone, this.ctx.currentTime, 0.015);
+  }
+
+  setSpringMix(normVal) {
+    this.springParams.mix = Math.max(0.0, Math.min(1.0, normVal));
+    if (!this.isInitialized) return;
+    this.springWorkletNode.parameters
+      .get('mix')
+      .setTargetAtTime(this.springParams.mix, this.ctx.currentTime, 0.015);
+  }
+
+  setSpringAcousticFeedback(normVal) {
+    this.springParams.acousticFeedback = Math.max(0.0, Math.min(0.95, normVal));
+    if (!this.isInitialized) return;
+    this.springWorkletNode.parameters
+      .get('acousticFeedback')
+      .setTargetAtTime(this.springParams.acousticFeedback, this.ctx.currentTime, 0.015);
+  }
+
+   async kickSpringTank() {
+    if (!this.isInitialized) await this.init();
+    if (this.ctx.state === 'suspended') await this.ctx.resume();
+    this.springWorkletNode.port.postMessage({ type: 'KICK_TANK' });
   }
 
   async setPower(powered) {
@@ -587,7 +1115,6 @@ export class AudioEngine {
   setWetDry(mixNorm) {
     this.params.wetDryMix = Math.max(0.0, Math.min(1.0, mixNorm));
     if (!this.isInitialized) return;
-    // Equal-Power Crossfade: Dry = cos(mix * 0.5 * pi), Wet = sin(mix * 0.5 * pi)
     const angle = this.params.wetDryMix * 0.5 * Math.PI;
     const dryGain = Math.cos(angle);
     const wetGain = Math.sin(angle);
@@ -775,7 +1302,6 @@ export class AudioEngine {
       const overtone = Math.sin(phase * 2.75) * Math.exp(-t * 55.0) * 0.45;
 
       const rawNoise = (Math.random() * 2.0 - 1.0) * Math.exp(-t * 95.0);
-      // Resonant woody snap around 1.8 kHz
       const snap = rawNoise - 0.7 * bpZ1 + 0.35 * bpZ2;
       bpZ2 = bpZ1;
       bpZ1 = snap;
@@ -790,7 +1316,7 @@ export class AudioEngine {
   _synthesizeProceduralStems() {
     const fs = this.ctx.sampleRate;
 
-    // 1. Dry Drum Groove (4-bar 1950s Studio Kit: Kick, Snare, Rim, Brushed Hat at 110 BPM)
+    // 1. Dry Drum Groove (4-bar 1960s Studio Kit at 110 BPM)
     const bpm = 110;
     const beatSec = 60.0 / bpm;
     const barSec = beatSec * 4.0;
@@ -804,7 +1330,6 @@ export class AudioEngine {
     for (let step = 0; step < 32; step++) {
       const stepStart = Math.floor(step * sixteenthSec * fs);
 
-      // Kick on 0, 6, 8, 16, 22, 24
       if (step === 0 || step === 6 || step === 8 || step === 16 || step === 22 || step === 24) {
         let p = 0;
         const len = Math.min(Math.floor(fs * 0.32), drumSamples - stepStart);
@@ -818,7 +1343,6 @@ export class AudioEngine {
         }
       }
 
-      // Snare / Rim on backbeats 4, 12, 20, 28 + ghost note on 15, 30
       if (step === 4 || step === 12 || step === 20 || step === 28 || step === 15 || step === 30) {
         const vel = (step === 15 || step === 30) ? 0.32 : 0.9;
         let p = 0;
@@ -835,7 +1359,6 @@ export class AudioEngine {
         }
       }
 
-      // Hi-hat every eighth note (even steps)
       if ((step & 1) === 0) {
         const accent = (step % 4 === 0) ? 0.28 : 0.16;
         const len = Math.min(Math.floor(fs * 0.07), drumSamples - stepStart);
@@ -853,7 +1376,7 @@ export class AudioEngine {
     }
     this.stemBuffers.drums = drumBuf;
 
-    // 2. Dry Pluck / Archtop Guitar Chord Sequence (Karplus-Strong / Harmonic Pluck)
+    // 2. Dry Pluck / Archtop Guitar Chord Sequence
     const gtrDuration = 6.4;
     const gtrSamples = Math.floor(fs * gtrDuration);
     const gtrBuf = this.ctx.createBuffer(2, gtrSamples, fs);
@@ -889,7 +1412,49 @@ export class AudioEngine {
     });
     this.stemBuffers.guitar = gtrBuf;
 
-    // 3. Dry Vocal Formant Synth Phrase (Expressive vibrato + vowel formants)
+    // 3. 1962 Staccato Surf Guitar Riff (Ideal for testing 6G15 Spring Reverb "Drip" & "Chirp")
+    const surfDuration = 4.8;
+    const surfSamples = Math.floor(fs * surfDuration);
+    const surfBuf = this.ctx.createBuffer(2, surfSamples, fs);
+    const sL = surfBuf.getChannelData(0);
+    const sR = surfBuf.getChannelData(1);
+
+    const surfNotes = [
+      { t: 0.0, f: 164.81, d: 0.18 },
+      { t: 0.22, f: 164.81, d: 0.16 },
+      { t: 0.45, f: 196.00, d: 0.20 },
+      { t: 0.70, f: 220.00, d: 0.22 },
+      { t: 1.00, f: 246.94, d: 0.16 },
+      { t: 1.20, f: 246.94, d: 0.16 },
+      { t: 1.42, f: 220.00, d: 0.20 },
+      { t: 1.70, f: 196.00, d: 0.25 },
+      { t: 2.15, f: 329.63, d: 0.14 }, // High staccato muted pick snap (classic Dick Dale / Fender 6G15 drip test!)
+      { t: 2.35, f: 329.63, d: 0.14 },
+      { t: 2.55, f: 392.00, d: 0.14 },
+      { t: 2.80, f: 493.88, d: 0.55 },
+      { t: 3.60, f: 164.81, d: 0.90 }
+    ];
+    surfNotes.forEach((sn) => {
+      const start = Math.floor(sn.t * fs);
+      const len = Math.min(Math.floor((sn.d + 0.25) * fs), surfSamples - start);
+      for (let i = 0; i < len; i++) {
+        const t = i / fs;
+        let v = 0.0;
+        // Bright bridge single-coil harmonic profile
+        for (let h = 1; h <= 9; h++) {
+          const hd = Math.exp(-t * (6.5 + h * 2.2));
+          v += Math.sin(2.0 * Math.PI * sn.f * h * t) * (1.0 / Math.pow(h, 0.75)) * hd;
+        }
+        // Heavy celluloid pick transient
+        const pick = (Math.random() * 2.0 - 1.0) * Math.exp(-t * 220.0) * 0.55;
+        const samp = Math.tanh((v * 0.36 + pick) * 1.3);
+        sL[start + i] += samp;
+        sR[start + i] += samp;
+      }
+    });
+    this.stemBuffers.surf = surfBuf;
+
+    // 4. Dry Vocal Formant Synth Phrase
     const vocDuration = 6.0;
     const vocSamples = Math.floor(fs * vocDuration);
     const vocBuf = this.ctx.createBuffer(2, vocSamples, fs);
@@ -897,10 +1462,10 @@ export class AudioEngine {
     const vR = vocBuf.getChannelData(1);
 
     const notes = [
-      { start: 0.1, dur: 1.2, f0: 220.0, f1: 730, f2: 1090 }, // 'Ah' A3
-      { start: 1.5, dur: 1.1, f0: 261.63, f1: 530, f2: 1840 }, // 'Eh' C4
-      { start: 2.8, dur: 1.3, f0: 293.66, f1: 390, f2: 1990 }, // 'Ee' D4
-      { start: 4.3, dur: 1.3, f0: 220.0, f1: 570, f2: 840 }   // 'Oh' A3
+      { start: 0.1, dur: 1.2, f0: 220.0, f1: 730, f2: 1090 },
+      { start: 1.5, dur: 1.1, f0: 261.63, f1: 530, f2: 1840 },
+      { start: 2.8, dur: 1.3, f0: 293.66, f1: 390, f2: 1990 },
+      { start: 4.3, dur: 1.3, f0: 220.0, f1: 570, f2: 840 }
     ];
 
     notes.forEach((n) => {
@@ -914,7 +1479,6 @@ export class AudioEngine {
         const f = n.f0 + vib;
         phase += (2.0 * Math.PI * f) / fs;
 
-        // Glottal pulse harmonics shaped around formants F1 and F2
         let sig = 0.0;
         for (let h = 1; h <= 12; h++) {
           const hf = f * h;
@@ -932,7 +1496,7 @@ export class AudioEngine {
   }
 
   // ---------------------------------------------------------------------------
-  // Zero-GC Real-Time Audio Telemetry Polling (for VU Meters & 3D Plate Modes)
+  // Zero-GC Real-Time Audio Telemetry Polling
   // ---------------------------------------------------------------------------
   getTelemetry() {
     if (!this.isInitialized || !this.isPowered) {
@@ -977,7 +1541,6 @@ export class AudioEngine {
     this.telemetry.outputPeak = outPeak;
     this.telemetry.outputDb = outRms > 0.00001 ? Math.max(-60.0, 20.0 * Math.log10(outRms * 1.414)) : -60.0;
 
-    // Populate 16 modal energy bands (4x4 spatial standing wave grid)
     for (let m = 0; m < 16; m++) {
       const startBin = 2 + m * 12;
       let binSum = 0.0;

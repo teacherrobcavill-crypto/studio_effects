@@ -1,11 +1,13 @@
 /**
- * @fileoverview Stage 4: 1960s EMT-140 Studio Hardware Rack UI Controller,
- * Fluted Bakelite SVG Rotary Knobs, Backlit Gondola Damper Scale, Moving-Coil Analog VU Needles +
- * 12-Segment Peak Ladders, Drag-and-Drop Audio Decoder, and One-Click Standalone Web App Exporter.
+ * @fileoverview Stage 4: Electro-Mechanical Reverbs Rack UI Controller:
+ *  1. 1957 EMT-140 ST Plate Reverb (2m × 1m Tensioned Steel Sheet, Gondola Damper, FDN-16)
+ *  2. Classic Tube-Driven Spring Reverb Tank (1930s Bell Labs / 1939 Hammond Oil / 1960 Type 4,
+ *     Wittrick Helical Dispersion Equations, 1961 Fender 6G15 6K6 Standalone vs 1963 AB763 12AT7 Built-in)
  */
 
 import { AudioEngine } from './AudioEngine.js';
 import { PlateVisualizer } from './PlateVisualizer.js';
+import { SpringVisualizer } from './SpringVisualizer.js';
 import {
   initDeclarativeTips,
   registerHubAudioCoordinator,
@@ -13,6 +15,7 @@ import {
 } from './src/ui/LearningTooltips.js';
 
 const KNOB_DEFINITIONS = [
+  // EMT-140 Plate Knobs
   {
     id: 'knob-input-gain',
     param: 'inputGain',
@@ -82,6 +85,78 @@ const KNOB_DEFINITIONS = [
     step: 0.1,
     defaultVal: 0.0,
     format: (v) => `${v >= 0 ? '+' : ''}${v.toFixed(1)} dB`
+  },
+
+  // Classic Tube Spring Reverb Knobs (Helical Geometry + 6G15 / AB763 Tube Controls)
+  {
+    id: 'knob-spring-r',
+    param: 'springWireRadius',
+    label: 'WIRE RADIUS (r)',
+    min: 0.14,
+    max: 0.45,
+    step: 0.01,
+    defaultVal: 0.25,
+    format: (v) => `${v.toFixed(2)} mm`
+  },
+  {
+    id: 'knob-spring-R',
+    param: 'springHelixRadius',
+    label: 'HELIX RADIUS (R)',
+    min: 1.8,
+    max: 5.5,
+    step: 0.05,
+    defaultVal: 3.0,
+    format: (v) => `${v.toFixed(2)} mm`
+  },
+  {
+    id: 'knob-spring-L',
+    param: 'springWireLength',
+    label: 'WIRE LENGTH (L)',
+    min: 1.2,
+    max: 5.0,
+    step: 0.05,
+    defaultVal: 2.65,
+    format: (v) => `${v.toFixed(2)} m`
+  },
+  {
+    id: 'knob-spring-dwell',
+    param: 'springDwell',
+    label: '6K6 DWELL',
+    min: 1.0,
+    max: 10.0,
+    step: 0.1,
+    defaultVal: 6.5,
+    format: (v) => `${v.toFixed(1)}`
+  },
+  {
+    id: 'knob-spring-tone',
+    param: 'springTone',
+    label: 'RECOVERY TONE',
+    min: 1.0,
+    max: 10.0,
+    step: 0.1,
+    defaultVal: 6.2,
+    format: (v) => `${v.toFixed(1)}`
+  },
+  {
+    id: 'knob-spring-mix',
+    param: 'springMix',
+    label: 'MIXER / REVERB',
+    min: 0.0,
+    max: 10.0,
+    step: 0.1,
+    defaultVal: 5.5,
+    format: (v) => `${v.toFixed(1)}`
+  },
+  {
+    id: 'knob-spring-feedback',
+    param: 'springFeedback',
+    label: 'SPEAKER LOOP',
+    min: 0.0,
+    max: 95.0,
+    step: 1.0,
+    defaultVal: 28.0,
+    format: (v) => `${Math.round(v)}%`
   }
 ];
 
@@ -91,6 +166,7 @@ class PlateReverbApp {
   constructor() {
     this.audioEngine = new AudioEngine();
     this.visualizer = null;
+    this.springVisualizer = null;
     this.knobs = new Map();
     this.vuInputSegs = [];
     this.vuOutputSegs = [];
@@ -104,9 +180,11 @@ class PlateReverbApp {
     this._initKnobs();
     this._initVUMeters();
     this._bindHardwareControls();
+    this._bindSpringHardwareControls();
     this._bindDragAndDrop();
     this._bindWebAppExportButtons();
     this._updateGondolaScale();
+    this._updateSpringPhysicsReadout();
     initDeclarativeTips();
     registerHubAudioCoordinator(() => {
       if (this.audioEngine && this.audioEngine.isInitialized) {
@@ -125,8 +203,12 @@ class PlateReverbApp {
   }
 
   _initDOM() {
+    this.dualStage = document.getElementById('em-dual-stage');
+    this.unitTabs = document.querySelectorAll('.em-unit-tab[data-unit-tab]');
+
     this.powerBtn = document.getElementById('btn-power');
     this.pilotJewel = document.getElementById('pilot-jewel');
+    this.springPilotJewel = document.getElementById('spring-pilot-jewel');
     this.subSelect = document.getElementById('source-sub-select');
     this.trigBtn = document.getElementById('btn-trigger-impulse');
     this.loopBtn = document.getElementById('btn-loop-toggle');
@@ -143,16 +225,44 @@ class PlateReverbApp {
     // Analog Moving-Coil Needles
     this.vuNeedleIn = document.getElementById('vu-needle-in');
     this.vuNeedleOut = document.getElementById('vu-needle-out');
+
+    // Spring Reverb Telemetry Readouts
+    this.springTopoReadout = document.getElementById('spring-topo-readout');
+    this.springTdReadout = document.getElementById('spring-td-readout');
+    this.springFcReadout = document.getElementById('spring-fc-readout');
+    this.springKappaReadout = document.getElementById('spring-kappa-readout');
+    this.springFcNeedle = document.getElementById('spring-fc-needle');
+    this.springTdPill = document.getElementById('spring-td-pill');
+
+    this.physValR = document.getElementById('phys-val-r');
+    this.physValHelixR = document.getElementById('phys-val-R');
+    this.physValL = document.getElementById('phys-val-L');
+    this.physValTd = document.getElementById('phys-val-Td');
+    this.physValFc = document.getElementById('phys-val-Fc');
   }
 
   _initVisualizer() {
     const viewportContainer = document.getElementById('plate-canvas-container');
-    this.visualizer = new PlateVisualizer(viewportContainer, this.audioEngine);
+    if (viewportContainer) {
+      this.visualizer = new PlateVisualizer(viewportContainer, this.audioEngine);
+    }
 
     const resetCamBtn = document.getElementById('btn-reset-camera');
-    if (resetCamBtn) {
+    if (resetCamBtn && this.visualizer) {
       resetCamBtn.addEventListener('click', () => {
         this.visualizer.resetCamera();
+      });
+    }
+
+    const springViewportContainer = document.getElementById('spring-canvas-container');
+    if (springViewportContainer) {
+      this.springVisualizer = new SpringVisualizer(springViewportContainer, this.audioEngine);
+    }
+
+    const resetSpringCamBtn = document.getElementById('btn-reset-spring-camera');
+    if (resetSpringCamBtn && this.springVisualizer) {
+      resetSpringCamBtn.addEventListener('click', () => {
+        this.springVisualizer.resetCamera();
       });
     }
   }
@@ -191,7 +301,6 @@ class PlateReverbApp {
       ticksMarkup += `<line x1="${p1.x.toFixed(2)}" y1="${p1.y.toFixed(2)}" x2="${p2.x.toFixed(2)}" y2="${p2.y.toFixed(2)}" stroke="#cbd5e1" stroke-width="1.3" />`;
     }
 
-    // Fluted Bakelite grip serrations
     let flutesMarkup = '';
     for (let i = 0; i < 12; i++) {
       const a = i * 30;
@@ -210,12 +319,12 @@ class PlateReverbApp {
         <div class="knob-svg-wrap" title="Drag vertically, scroll wheel, or double-click to reset">
           <svg class="knob-svg" viewBox="0 0 80 80">
             <defs>
-              <radialGradient id="bakeliteGrad" cx="35%" cy="30%" r="70%">
+              <radialGradient id="bakeliteGrad-${def.id}" cx="35%" cy="30%" r="70%">
                 <stop offset="0%" stop-color="#383e47" />
                 <stop offset="55%" stop-color="#181b20" />
                 <stop offset="100%" stop-color="#090b0d" />
               </radialGradient>
-              <linearGradient id="spunSilverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <linearGradient id="spunSilverGrad-${def.id}" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stop-color="#f8fafc" />
                 <stop offset="45%" stop-color="#94a3b8" />
                 <stop offset="55%" stop-color="#e2e8f0" />
@@ -226,9 +335,9 @@ class PlateReverbApp {
             <path class="knob-track" d="${fullTrackPath}" />
             <path class="knob-arc" d="" />
             <circle class="knob-skirt" cx="${cx}" cy="${cy}" r="26" />
-            <circle class="knob-cap-outer" cx="${cx}" cy="${cy}" r="22" />
+            <circle class="knob-cap-outer" cx="${cx}" cy="${cy}" r="22" style="fill:url(#bakeliteGrad-${def.id})" />
             ${flutesMarkup}
-            <circle class="knob-cap-silver" cx="${cx}" cy="${cy}" r="11.5" />
+            <circle class="knob-cap-silver" cx="${cx}" cy="${cy}" r="11.5" style="fill:url(#spunSilverGrad-${def.id})" />
             <line class="knob-pointer" x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy - 21}" />
           </svg>
         </div>
@@ -241,9 +350,12 @@ class PlateReverbApp {
       const readoutEl = container.querySelector('.knob-readout');
       const tooltipEl = container.querySelector('.knob-tooltip');
       const svgWrap = container.querySelector('.knob-svg-wrap');
+      const labelEl = container.querySelector('.knob-label');
 
       const state = {
         def,
+        container,
+        labelEl,
         value: def.defaultVal,
         updateUI: (val) => {
           const clamped = Math.max(def.min, Math.min(def.max, val));
@@ -332,7 +444,7 @@ class PlateReverbApp {
         break;
       case 'plateSize':
         this.audioEngine.setPlateSize(value);
-        this.visualizer.setPlateSizeScale(value);
+        if (this.visualizer) this.visualizer.setPlateSizeScale(value);
         break;
       case 'decay':
         this.audioEngine.setDecay(value);
@@ -341,7 +453,7 @@ class PlateReverbApp {
       case 'damping': {
         const norm = value / 100.0;
         this.audioEngine.setDamping(norm);
-        this.visualizer.setDampingPosition(norm);
+        if (this.visualizer) this.visualizer.setDampingPosition(norm);
         this._updateGondolaScale();
         break;
       }
@@ -351,13 +463,41 @@ class PlateReverbApp {
       case 'outputGain':
         this.audioEngine.setOutputLevel(value);
         break;
+
+      // Spring Reverb Knobs
+      case 'springWireRadius':
+        this.audioEngine.setSpringWireRadius(value);
+        if (this.springVisualizer) this.springVisualizer.setSpringGeometryParams({ wireRadiusMm: value });
+        this._updateSpringPhysicsReadout();
+        break;
+      case 'springHelixRadius':
+        this.audioEngine.setSpringHelixRadius(value);
+        if (this.springVisualizer) this.springVisualizer.setSpringGeometryParams({ helixRadiusMm: value });
+        this._updateSpringPhysicsReadout();
+        break;
+      case 'springWireLength':
+        this.audioEngine.setSpringWireLength(value);
+        if (this.springVisualizer) this.springVisualizer.setSpringGeometryParams({ wireLengthM: value });
+        this._updateSpringPhysicsReadout();
+        break;
+      case 'springDwell':
+        this.audioEngine.setSpringDwell((value - 1.0) / 9.0);
+        break;
+      case 'springTone':
+        this.audioEngine.setSpringTone((value - 1.0) / 9.0);
+        break;
+      case 'springMix':
+        this.audioEngine.setSpringMix(value / 10.0);
+        break;
+      case 'springFeedback':
+        this.audioEngine.setSpringAcousticFeedback(value / 100.0);
+        break;
     }
   }
 
   _updateGondolaScale() {
     const decay = this.audioEngine.params.decaySeconds;
     const damp = this.audioEngine.params.damping;
-    // Map decay (0.2s .. 12.0s) and mechanical damping onto gondola pointer percentage
     const norm = Math.max(0.04, Math.min(0.96, ((decay - 0.2) / 11.8) * (1.0 - damp * 0.35)));
     if (this.gondolaNeedle) {
       this.gondolaNeedle.style.left = `${(norm * 100).toFixed(1)}%`;
@@ -368,6 +508,35 @@ class PlateReverbApp {
     }
     if (this.gondolaRt60El) {
       this.gondolaRt60El.textContent = `RT60: ${decay.toFixed(1)} s`;
+    }
+  }
+
+  _updateSpringPhysicsReadout() {
+    const metrics = this.audioEngine.getSpringPhysicsMetrics();
+    const sp = this.audioEngine.springParams;
+
+    if (this.springTdReadout) {
+      this.springTdReadout.textContent = `ECHO TIME T_D: ${metrics.TdMs.toFixed(1)} ms`;
+    }
+    if (this.springFcReadout) {
+      this.springFcReadout.textContent = `TRANSITION F_c: ${Math.round(metrics.FcHz)} Hz`;
+    }
+    if (this.springKappaReadout) {
+      this.springKappaReadout.textContent = `κ: ${Math.round(metrics.kappaInvM)} m⁻¹`;
+    }
+    if (this.springTdPill) {
+      this.springTdPill.textContent = `T_D: ${metrics.TdMs.toFixed(1)} ms`;
+    }
+
+    if (this.physValR) this.physValR.textContent = `${sp.wireRadiusMm.toFixed(2)} mm`;
+    if (this.physValHelixR) this.physValHelixR.textContent = `${sp.helixRadiusMm.toFixed(2)} mm`;
+    if (this.physValL) this.physValL.textContent = `${sp.wireLengthM.toFixed(2)} m`;
+    if (this.physValTd) this.physValTd.textContent = `${metrics.TdMs.toFixed(1)} ms`;
+    if (this.physValFc) this.physValFc.textContent = `${Math.round(metrics.FcHz)} Hz`;
+
+    if (this.springFcNeedle) {
+      const norm = Math.max(0.05, Math.min(0.95, (metrics.TdMs - 15.0) / 160.0));
+      this.springFcNeedle.style.left = `${(norm * 100).toFixed(1)}%`;
     }
   }
 
@@ -405,7 +574,6 @@ class PlateReverbApp {
       }
     }
 
-    // Update 1960s Moving-Coil Analog Needles (-42 deg to +42 deg)
     const targetInAngle = Math.max(-42.0, Math.min(42.0, ((inDb + 36.0) / 39.0) * 84.0 - 42.0));
     const targetOutAngle = Math.max(-42.0, Math.min(42.0, ((outDb + 36.0) / 39.0) * 84.0 - 42.0));
 
@@ -417,6 +585,179 @@ class PlateReverbApp {
     }
     if (this.vuNeedleOut) {
       this.vuNeedleOut.setAttribute('transform', `rotate(${this.needleAngleOut.toFixed(1)} 155 68)`);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Top Unit Switcher & Spring Reverb Controls (6G15 vs AB763, Historical Eras)
+  // ---------------------------------------------------------------------------
+  _bindSpringHardwareControls() {
+    // Top Unit Mode Switcher (EMT-140 Plate vs Tube Spring Reverb vs Side-by-Side)
+    this.unitTabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const mode = tab.getAttribute('data-unit-tab');
+        this.unitTabs.forEach((t) => {
+          const isMatch = t === tab;
+          t.classList.toggle('active', isMatch);
+          t.setAttribute('aria-selected', String(isMatch));
+        });
+
+        if (this.dualStage) {
+          this.dualStage.className = `em-dual-stage mode-${mode}`;
+        }
+
+        if (mode === 'spring') {
+          this.audioEngine.setActiveUnit('spring');
+        } else if (mode === 'plate') {
+          this.audioEngine.setActiveUnit('plate');
+        }
+
+        requestAnimationFrame(() => {
+          if (this.visualizer && this.visualizer._onResize) this.visualizer._onResize();
+          if (this.springVisualizer) this.springVisualizer.resize();
+        });
+      });
+    });
+
+    // Clicking inside either panel in Side-by-Side mode activates its audio path automatically
+    const platePanel = document.getElementById('unit-panel-plate');
+    const springPanel = document.getElementById('unit-panel-spring');
+    if (platePanel) {
+      platePanel.addEventListener('pointerdown', () => {
+        if (this.audioEngine.activeUnit !== 'plate') {
+          this.audioEngine.setActiveUnit('plate');
+        }
+      });
+    }
+    if (springPanel) {
+      springPanel.addEventListener('pointerdown', () => {
+        if (this.audioEngine.activeUnit !== 'spring') {
+          this.audioEngine.setActiveUnit('spring');
+        }
+      });
+    }
+
+    // Historical Era Buttons (1960 Type 4 vs 1939 Hammond Oil vs 1930s Bell Labs)
+    const eraBtns = document.querySelectorAll('.spring-era-btn[data-spring-era]');
+    const eraLabels = [
+      'CUTAWAY ACCUTRONICS TYPE 4 DUAL-SPRING TRANSMISSION LINE (1960)',
+      '1939 LAURENS HAMMOND OIL-FILLED DAMPING TUBES (ORGAN REVERB)',
+      '1930s BELL TELEPHONE LABS MECHANICAL DELAY LINE'
+    ];
+    eraBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const era = parseInt(btn.getAttribute('data-spring-era'), 10);
+        eraBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        this.audioEngine.setActiveUnit('spring');
+        this.audioEngine.setSpringTankEra(era);
+        if (this.springVisualizer) this.springVisualizer.setTankEraVisual(era);
+
+        const hudLabel = document.getElementById('spring-hud-tank-label');
+        if (hudLabel) hudLabel.textContent = eraLabels[era] || eraLabels[0];
+      });
+    });
+
+    // Electrical Topology Buttons: Version A (1961 Fender 6G15 6K6) vs Version B (1963 AB763 Twin Reverb 12AT7)
+    const topoBtns = document.querySelectorAll('.spring-topo-btn[data-spring-topo]');
+    topoBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const topo = parseInt(btn.getAttribute('data-spring-topo'), 10);
+        topoBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        this.audioEngine.setActiveUnit('spring');
+        this.audioEngine.setSpringTopology(topo);
+        if (this.springVisualizer) this.springVisualizer.setTopologyVisual(topo);
+
+        const dwellKnob = this.knobs.get('springDwell');
+        const toneKnob = this.knobs.get('springTone');
+        const mixKnob = this.knobs.get('springMix');
+
+        const badgeModel = document.getElementById('spring-badge-model');
+        const subtitleLine = document.getElementById('spring-subtitle-line');
+        const hudTubeLabel = document.getElementById('spring-hud-tube-label');
+        const modeTitle = document.getElementById('spring-circuit-mode-title');
+        const modeDesc = document.getElementById('spring-circuit-mode-desc');
+
+        if (topo === 0) {
+          // Version A: 1961 Fender 6G15 Standalone Tube Reverb
+          if (dwellKnob) dwellKnob.container.classList.remove('knob-locked');
+          if (toneKnob) toneKnob.container.classList.remove('knob-locked');
+          if (mixKnob && mixKnob.labelEl) mixKnob.labelEl.textContent = 'MIXER (WET/DRY)';
+          if (this.springTopoReadout) this.springTopoReadout.textContent = 'TOPOLOGY: 1961 6G15 (6K6 PENTODE)';
+          if (badgeModel) badgeModel.textContent = '6G15 / TYPE 4';
+          if (subtitleLine) {
+            subtitleLine.textContent =
+              'STANDALONE 6K6 PENTODE DRIVER • 8Ω STEP-DOWN TRANSFORMER • DUAL HELICAL TRANSMISSION LINE • 12AX7 RECOVERY';
+          }
+          if (hudTubeLabel) {
+            hudTubeLabel.textContent = 'DRIVER: 6K6GT PENTODE (8Ω XFMR) • RECOVERY: 12AX7 DUAL-TRIODE';
+          }
+          if (modeTitle) modeTitle.textContent = '6G15 Controls: Active';
+          if (modeDesc) modeDesc.textContent = 'Dwell, Tone & Mixer Unlocked';
+        } else {
+          // Version B: 1963 Fender AB763 Twin Reverb Built-In Amp Reverb
+          if (dwellKnob) dwellKnob.container.classList.add('knob-locked');
+          if (toneKnob) toneKnob.container.classList.add('knob-locked');
+          if (mixKnob && mixKnob.labelEl) mixKnob.labelEl.textContent = 'REVERB (RETURN)';
+          if (this.springTopoReadout) this.springTopoReadout.textContent = 'TOPOLOGY: 1963 AB763 (12AT7 COMBO)';
+          if (badgeModel) badgeModel.textContent = 'AB763 / TWIN';
+          if (subtitleLine) {
+            subtitleLine.textContent =
+              'BUILT-IN PARALLEL 12AT7 DRIVER • FIXED DWELL/TONE • SINGLE REVERB KNOB • SPEAKER ACOUSTIC FEEDBACK LOOP';
+          }
+          if (hudTubeLabel) {
+            hudTubeLabel.textContent = 'DRIVER: PARALLEL 12AT7 • COMBO CABINET: 2×12" SPEAKER FEEDBACK';
+          }
+          if (modeTitle) modeTitle.textContent = 'AB763 Controls: Single Knob';
+          if (modeDesc) modeDesc.textContent = 'Dwell & Tone Fixed by Circuit';
+        }
+      });
+    });
+
+    // Kick Tank (Mechanical Spring Crash) Buttons
+    const triggerKick = async () => {
+      this.audioEngine.setActiveUnit('spring');
+      await this.audioEngine.kickSpringTank();
+      if (this.springVisualizer) this.springVisualizer.triggerMechanicalKick();
+      this._updatePowerUI(true);
+    };
+
+    const kickBtnTop = document.getElementById('btn-spring-kick');
+    const kickBtnBot = document.getElementById('btn-spring-crash-bottom');
+    if (kickBtnTop) kickBtnTop.addEventListener('click', triggerKick);
+    if (kickBtnBot) kickBtnBot.addEventListener('click', triggerKick);
+
+    // Quick Play 1962 Surf Guitar Stem Button
+    const surfBtn = document.getElementById('btn-spring-surf');
+    if (surfBtn) {
+      surfBtn.addEventListener('click', async () => {
+        this.audioEngine.setActiveUnit('spring');
+        this.audioEngine.sourceType = 'stem';
+        this.audioEngine.stemSubType = 'surf';
+        if (this.audioEngine.isLoopPlaying) {
+          this.audioEngine.stopLoop();
+          surfBtn.textContent = '🎸 PLAY 1962 SURF GUITAR';
+        } else {
+          await this.audioEngine.init();
+          this.audioEngine.startLoop();
+          surfBtn.textContent = '⏹ STOP SURF GUITAR';
+        }
+        this._updatePowerUI(true);
+        this._syncTransportButtons();
+      });
+    }
+
+    // Rimshot Drip Test Button
+    const rimBtn = document.getElementById('btn-spring-rimshot');
+    if (rimBtn) {
+      rimBtn.addEventListener('click', async () => {
+        this.audioEngine.setActiveUnit('spring');
+        await this.audioEngine.triggerImpulse('rimshot');
+        this._updatePowerUI(true);
+      });
     }
   }
 
@@ -518,7 +859,7 @@ class PlateReverbApp {
         btn.classList.add('active');
 
         this.audioEngine.setMaterial(matIdx);
-        this.visualizer.setMaterialPreset(matIdx);
+        if (this.visualizer) this.visualizer.setMaterialPreset(matIdx);
         if (this.gondolaAlloyEl) this.gondolaAlloyEl.textContent = `PLATE: ${matNames[matIdx]}`;
       });
     });
@@ -557,6 +898,7 @@ class PlateReverbApp {
     } else if (sourceType === 'stem') {
       const opts = [
         { value: 'drums', label: '1960s Studio Drum Groove (110 BPM)' },
+        { value: 'surf', label: '1962 Staccato Surf Guitar Riff' },
         { value: 'guitar', label: 'Dry Archtop Guitar Chords' },
         { value: 'vocal', label: 'Dry Vocal Formant Phrase' }
       ];
@@ -584,13 +926,21 @@ class PlateReverbApp {
   }
 
   _syncTransportButtons() {
-    if (!this.loopBtn) return;
-    if (this.audioEngine.isLoopPlaying) {
-      this.loopBtn.classList.add('playing');
-      this.loopBtn.textContent = 'STOP LOOP';
-    } else {
-      this.loopBtn.classList.remove('playing');
-      this.loopBtn.textContent = 'PLAY LOOP';
+    if (this.loopBtn) {
+      if (this.audioEngine.isLoopPlaying) {
+        this.loopBtn.classList.add('playing');
+        this.loopBtn.textContent = 'STOP LOOP';
+      } else {
+        this.loopBtn.classList.remove('playing');
+        this.loopBtn.textContent = 'PLAY LOOP';
+      }
+    }
+    const surfBtn = document.getElementById('btn-spring-surf');
+    if (surfBtn) {
+      surfBtn.textContent =
+        this.audioEngine.isLoopPlaying && this.audioEngine.stemSubType === 'surf'
+          ? '⏹ STOP SURF GUITAR'
+          : '🎸 PLAY 1962 SURF GUITAR';
     }
   }
 
@@ -601,6 +951,9 @@ class PlateReverbApp {
     }
     if (this.pilotJewel) {
       this.pilotJewel.classList.toggle('active', powered);
+    }
+    if (this.springPilotJewel) {
+      this.springPilotJewel.classList.toggle('active', powered);
     }
     notifyHubAudioState('app-emt140-plate', Boolean(powered && this.audioEngine && this.audioEngine.isLoopPlaying));
   }
@@ -680,7 +1033,7 @@ class PlateReverbApp {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'emt140-plate-reverb-webapp.html';
+        a.download = 'electro-mechanical-reverbs-webapp.html';
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -695,6 +1048,9 @@ class PlateReverbApp {
       this._updateVUMeters(telemetry.inputDb, telemetry.outputDb);
       if (this.visualizer) {
         this.visualizer.update(nowMs, telemetry);
+      }
+      if (this.springVisualizer) {
+        this.springVisualizer.update(nowMs, telemetry);
       }
       requestAnimationFrame(tick);
     };

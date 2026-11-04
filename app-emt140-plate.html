@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>1960s EMT-140 ST Hallplatten-Nachhallgerät — Physical Plate Reverb Simulator</title>
+  <title>Module: Electro-Mechanical Reverbs: EMT Plate &amp; Spring Tanks</title>
   <link rel="stylesheet" href="styles.css" />
   <!-- Three.js r128 + OrbitControls -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -13,284 +13,550 @@
   <!-- Drag-and-Drop Audio File Overlay -->
   <div id="drop-overlay" class="drop-overlay">
     <div class="drop-box">
-      <h2>Drop Audio Tape Stem onto Plate Transducer</h2>
-      <p>Supports .WAV, .MP3, .OGG, .FLAC — Decodes directly into 48 kHz FDN-16 Engine</p>
+      <h2>Drop Audio Tape Stem onto Electro-Mechanical Transducer</h2>
+      <p>Supports .WAV, .MP3, .OGG, .FLAC — Decodes directly into 48 kHz EMT Plate &amp; Spring Tank Engines</p>
     </div>
   </div>
 
   <input id="hidden-file-input" type="file" accept=".wav,.mp3,.ogg,.flac,audio/*" style="display:none;" />
 
-  <!-- Top Web-App Embed & Copy-Code Toolbar -->
+  <!-- Top Module Switcher & Web-App Embed Toolbar -->
   <nav class="webapp-host-bar">
     <div class="host-bar-left">
-      <span class="host-badge">1960s STUDIO EDITION</span>
-      <span>Self-Contained Zero-GC Web Audio + WebGL Plate Reverb — Ready to Embed or Host</span>
+      <span class="host-badge">ELECTRO-MECHANICAL REVERBS</span>
+      <span>Module: EMT-140 Plate &amp; Classic Tube-Driven Spring Reverb Tanks (1930s–1963)</span>
     </div>
+
+    <!-- Side-by-Side Unit Selector Tabs (EMT Plate vs. Classic Spring Tank) -->
+    <div class="em-unit-switcher" role="tablist" aria-label="Electro-Mechanical Reverb Selector">
+      <button type="button" class="em-unit-tab active" data-unit-tab="plate" role="tab" aria-selected="true">
+        <span class="em-tab-era">1957 · PLATE</span>
+        <span class="em-tab-title">EMT-140 ST Plate Reverb</span>
+      </button>
+      <button type="button" class="em-unit-tab" data-unit-tab="spring" role="tab" aria-selected="false">
+        <span class="em-tab-era">1939–1963 · SPRING</span>
+        <span class="em-tab-title">Tube Spring Reverb Tank (6G15 / AB763)</span>
+      </button>
+      <button type="button" class="em-unit-tab" data-unit-tab="side-by-side" role="tab" aria-selected="false">
+        <span class="em-tab-era">DUAL VIEW</span>
+        <span class="em-tab-title">Side-by-Side Plate + Spring</span>
+      </button>
+    </div>
+
     <div class="host-bar-actions">
       <button id="btn-copy-webapp" class="host-btn primary">COPY FULL WEB APP HTML</button>
       <button id="btn-download-webapp" class="host-btn">DOWNLOAD .HTML BUNDLE</button>
     </div>
   </nav>
 
-  <!-- 1960s EMT-140 ST Hammerschlag Enamel Studio Enclosure -->
-  <main class="rack-enclosure">
-    <!-- Left Mahogany & Hammerite Rack Ear -->
-    <aside class="rack-ear">
-      <div class="rack-bolt"></div>
-      <div class="rack-bolt"></div>
-      <div class="rack-handle"></div>
-      <div class="rack-bolt"></div>
-      <div class="rack-bolt"></div>
-    </aside>
+  <!-- Dual Electro-Mechanical Stage Grid (Supports single full-width or side-by-side layout) -->
+  <div id="em-dual-stage" class="em-dual-stage mode-plate">
 
-    <!-- Main 1960s Hammer-Tone Steel Faceplate -->
-    <section class="rack-faceplate">
-      <!-- Top Header: Riveted EMT Badge + Backlit Gondola Mechanical Scale + Mains Switch -->
-      <header class="rack-header">
-        <div class="brand-plate">
-          <div class="emt-riveted-badge">
-            <span class="emt-logo-main">EMT 140 ST</span>
-            <span class="emt-logo-sub">LAHR / SCHWARZWALD</span>
-          </div>
-          <div class="brand-titles">
-            <h1>
-              Hallplatten-Nachhallgerät — Studio Plate Reverb
-              <button type="button" class="edu-tip-badge edu-amber" data-edu-title="1957 EMT-140 Plate Reverb Physics" data-edu-tip="Introduced in 1957 by Wilhelm Franz KG (engineered by Dr. Walter Kuhl), the EMT-140 replaced echo chambers with a 0.5mm cold-rolled steel sheet (2m × 1m) tensioned by 4 corner springs inside a 600 lb wooden crate. Unlike air, bending waves in metal exhibit Dispersion: high frequencies travel faster than low frequencies, producing an instant, silky transient halo!" data-edu-try="Click 'STRIKE PLATE' or 'PLAY LOOP' below and watch the 3D flexural standing waves ripple across the suspended metal sheet.">?</button>
-            </h1>
-            <p>WILHELM FRANZ KG • V76 TUBE DRIVER • FDN-16 FLEXURAL DISPERSION NETWORK</p>
-          </div>
-        </div>
+    <!-- ======================================================================
+         UNIT A: 1957 EMT-140 ST Hallplatten-Nachhallgerät (Plate Reverb)
+         ====================================================================== -->
+    <main id="unit-panel-plate" class="rack-enclosure unit-panel">
+      <aside class="rack-ear">
+        <div class="rack-bolt"></div>
+        <div class="rack-bolt"></div>
+        <div class="rack-handle"></div>
+        <div class="rack-bolt"></div>
+        <div class="rack-bolt"></div>
+      </aside>
 
-        <!-- Iconic 1960s Backlit Mechanical Gondola Damper Scale ("Nachhallzeit") -->
-        <div class="gondola-dial-housing" data-edu-title="Gondola Mechanical Damper ('Nachhallzeit')" data-edu-tip="Real EMT-140 plates had no electronic decay knob—instead, a motorized porous fiberglass damping plate moved closer to or farther from the vibrating steel sheet (4 mm to 120 mm air gap) to absorb acoustic energy and vary RT60 from 0.5s to 12s." data-edu-try="Turn the 'NACHHALL T60' or 'DAMPER PAD' knobs below and watch the backlit Gondola needle and 3D damper plate move!">
-          <div class="gondola-top-labels">
-            <span id="gondola-alloy-val">PLATE: STEEL (EMT 140)</span>
-            <span>NACHHALLZEIT / DÄMPFUNGSPLATTE ?</span>
-            <span id="gondola-gap-val">PAD GAP: 120 mm</span>
-            <span id="gondola-rt60-val">RT60: 3.2 s</span>
-          </div>
-          <div class="gondola-glass-window">
-            <div class="gondola-scale-marks">
-              <span>0.5s</span>
-              <span>1.0s</span>
-              <span>1.5s</span>
-              <span>2.0s</span>
-              <span>3.0s</span>
-              <span>4.5s</span>
-              <span>6.0s</span>
-              <span>9.0s</span>
-              <span>12s</span>
+      <section class="rack-faceplate">
+        <header class="rack-header">
+          <div class="brand-plate">
+            <div class="emt-riveted-badge">
+              <span class="emt-logo-main">EMT 140 ST</span>
+              <span class="emt-logo-sub">LAHR / SCHWARZWALD</span>
             </div>
-            <div id="gondola-needle" class="gondola-needle"></div>
+            <div class="brand-titles">
+              <h1>
+                Hallplatten-Nachhallgerät — Studio Plate Reverb
+                <button type="button" class="edu-tip-badge edu-amber" data-edu-title="1957 EMT-140 Plate Reverb Physics" data-edu-tip="Introduced in 1957 by Wilhelm Franz KG (engineered by Dr. Walter Kuhl), the EMT-140 replaced echo chambers with a 0.5mm cold-rolled steel sheet (2m × 1m) tensioned by 4 corner springs inside a 600 lb wooden crate. Unlike air, bending waves in metal exhibit Dispersion: high frequencies travel faster than low frequencies, producing an instant, silky transient halo!" data-edu-try="Click 'STRIKE PLATE' or 'PLAY LOOP' below and watch the 3D flexural standing waves ripple across the suspended metal sheet.">?</button>
+              </h1>
+              <p>WILHELM FRANZ KG • V76 TUBE DRIVER • FDN-16 FLEXURAL DISPERSION NETWORK</p>
+            </div>
           </div>
-        </div>
 
-        <!-- Mains Red/Amber Pilot Lamp & Rocker Switch -->
-        <div class="power-cluster">
-          <div id="pilot-jewel" class="pilot-jewel" title="V76 Vacuum Tube Heater & DSP Status"></div>
-          <button id="btn-power" class="power-rocker">MAINS OFF</button>
-        </div>
-      </header>
-
-      <!-- Foldable Engineering Guide Drawer -->
-      <details class="edu-foldable" style="margin: 0 2px 6px;">
-        <summary>
-          <span class="edu-foldable-title">
-            <span class="edu-foldable-tag">1960s Engineering Guide</span>
-            <span>How Flexural Plate Dispersion, Damper Gap &amp; Dual Piezo Pickups Work</span>
-          </span>
-          <span class="edu-foldable-chevron">▼ Unfold Guide</span>
-        </summary>
-        <div class="edu-foldable-body">
-          A moving-coil driver mounted slightly off-center excites 2D bending waves in the tensioned metal sheet. Because flexural phase velocity increases with frequency ($v_p \propto \sqrt{\omega}$), high-frequency transients reach the two asymmetric piezo contact pickups <strong>before</strong> low frequencies—creating the unmistakable dense "whip" that made the EMT-140 famous on Abbey Road, Pink Floyd, and Motown vocals.
-          <div class="edu-foldable-try">
-            <strong>🎧 Quick Experiment:</strong> Click <strong>PLAY LOOP</strong> (Module I), switch between <strong>STEEL (EMT 140)</strong> and <strong>GOLD (EMT 240)</strong> in Module II, and toggle the <strong>80 Hz Bass Cut Filter</strong> in Module III to hear how low-end rumble is cleaned up.
+          <div class="gondola-dial-housing" data-edu-title="Gondola Mechanical Damper ('Nachhallzeit')" data-edu-tip="Real EMT-140 plates had no electronic decay knob—instead, a motorized porous fiberglass damping plate moved closer to or farther from the vibrating steel sheet (4 mm to 120 mm air gap) to absorb acoustic energy and vary RT60 from 0.5s to 12s." data-edu-try="Turn the 'NACHHALL T60' or 'DAMPER PAD' knobs below and watch the backlit Gondola needle and 3D damper plate move!">
+            <div class="gondola-top-labels">
+              <span id="gondola-alloy-val">PLATE: STEEL (EMT 140)</span>
+              <span>NACHHALLZEIT / DÄMPFUNGSPLATTE ?</span>
+              <span id="gondola-gap-val">PAD GAP: 120 mm</span>
+              <span id="gondola-rt60-val">RT60: 3.2 s</span>
+            </div>
+            <div class="gondola-glass-window">
+              <div class="gondola-scale-marks">
+                <span>0.5s</span>
+                <span>1.0s</span>
+                <span>1.5s</span>
+                <span>2.0s</span>
+                <span>3.0s</span>
+                <span>4.5s</span>
+                <span>6.0s</span>
+                <span>9.0s</span>
+                <span>12s</span>
+              </div>
+              <div id="gondola-needle" class="gondola-needle"></div>
+            </div>
           </div>
-        </div>
-      </details>
 
-      <!-- 3D Cutaway Mechanical Plate Crate Viewport -->
-      <div class="viewport-bezel">
-        <div id="plate-canvas-container"></div>
-
-        <div class="viewport-hud-top">
-          <div class="hud-pill">
-            <span>CUTAWAY STUDIO CRATE — 2.0m × 1.0m SUSPENDED SHEET</span>
-            <button id="btn-reset-camera" class="hud-btn">CENTER CAMERA</button>
+          <div class="power-cluster">
+            <div id="pilot-jewel" class="pilot-jewel" title="V76 Vacuum Tube Heater & DSP Status"></div>
+            <button id="btn-power" class="power-rocker">MAINS OFF</button>
           </div>
-          <div class="hud-pill">
-            <span>TUBE AMP: 3× TELEFUNKEN EF804S • SPRINGS: 4-CORNER HELICAL</span>
-          </div>
-        </div>
+        </header>
 
-        <div class="viewport-hud-bottom">
-          <span>ORBIT 360°: LEFT DRAG • PAN: RIGHT DRAG • ZOOM: SCROLL WHEEL</span>
-          <span>DRIVER: MOVING-COIL TRANSDUCER • PICKUPS: DUAL ASYMMETRIC PIEZO</span>
-        </div>
-      </div>
-
-      <!-- Lower 1960s Telefunken/EMT Control Modules -->
-      <div class="control-deck">
-        <!-- MODULE I: Input Amplifier & Studio Tape / Stem Sources -->
-        <div class="hw-bay">
-          <div class="bay-header">
-            <span class="bay-title">
-              I. Tube Driver &amp; Signal Source
-              <button type="button" class="edu-tip-badge edu-amber" data-edu-title="V76 Tube Driver & 4-Stage All-Pass Diffuser" data-edu-tip="Sums stereo input to mono, passes through 4 series all-pass diffusers (prime delays 83, 149, 231, 353 samples) to model initial driver coupling, and excites the 16-channel Feedback Delay Network. PRE-DELAY adds up to 250ms of tape pre-delay before hitting the plate." data-edu-try="Switch between IMPULSE ('STRIKE PLATE') and TAPE STEMS ('PLAY LOOP'), or drag any .WAV/.MP3 file onto the window!">?</button>
+        <details class="edu-foldable" style="margin: 0 2px 6px;">
+          <summary>
+            <span class="edu-foldable-title">
+              <span class="edu-foldable-tag">1957 EMT-140 Engineering Guide</span>
+              <span>How 2D Flexural Plate Dispersion, Damper Gap &amp; Dual Piezo Pickups Work</span>
             </span>
-            <span class="bay-subtitle">4-STAGE ALL-PASS DIFFUSER</span>
-          </div>
-
-          <div class="source-toolbar">
-            <div class="source-mode-tabs">
-              <button class="hw-tab-btn active" data-source="impulse">IMPULSE</button>
-              <button class="hw-tab-btn" data-source="stem">TAPE STEMS</button>
-              <button class="hw-tab-btn" data-source="mic">LIVE MIC</button>
-              <button class="hw-tab-btn" data-source="file">DROP FILE</button>
-            </div>
-
-            <div class="source-sub-row">
-              <select id="source-sub-select" class="hw-select"></select>
-              <button id="btn-trigger-impulse" class="hw-action-btn trig-btn">STRIKE PLATE</button>
-              <button id="btn-loop-toggle" class="hw-action-btn loop-btn">PLAY LOOP</button>
+            <span class="edu-foldable-chevron">▼ Unfold Guide</span>
+          </summary>
+          <div class="edu-foldable-body">
+            A moving-coil driver mounted slightly off-center excites 2D bending waves in the tensioned metal sheet. Because flexural phase velocity increases with frequency ($v_p \propto \sqrt{\omega}$), high-frequency transients reach the two asymmetric piezo contact pickups <strong>before</strong> low frequencies—creating the unmistakable dense "whip" that made the EMT-140 famous on Abbey Road, Pink Floyd, and Motown vocals.
+            <div class="edu-foldable-try">
+              <strong>🎧 Quick Experiment:</strong> Click <strong>PLAY LOOP</strong> (Module I), switch between <strong>STEEL (EMT 140)</strong> and <strong>GOLD (EMT 240)</strong> in Module II, or switch to the <strong>Tube Spring Reverb Tank</strong> tab above to compare 2D plate dispersion against 1D helical spring dispersion!
             </div>
           </div>
+        </details>
 
-          <div class="knobs-row">
-            <div id="knob-input-gain" class="knob-widget"></div>
-            <div id="knob-predelay" class="knob-widget"></div>
+        <!-- 3D Cutaway Mechanical Plate Crate Viewport -->
+        <div class="viewport-bezel">
+          <div id="plate-canvas-container"></div>
+
+          <div class="viewport-hud-top">
+            <div class="hud-pill">
+              <span>CUTAWAY STUDIO CRATE — 2.0m × 1.0m SUSPENDED SHEET</span>
+              <button id="btn-reset-camera" class="hud-btn">CENTER CAMERA</button>
+            </div>
+            <div class="hud-pill">
+              <span>TUBE AMP: 3× TELEFUNKEN EF804S • SPRINGS: 4-CORNER HELICAL</span>
+            </div>
+          </div>
+
+          <div class="viewport-hud-bottom">
+            <span>ORBIT 360°: LEFT DRAG • PAN: RIGHT DRAG • ZOOM: SCROLL WHEEL</span>
+            <span>DRIVER: MOVING-COIL TRANSDUCER • PICKUPS: DUAL ASYMMETRIC PIEZO</span>
           </div>
         </div>
 
-        <!-- MODULE II: Plate Metallurgy & Motorized Mechanical Damper -->
-        <div class="hw-bay">
-          <div class="bay-header">
-            <span class="bay-title">
-              II. Plate Metallurgy &amp; Damper Motor
-              <button type="button" class="edu-tip-badge edu-amber" data-edu-title="Metallurgy Dispersion & Walsh-Hadamard FDN-16" data-edu-tip="Different alloys alter wave dispersion (all-pass coefficient a) and high-frequency damping cutoff: STEEL (EMT 140, 4.5kHz classic vocal sheen), GOLD (EMT 240, 24k gold foil, warm dark 2.8kHz tail), ALUMINIUM (bright 7.5kHz sizzle), and TITANIUM (dense 6.2kHz modal ring)." data-edu-try="Compare STEEL vs. GOLD while a vocal or drum stem is looping, and sweep PLATE TENSION!">?</button>
+        <!-- Lower 1960s Telefunken/EMT Control Modules -->
+        <div class="control-deck">
+          <!-- MODULE I: Input Amplifier & Studio Tape / Stem Sources -->
+          <div class="hw-bay">
+            <div class="bay-header">
+              <span class="bay-title">
+                I. Tube Driver &amp; Signal Source
+                <button type="button" class="edu-tip-badge edu-amber" data-edu-title="V76 Tube Driver & 4-Stage All-Pass Diffuser" data-edu-tip="Sums stereo input to mono, passes through 4 series all-pass diffusers (prime delays 83, 149, 231, 353 samples) to model initial driver coupling, and excites the 16-channel Feedback Delay Network. PRE-DELAY adds up to 250ms of tape pre-delay before hitting the plate." data-edu-try="Switch between IMPULSE ('STRIKE PLATE') and TAPE STEMS ('PLAY LOOP'), or drag any .WAV/.MP3 file onto the window!">?</button>
+              </span>
+              <span class="bay-subtitle">4-STAGE ALL-PASS DIFFUSER</span>
+            </div>
+
+            <div class="source-toolbar">
+              <div class="source-mode-tabs">
+                <button class="hw-tab-btn active" data-source="impulse">IMPULSE</button>
+                <button class="hw-tab-btn" data-source="stem">TAPE STEMS</button>
+                <button class="hw-tab-btn" data-source="mic">LIVE MIC</button>
+                <button class="hw-tab-btn" data-source="file">DROP FILE</button>
+              </div>
+
+              <div class="source-sub-row">
+                <select id="source-sub-select" class="hw-select"></select>
+                <button id="btn-trigger-impulse" class="hw-action-btn trig-btn">STRIKE PLATE</button>
+                <button id="btn-loop-toggle" class="hw-action-btn loop-btn">PLAY LOOP</button>
+              </div>
+            </div>
+
+            <div class="knobs-row">
+              <div id="knob-input-gain" class="knob-widget"></div>
+              <div id="knob-predelay" class="knob-widget"></div>
+            </div>
+          </div>
+
+          <!-- MODULE II: Plate Metallurgy & Motorized Mechanical Damper -->
+          <div class="hw-bay">
+            <div class="bay-header">
+              <span class="bay-title">
+                II. Plate Metallurgy &amp; Damper Motor
+                <button type="button" class="edu-tip-badge edu-amber" data-edu-title="Metallurgy Dispersion & Walsh-Hadamard FDN-16" data-edu-tip="Different alloys alter wave dispersion (all-pass coefficient a) and high-frequency damping cutoff: STEEL (EMT 140, 4.5kHz classic vocal sheen), GOLD (EMT 240, 24k gold foil, warm dark 2.8kHz tail), ALUMINIUM (bright 7.5kHz sizzle), and TITANIUM (dense 6.2kHz modal ring)." data-edu-try="Compare STEEL vs. GOLD while a vocal or drum stem is looping, and sweep PLATE TENSION!">?</button>
+              </span>
+              <span class="bay-subtitle">16×16 WALSH-HADAMARD MATRIX</span>
+            </div>
+
+            <div class="material-bank">
+              <button class="mat-push-btn active" data-material="0">
+                <span class="mat-led"></span>
+                <span class="mat-name">STEEL</span>
+                <span class="mat-spec">EMT 140 • 4.5kHz</span>
+              </button>
+              <button class="mat-push-btn" data-material="1">
+                <span class="mat-led"></span>
+                <span class="mat-name">GOLD</span>
+                <span class="mat-spec">EMT 240 • 2.8kHz</span>
+              </button>
+              <button class="mat-push-btn" data-material="2">
+                <span class="mat-led"></span>
+                <span class="mat-name">ALUMINIUM</span>
+                <span class="mat-spec">BRIGHT • 7.5kHz</span>
+              </button>
+              <button class="mat-push-btn" data-material="3">
+                <span class="mat-led"></span>
+                <span class="mat-name">TITANIUM</span>
+                <span class="mat-spec">DENSE • 6.2kHz</span>
+              </button>
+            </div>
+
+            <div class="knobs-row">
+              <div id="knob-plate-size" class="knob-widget"></div>
+              <div id="knob-decay" class="knob-widget"></div>
+              <div id="knob-damping" class="knob-widget"></div>
+            </div>
+          </div>
+
+          <!-- MODULE III: Stereo Piezo Pickups & 80 Hz High-Pass Stage -->
+          <div class="hw-bay">
+            <div class="bay-header">
+              <span class="bay-title">
+                III. Stereo Pickup Amplifier
+                <button type="button" class="edu-tip-badge edu-amber" data-edu-title="Dual Piezo Pickups & 80 Hz Bass Cut" data-edu-tip="The EMT-140 ST added a second barium-titanate piezo pickup at an asymmetric node on the steel sheet to produce true stereo reverb from a mono send. Engaging the 80 Hz 2nd-order Butterworth high-pass filter removes low-frequency plate thunder." data-edu-try="Toggle '80Hz ON' to 'LINEAR' on a drum loop to hear how low kick energy booms on an unfiltered plate.">?</button>
+              </span>
+              <span class="bay-subtitle">EQUAL-POWER BLEND</span>
+            </div>
+
+            <div class="switch-row">
+              <div class="switch-label-group">
+                <span class="switch-title">80 Hz Bass Cut Filter</span>
+                <span class="switch-desc">12 dB/oct Butterworth High-Pass</span>
+              </div>
+              <button id="switch-lowcut" class="toggle-switch active">
+                <span class="sw-dot"></span>
+                <span class="sw-text">80Hz ON</span>
+              </button>
+            </div>
+
+            <div class="knobs-row">
+              <div id="knob-mix" class="knob-widget"></div>
+              <div id="knob-output" class="knob-widget"></div>
+            </div>
+          </div>
+
+          <!-- MODULE IV: Dual 1960s Backlit Analog Needle VU + 12-Segment Peak Ladder -->
+          <div class="vu-meter-bay">
+            <div class="bay-header">
+              <span class="bay-title">VU / PEAK METER</span>
+              <span class="bay-subtitle">IN / OUT</span>
+            </div>
+
+            <div class="analog-vu-window">
+              <svg class="analog-vu-svg" viewBox="0 0 210 72">
+                <path d="M 18 58 A 42 42 0 0 1 92 58" fill="none" stroke="#291805" stroke-width="1.5" />
+                <path d="M 72 26 A 42 42 0 0 1 92 58" fill="none" stroke="#b91c1c" stroke-width="2.5" />
+                <text x="55" y="46" text-anchor="middle" font-family="monospace" font-size="8" font-weight="bold" fill="#291805">IN VU</text>
+                <line id="vu-needle-in" x1="55" y1="68" x2="55" y2="14" stroke="#1c1917" stroke-width="1.8" transform="rotate(-42 55 68)" />
+                <circle cx="55" cy="68" r="4" fill="#291805" />
+
+                <line x1="105" y1="6" x2="105" y2="66" stroke="rgba(41,24,5,0.25)" stroke-width="1" />
+
+                <path d="M 118 58 A 42 42 0 0 1 192 58" fill="none" stroke="#291805" stroke-width="1.5" />
+                <path d="M 172 26 A 42 42 0 0 1 192 58" fill="none" stroke="#b91c1c" stroke-width="2.5" />
+                <text x="155" y="46" text-anchor="middle" font-family="monospace" font-size="8" font-weight="bold" fill="#291805">OUT VU</text>
+                <line id="vu-needle-out" x1="155" y1="68" x2="155" y2="14" stroke="#b91c1c" stroke-width="1.8" transform="rotate(-42 155 68)" />
+                <circle cx="155" cy="68" r="4" fill="#291805" />
+              </svg>
+            </div>
+
+            <div class="vu-columns">
+              <div class="vu-channel">
+                <div id="vu-input-ladder" class="vu-ladder"></div>
+                <span class="vu-ch-label">IN</span>
+              </div>
+
+              <div class="vu-scale">
+                <span>CLIP</span>
+                <span>0dB</span>
+                <span>-3</span>
+                <span>-6</span>
+                <span>-12</span>
+                <span>-24</span>
+              </div>
+
+              <div class="vu-channel">
+                <div id="vu-output-ladder" class="vu-ladder"></div>
+                <span class="vu-ch-label">OUT</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="rack-ear">
+        <div class="rack-bolt"></div>
+        <div class="rack-bolt"></div>
+        <div class="rack-handle"></div>
+        <div class="rack-bolt"></div>
+        <div class="rack-bolt"></div>
+      </aside>
+    </main>
+
+    <!-- ======================================================================
+         UNIT B: Classic Tube-Driven Spring Reverb Tank (1930s–1963)
+         ====================================================================== -->
+    <main id="unit-panel-spring" class="rack-enclosure spring-enclosure unit-panel">
+      <aside class="rack-ear spring-tolex-ear">
+        <div class="rack-bolt"></div>
+        <div class="rack-bolt"></div>
+        <div class="rack-handle"></div>
+        <div class="rack-bolt"></div>
+        <div class="rack-bolt"></div>
+      </aside>
+
+      <section class="rack-faceplate spring-faceplate">
+        <!-- Top Header: Fender/Accutronics Badge + Wittrick Helical Dispersion Telemetry Window + Power -->
+        <header class="rack-header">
+          <div class="brand-plate">
+            <div class="emt-riveted-badge spring-badge">
+              <span class="emt-logo-main" id="spring-badge-model">6G15 / TYPE 4</span>
+              <span class="emt-logo-sub" id="spring-badge-sub">FULLERTON / ACCUTRONICS</span>
+            </div>
+            <div class="brand-titles">
+              <h1>
+                Classic Tube-Driven Spring Reverberation System
+                <button type="button" class="edu-tip-badge edu-amber" data-edu-title="Helical Wave Propagation & Wittrick Dispersion" data-edu-tip="A helical spring tank functions as a mechanical transmission line. The drive transducer converts tube current into torsional waves (u) coupled with transverse bending waves (v). Because group velocity depends strongly on frequency below the Wittrick transition frequency (Fc), high frequencies arrive before low frequencies—producing the iconic surf 'drip', 'boing', and 'chirp'!" data-edu-try="Click '⚡ KICK TANK (CRASH)' or play the '1962 Surf Guitar' stem while sweeping Helix Radius (R) and Wire Radius (r)!">?</button>
+              </h1>
+              <p id="spring-subtitle-line">STANDALONE 6K6 PENTODE DRIVER • 8Ω STEP-DOWN TRANSFORMER • DUAL HELICAL TRANSMISSION LINE • 12AX7 RECOVERY</p>
+            </div>
+          </div>
+
+          <!-- Backlit Wittrick Helical Dispersion & Coupled Wave Readout Housing -->
+          <div class="gondola-dial-housing spring-telemetry-housing" data-edu-title="Wittrick Linear Model for Thin Helical Springs" data-edu-tip="Base Echo Time: T_D ≈ (4·L·R / r)·√(ρ/E). Transition Frequency: F_c ≈ (3·r / (16·√5·π·R²))·√(E/ρ), where ρ = 7800 kg/m³ and E = 200 GPa for steel music wire. Adjusting wire radius (r), helix radius (R), or wire length (L) recalculates T_D and F_c in real time!" data-edu-try="Increase Helix Radius (R) to lengthen T_D and lower F_c, creating a deeper, slower-chirping cavernous spring tank.">
+            <div class="gondola-top-labels">
+              <span id="spring-topo-readout">TOPOLOGY: 1961 6G15 (6K6 PENTODE)</span>
+              <span id="spring-td-readout">ECHO TIME T_D: 69.8 ms</span>
+              <span id="spring-fc-readout">TRANSITION F_c: 1495 Hz</span>
+              <span id="spring-kappa-readout">κ: 333 m⁻¹</span>
+            </div>
+            <div class="gondola-glass-window spring-chirp-window">
+              <div class="gondola-scale-marks">
+                <span>1930s BELL</span>
+                <span>1939 HAMMOND OIL</span>
+                <span>1960 TYPE 4</span>
+                <span>1961 6G15 6K6</span>
+                <span>1963 AB763 12AT7</span>
+                <span>T_D = 4LR/r·√(ρ/E)</span>
+              </div>
+              <div id="spring-fc-needle" class="gondola-needle"></div>
+            </div>
+          </div>
+
+          <div class="power-cluster">
+            <div id="spring-pilot-jewel" class="pilot-jewel" title="Fender Ruby Jewel Pilot Lamp"></div>
+            <button id="btn-spring-kick" class="power-rocker spring-kick-btn" title="Mechanically jar the spring pan to hear explosive spring crash!">⚡ KICK TANK</button>
+          </div>
+        </header>
+
+        <!-- Foldable Physical Mathematics & Historical Evolution Drawer -->
+        <details class="edu-foldable" style="margin: 0 2px 6px;">
+          <summary>
+            <span class="edu-foldable-title">
+              <span class="edu-foldable-tag">History, Physics &amp; Math</span>
+              <span>1930s Bell Labs → 1939 Hammond Oil Tubes → 1960 Accutronics Type 4 → 1961 6G15 vs. 1963 AB763 &amp; Wittrick Wave Equations</span>
             </span>
-            <span class="bay-subtitle">16×16 WALSH-HADAMARD MATRIX</span>
+            <span class="edu-foldable-chevron">▼ Unfold Equations &amp; Topologies</span>
+          </summary>
+          <div class="edu-foldable-body">
+            <div class="spring-math-grid">
+              <div class="spring-math-col">
+                <strong>1. Historical &amp; Developmental Timeline:</strong>
+                <ul style="margin: 4px 0 0 16px; font-size: 11px; line-height: 1.42;">
+                  <li><strong>1930s (Bell Labs):</strong> Mechanical delay lines researched to simulate long-distance telephone network delay.</li>
+                  <li><strong>1939 (Laurens Hammond):</strong> Massive springs suspended in <em>oil-filled tubes</em> to dampen mechanical response and shorten decay for the Hammond organ.</li>
+                  <li><strong>1959/1960 (Accutronics / Alan Young):</strong> Compact dry <em>Type 4</em> dual-spring tank with incommensurate delay times to minimize standing waves and flutter echoes.</li>
+                  <li><strong>1961 (Fender 6G15 Standalone) vs. 1963 (AB763 Built-in):</strong> High-headroom 6K6 pentode pre-amp unit vs. built-in 12AT7 combo amp circuit with speaker-to-spring acoustic feedback.</li>
+                </ul>
+              </div>
+              <div class="spring-math-col">
+                <strong>2. Wittrick Dispersion &amp; Coupled Wave Equations ($\rho = 7800\text{ kg/m}^3, E = 200\text{ GPa}$):</strong>
+                <div class="math-formula-box">
+                  <div>Base Echo Delay: <code>T_D ≈ (4 · L · R / r) · √(ρ / E)</code> &nbsp;|&nbsp; Transition Freq: <code>F_c ≈ [3r / (16√5 · π · R²)] · √(E / ρ)</code></div>
+                  <div style="margin-top:3px;">Torsional ($u$) &amp; Transverse ($v$) PDEs: <code>∂²u/∂t² = (E/ρ)(∂²u/∂s² - κ·∂v/∂s)</code></div>
+                  <div><code>∂²v/∂t² = -(E·r² / 4ρ)·∂⁴v/∂s⁴ + 2κ·∂²v/∂s² + κv + (Eκ/ρ)(∂u/∂s - κv)</code></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <!-- 3D Cutaway Helical Spring Tank & Tube Stage Viewport -->
+        <div class="viewport-bezel">
+          <div id="spring-canvas-container" style="width:100%; height:100%; cursor:grab;"></div>
+
+          <div class="viewport-hud-top">
+            <div class="hud-pill">
+              <span id="spring-hud-tank-label">CUTAWAY ACCUTRONICS TYPE 4 DUAL-SPRING TRANSMISSION LINE</span>
+              <button id="btn-reset-spring-camera" class="hud-btn">CENTER CAMERA</button>
+            </div>
+            <div class="hud-pill">
+              <span id="spring-hud-tube-label">DRIVER: 6K6GT PENTODE (8Ω XFMR) • RECOVERY: 12AX7 DUAL-TRIODE</span>
+            </div>
           </div>
 
-          <div class="material-bank">
-            <button class="mat-push-btn active" data-material="0">
-              <span class="mat-led"></span>
-              <span class="mat-name">STEEL</span>
-              <span class="mat-spec">EMT 140 • 4.5kHz</span>
-            </button>
-            <button class="mat-push-btn" data-material="1">
-              <span class="mat-led"></span>
-              <span class="mat-name">GOLD</span>
-              <span class="mat-spec">EMT 240 • 2.8kHz</span>
-            </button>
-            <button class="mat-push-btn" data-material="2">
-              <span class="mat-led"></span>
-              <span class="mat-name">ALUMINIUM</span>
-              <span class="mat-spec">BRIGHT • 7.5kHz</span>
-            </button>
-            <button class="mat-push-btn" data-material="3">
-              <span class="mat-led"></span>
-              <span class="mat-name">TITANIUM</span>
-              <span class="mat-spec">DENSE • 6.2kHz</span>
-            </button>
-          </div>
-
-          <div class="knobs-row">
-            <div id="knob-plate-size" class="knob-widget"></div>
-            <div id="knob-decay" class="knob-widget"></div>
-            <div id="knob-damping" class="knob-widget"></div>
+          <div class="viewport-hud-bottom">
+            <span>ORBIT 360°: LEFT DRAG • COUPLED TORSIONAL (u) &amp; TRANSVERSE (v) HELICAL WAVES</span>
+            <span id="spring-hud-physics-summary">ρ = 7800 kg/m³ • E = 200 GPa • c_steel = 5064 m/s</span>
           </div>
         </div>
 
-        <!-- MODULE III: Stereo Piezo Pickups & 80 Hz High-Pass Stage -->
-        <div class="hw-bay">
-          <div class="bay-header">
-            <span class="bay-title">
-              III. Stereo Pickup Amplifier
-              <button type="button" class="edu-tip-badge edu-amber" data-edu-title="Dual Piezo Pickups & 80 Hz Bass Cut" data-edu-tip="The EMT-140 ST added a second barium-titanate piezo pickup at an asymmetric node on the steel sheet to produce true stereo reverb from a mono send. Engaging the 80 Hz 2nd-order Butterworth high-pass filter removes low-frequency plate thunder." data-edu-try="Toggle '80Hz ON' to 'LINEAR' on a drum loop to hear how low kick energy booms on an unfiltered plate.">?</button>
-            </span>
-            <span class="bay-subtitle">EQUAL-POWER BLEND</span>
+        <!-- Lower Spring Reverb Control Deck (4 Hardware Bays) -->
+        <div class="control-deck">
+          <!-- BAY I: Historical Era Tank & Input Source Exciter -->
+          <div class="hw-bay">
+            <div class="bay-header">
+              <span class="bay-title">
+                I. Historical Era &amp; Signal Source
+                <button type="button" class="edu-tip-badge edu-amber" data-edu-title="1930s Bell Labs, 1939 Hammond Oil & 1960 Type 4" data-edu-tip="Compare the 3 historical mechanical delay eras: 1960 Accutronics Type 4 (dual dry counter-wound springs with lively chirp), 1939 Hammond Organ Tank (springs submerged in oil-filled tubes for dark viscous damping), and 1930s Bell Labs (single long telephone delay spring)." data-edu-try="Switch between 1960 TYPE 4 and 1939 HAMMOND OIL while playing the '1962 Surf Guitar' stem!">?</button>
+              </span>
+              <span class="bay-subtitle">1930s–1960 EVOLUTION</span>
+            </div>
+
+            <div class="material-bank" style="grid-template-columns: repeat(3, 1fr);">
+              <button class="mat-push-btn spring-era-btn active" data-spring-era="0">
+                <span class="mat-led"></span>
+                <span class="mat-name">1960 TYPE 4</span>
+                <span class="mat-spec">Dry Dual-Spring</span>
+              </button>
+              <button class="mat-push-btn spring-era-btn" data-spring-era="1">
+                <span class="mat-led"></span>
+                <span class="mat-name">1939 HAMMOND</span>
+                <span class="mat-spec">Oil-Filled Tube</span>
+              </button>
+              <button class="mat-push-btn spring-era-btn" data-spring-era="2">
+                <span class="mat-led"></span>
+                <span class="mat-name">1930s BELL</span>
+                <span class="mat-spec">Single Delay Line</span>
+              </button>
+            </div>
+
+            <div class="source-sub-row" style="margin-top:4px;">
+              <button id="btn-spring-surf" class="hw-action-btn trig-btn" style="flex:1;">🎸 PLAY 1962 SURF GUITAR</button>
+              <button id="btn-spring-rimshot" class="hw-action-btn" style="flex:1;">🥁 RIMSHOT DRIP TEST</button>
+            </div>
+
+            <div class="knobs-row">
+              <div id="knob-spring-r" class="knob-widget"></div>
+              <div id="knob-spring-R" class="knob-widget"></div>
+            </div>
           </div>
 
-          <div class="switch-row">
-            <div class="switch-label-group">
-              <span class="switch-title">80 Hz Bass Cut Filter</span>
-              <span class="switch-desc">12 dB/oct Butterworth High-Pass</span>
+          <!-- BAY II: Helical Spring Geometry (r, R, L) & Wittrick Dispersion -->
+          <div class="hw-bay">
+            <div class="bay-header">
+              <span class="bay-title">
+                II. Helical Geometry &amp; Topology
+                <button type="button" class="edu-tip-badge edu-amber" data-edu-title="Version A (6G15 Standalone) vs. Version B (AB763 Built-in)" data-edu-tip="Version A (1961 Fender 6G15) uses a single-ended 6K6 power pentode driving an 8-ohm step-down transformer ahead of the amp, with full Dwell, Tone, and Mixer controls. Version B (1963 AB763 Twin Reverb) uses a parallel 12AT7 dual-triode with fixed Dwell/Tone, a single Reverb knob, and sympathetic speaker-to-spring acoustic feedback inside the combo cabinet!" data-edu-try="Toggle between VERSION A (6G15) and VERSION B (AB763) and watch the 3D speaker cones and Dwell/Tone lock respond.">?</button>
+              </span>
+              <span class="bay-subtitle">6G15 6K6 vs. AB763 12AT7</span>
             </div>
-            <button id="switch-lowcut" class="toggle-switch active">
-              <span class="sw-dot"></span>
-              <span class="sw-text">80Hz ON</span>
+
+            <div class="material-bank" style="grid-template-columns: 1fr 1fr;">
+              <button class="mat-push-btn spring-topo-btn active" data-spring-topo="0">
+                <span class="mat-led"></span>
+                <span class="mat-name">VERSION A: 1961 6G15</span>
+                <span class="mat-spec">Standalone 6K6 Pentode + Xfmr</span>
+              </button>
+              <button class="mat-push-btn spring-topo-btn" data-spring-topo="1">
+                <span class="mat-led"></span>
+                <span class="mat-name">VERSION B: 1963 AB763</span>
+                <span class="mat-spec">Built-In 12AT7 + Speaker Loop</span>
+              </button>
+            </div>
+
+            <div class="knobs-row">
+              <div id="knob-spring-L" class="knob-widget"></div>
+              <div id="knob-spring-dwell" class="knob-widget"></div>
+              <div id="knob-spring-tone" class="knob-widget"></div>
+            </div>
+          </div>
+
+          <!-- BAY III: 12AX7 Recovery Mixer & Sympathetic Acoustic Feedback Loop -->
+          <div class="hw-bay">
+            <div class="bay-header">
+              <span class="bay-title">
+                III. Recovery &amp; Acoustic Loop
+                <button type="button" class="edu-tip-badge edu-amber" data-edu-title="12AX7 Recovery & Combo Speaker Feedback" data-edu-tip="A high-gain 12AX7 dual-triode amplifies the millivolt signal from the receiving transducer back to line level. In Version B (AB763 Combo), mounting the spring tank inside the speaker cabinet induces sympathetic mechanical movement in the springs—lengthening the tail and risking microphonic howl!" data-edu-try="In Version B (AB763), turn up ACOUSTIC FEEDBACK to hear the 12-inch speaker cones excite resonant low-mid spring sustain.">?</button>
+              </span>
+              <span class="bay-subtitle">12AX7 + CABINET COUPLING</span>
+            </div>
+
+            <div class="switch-row">
+              <div class="switch-label-group">
+                <span class="switch-title" id="spring-circuit-mode-title">6G15 Controls: Active</span>
+                <span class="switch-desc" id="spring-circuit-mode-desc">Dwell, Tone &amp; Mixer Unlocked</span>
+              </div>
+              <span id="spring-td-pill" class="host-badge">T_D: 69.8 ms</span>
+            </div>
+
+            <div class="knobs-row">
+              <div id="knob-spring-mix" class="knob-widget"></div>
+              <div id="knob-spring-feedback" class="knob-widget"></div>
+            </div>
+          </div>
+
+          <!-- BAY IV: Wittrick Dispersion Curve & Live Telemetry Scope -->
+          <div class="vu-meter-bay">
+            <div class="bay-header">
+              <span class="bay-title">DISPERSION / CHIRP</span>
+              <span class="bay-subtitle">T_D &amp; F_c</span>
+            </div>
+
+            <div class="spring-physics-card">
+              <div class="phys-row">
+                <span>Wire Radius ($r$):</span>
+                <strong id="phys-val-r">0.25 mm</strong>
+              </div>
+              <div class="phys-row">
+                <span>Helix Radius ($R$):</span>
+                <strong id="phys-val-R">3.00 mm</strong>
+              </div>
+              <div class="phys-row">
+                <span>Wire Length ($L$):</span>
+                <strong id="phys-val-L">2.65 m</strong>
+              </div>
+              <div class="phys-row highlight">
+                <span>Echo Delay ($T_D$):</span>
+                <strong id="phys-val-Td">69.8 ms</strong>
+              </div>
+              <div class="phys-row highlight">
+                <span>Transition ($F_c$):</span>
+                <strong id="phys-val-Fc">1495 Hz</strong>
+              </div>
+              <div class="phys-row">
+                <span>Steel ($\rho, E$):</span>
+                <strong>7800 kg/m³ · 200 GPa</strong>
+              </div>
+            </div>
+
+            <button id="btn-spring-crash-bottom" class="hw-action-btn trig-btn" style="width:100%;">
+              💥 KICK SPRING PAN (BOING!)
             </button>
           </div>
-
-          <div class="knobs-row">
-            <div id="knob-mix" class="knob-widget"></div>
-            <div id="knob-output" class="knob-widget"></div>
-          </div>
         </div>
+      </section>
 
-        <!-- MODULE IV: Dual 1960s Backlit Analog Needle VU + 12-Segment Peak Ladder -->
-        <div class="vu-meter-bay">
-          <div class="bay-header">
-            <span class="bay-title">VU / PEAK METER</span>
-            <span class="bay-subtitle">IN / OUT</span>
-          </div>
+      <aside class="rack-ear spring-tolex-ear">
+        <div class="rack-bolt"></div>
+        <div class="rack-bolt"></div>
+        <div class="rack-handle"></div>
+        <div class="rack-bolt"></div>
+        <div class="rack-bolt"></div>
+      </aside>
+    </main>
 
-          <!-- Warm Backlit Analog Moving-Coil Dial -->
-          <div class="analog-vu-window">
-            <svg class="analog-vu-svg" viewBox="0 0 210 72">
-              <!-- Left Dial (IN) -->
-              <path d="M 18 58 A 42 42 0 0 1 92 58" fill="none" stroke="#291805" stroke-width="1.5" />
-              <path d="M 72 26 A 42 42 0 0 1 92 58" fill="none" stroke="#b91c1c" stroke-width="2.5" />
-              <text x="55" y="46" text-anchor="middle" font-family="monospace" font-size="8" font-weight="bold" fill="#291805">IN VU</text>
-              <line id="vu-needle-in" x1="55" y1="68" x2="55" y2="14" stroke="#1c1917" stroke-width="1.8" transform="rotate(-42 55 68)" />
-              <circle cx="55" cy="68" r="4" fill="#291805" />
-
-              <!-- Divider -->
-              <line x1="105" y1="6" x2="105" y2="66" stroke="rgba(41,24,5,0.25)" stroke-width="1" />
-
-              <!-- Right Dial (OUT) -->
-              <path d="M 118 58 A 42 42 0 0 1 192 58" fill="none" stroke="#291805" stroke-width="1.5" />
-              <path d="M 172 26 A 42 42 0 0 1 192 58" fill="none" stroke="#b91c1c" stroke-width="2.5" />
-              <text x="155" y="46" text-anchor="middle" font-family="monospace" font-size="8" font-weight="bold" fill="#291805">OUT VU</text>
-              <line id="vu-needle-out" x1="155" y1="68" x2="155" y2="14" stroke="#b91c1c" stroke-width="1.8" transform="rotate(-42 155 68)" />
-              <circle cx="155" cy="68" r="4" fill="#291805" />
-            </svg>
-          </div>
-
-          <div class="vu-columns">
-            <div class="vu-channel">
-              <div id="vu-input-ladder" class="vu-ladder"></div>
-              <span class="vu-ch-label">IN</span>
-            </div>
-
-            <div class="vu-scale">
-              <span>CLIP</span>
-              <span>0dB</span>
-              <span>-3</span>
-              <span>-6</span>
-              <span>-12</span>
-              <span>-24</span>
-            </div>
-
-            <div class="vu-channel">
-              <div id="vu-output-ladder" class="vu-ladder"></div>
-              <span class="vu-ch-label">OUT</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Right Mahogany & Hammerite Rack Ear -->
-    <aside class="rack-ear">
-      <div class="rack-bolt"></div>
-      <div class="rack-bolt"></div>
-      <div class="rack-handle"></div>
-      <div class="rack-bolt"></div>
-      <div class="rack-bolt"></div>
-    </aside>
-  </main>
+  </div>
 
   <script type="module" src="app.js"></script>
 </body>

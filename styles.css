@@ -1018,3 +1018,180 @@ html, body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================================
+   MODULE 3 EXTENSION: Electro-Mechanical Reverbs (EMT Plate + Tube Spring Tank)
+   ============================================================================ */
+.em-unit-switcher {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #0d1014;
+  padding: 4px;
+  border-radius: 6px;
+  border: 1px solid #334155;
+}
+
+.em-unit-tab {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.03);
+  color: #94a3b8;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.em-unit-tab:hover {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.em-unit-tab.active {
+  background: linear-gradient(180deg, rgba(255, 157, 46, 0.22) 0%, rgba(217, 119, 6, 0.1) 100%);
+  border-color: var(--amber-lamp);
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(255, 157, 46, 0.25);
+}
+
+.em-tab-era {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: rgba(255, 157, 46, 0.16);
+  color: var(--amber-bright);
+  border: 1px solid rgba(255, 157, 46, 0.35);
+}
+
+.em-unit-tab.active .em-tab-era {
+  background: var(--amber-lamp);
+  color: #140c02;
+}
+
+/* Dual Stage Container */
+.em-dual-stage {
+  width: 100%;
+  max-width: 1440px;
+  display: grid;
+  gap: 16px;
+  align-items: start;
+}
+
+.em-dual-stage.mode-plate {
+  grid-template-columns: 1fr;
+}
+.em-dual-stage.mode-plate #unit-panel-spring {
+  display: none;
+}
+
+.em-dual-stage.mode-spring {
+  grid-template-columns: 1fr;
+}
+.em-dual-stage.mode-spring #unit-panel-plate {
+  display: none;
+}
+
+.em-dual-stage.mode-side-by-side {
+  max-width: 1880px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.em-dual-stage.mode-side-by-side .control-deck {
+  grid-template-columns: 1fr 1fr;
+}
+
+.em-dual-stage.mode-side-by-side .rack-header {
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+/* 1961 Fender 6G15 Blonde/Brownface & 1963 AB763 Blackface Enclosure Styling */
+.spring-enclosure {
+  background:
+    radial-gradient(circle at 25% 20%, rgba(255, 236, 195, 0.06) 0%, transparent 55%),
+    linear-gradient(180deg, #433427 0%, #2d2219 50%, #1f1710 100%);
+  border-color: #7c5e42;
+}
+
+.spring-tolex-ear {
+  background: linear-gradient(90deg, #8c6d46 0%, #b89768 35%, #3d2f22 38%, #4d3b2b 75%, #261d14 100%);
+}
+
+.spring-badge {
+  background: linear-gradient(180deg, #b45309 0%, #78350f 100%);
+  border-color: #fde68a;
+}
+
+.spring-kick-btn {
+  background: linear-gradient(180deg, #d97706 0%, #78350f 100%);
+  border-color: #fbbf24;
+  color: #fffbeb;
+}
+
+.spring-kick-btn:hover {
+  background: linear-gradient(180deg, #f59e0b 0%, #92400e 100%);
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.65);
+}
+
+.spring-math-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.math-formula-box {
+  margin-top: 5px;
+  padding: 7px 10px;
+  border-radius: 5px;
+  background: rgba(9, 12, 16, 0.85);
+  border: 1px solid rgba(255, 183, 77, 0.35);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  color: #fde68a;
+  line-height: 1.5;
+}
+
+.spring-physics-card {
+  background: #111518;
+  border: 1px solid #3b4852;
+  border-radius: 5px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.64rem;
+}
+
+.phys-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #cbd5e1;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+  padding-bottom: 3px;
+}
+
+.phys-row strong {
+  color: #f8fafc;
+}
+
+.phys-row.highlight strong {
+  color: var(--amber-bright);
+}
+
+.knob-widget.knob-locked {
+  opacity: 0.48;
+  pointer-events: none;
+  filter: grayscale(0.6);
+}
+
