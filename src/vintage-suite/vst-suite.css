@@ -1,0 +1,722 @@
+/* ==========================================================================
+   VINTAGE STUDIO TECHNOLOGY INTERACTIVE SUITE (1970s–1990s)
+   Strictly Scoped Stylesheet — Zero Global Tag Selectors
+   All selectors are prefixed with .vst-suite-
+   ========================================================================== */
+
+.vst-suite-root {
+  --vst-bg-rack: #121418;
+  --vst-bg-panel: #1b1f26;
+  --vst-bg-recessed: #0c0e12;
+  --vst-ssl-grey: #2d333b;
+  --vst-ssl-light: #3d4450;
+  --vst-dolby-black: #17191d;
+  --vst-studer-blue: #273746;
+  --vst-amber-vu: #ffb74d;
+  --vst-amber-glow: rgba(255, 183, 77, 0.28);
+  --vst-led-red: #ff3b30;
+  --vst-led-amber: #ffcc00;
+  --vst-led-green: #30d158;
+  --vst-cyan-trace: #00e5ff;
+  --vst-text-main: #e8edf2;
+  --vst-text-muted: #93a1b0;
+  --vst-text-dim: #627080;
+  --vst-border-metal: #343c47;
+  --vst-border-dark: #090b0e;
+  --vst-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --vst-font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100%;
+  background: var(--vst-bg-rack);
+  color: var(--vst-text-main);
+  font-family: var(--vst-font-sans);
+  font-size: 13px;
+  line-height: 1.4;
+  padding: 12px 16px 28px;
+  user-select: none;
+  overflow-x: hidden;
+}
+
+.vst-suite-root *,
+.vst-suite-root *::before,
+.vst-suite-root *::after {
+  box-sizing: border-box;
+}
+
+/* Top Master Rack Header & Signal Generator Bar */
+.vst-suite-master-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: linear-gradient(180deg, #252b34 0%, #181c22 100%);
+  border: 1px solid var(--vst-border-metal);
+  border-radius: 6px;
+  padding: 10px 16px;
+  margin-bottom: 14px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.vst-suite-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vst-suite-badge {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  color: #fff;
+  font-family: var(--vst-font-mono);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  padding: 5px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.35);
+}
+
+.vst-suite-title-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.vst-suite-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--vst-text-main);
+  margin: 0;
+}
+
+.vst-suite-subtitle {
+  font-size: 11px;
+  color: var(--vst-text-muted);
+  font-family: var(--vst-font-mono);
+}
+
+/* Module Tab Switcher */
+.vst-suite-module-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--vst-bg-recessed);
+  padding: 4px;
+  border-radius: 5px;
+  border: 1px solid #262c36;
+}
+
+.vst-suite-tab-btn {
+  appearance: none;
+  background: transparent;
+  color: var(--vst-text-muted);
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 6px 11px;
+  font-family: var(--vst-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.vst-suite-tab-btn:hover {
+  color: var(--vst-text-main);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.vst-suite-tab-btn.vst-suite-active {
+  background: var(--vst-ssl-light);
+  color: #fff;
+  border-color: var(--vst-amber-vu);
+  box-shadow: 0 0 10px rgba(255, 183, 77, 0.2);
+}
+
+/* Master Transport & Test Stem Controls */
+.vst-suite-transport-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.vst-suite-btn {
+  appearance: none;
+  background: linear-gradient(180deg, #353d48 0%, #242a32 100%);
+  color: var(--vst-text-main);
+  border: 1px solid #495362;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-family: var(--vst-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.12s ease;
+}
+
+.vst-suite-btn:hover {
+  background: linear-gradient(180deg, #404956 0%, #2b323b 100%);
+  border-color: #637082;
+}
+
+.vst-suite-btn:active {
+  transform: translateY(1px);
+}
+
+.vst-suite-btn-power.vst-suite-playing {
+  background: linear-gradient(180deg, #1b6e36 0%, #124d25 100%);
+  border-color: var(--vst-led-green);
+  color: #eafff0;
+  box-shadow: 0 0 12px rgba(48, 209, 88, 0.35);
+}
+
+.vst-suite-btn-trigger {
+  background: linear-gradient(180deg, #9a4d12 0%, #6e3509 100%);
+  border-color: var(--vst-amber-vu);
+  color: #fff3e0;
+}
+
+.vst-suite-btn-trigger:hover {
+  background: linear-gradient(180deg, #b85d17 0%, #83400c 100%);
+}
+
+.vst-suite-led-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4a525d;
+  display: inline-block;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.vst-suite-led-dot.vst-suite-on-green {
+  background: var(--vst-led-green);
+  box-shadow: 0 0 8px var(--vst-led-green);
+}
+
+.vst-suite-led-dot.vst-suite-on-red {
+  background: var(--vst-led-red);
+  box-shadow: 0 0 8px var(--vst-led-red);
+}
+
+.vst-suite-led-dot.vst-suite-on-amber {
+  background: var(--vst-led-amber);
+  box-shadow: 0 0 8px var(--vst-led-amber);
+}
+
+.vst-suite-select {
+  appearance: none;
+  background: var(--vst-bg-recessed);
+  color: var(--vst-amber-vu);
+  border: 1px solid #3c4554;
+  border-radius: 4px;
+  padding: 5px 24px 5px 9px;
+  font-family: var(--vst-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, var(--vst-amber-vu) 50%),
+    linear-gradient(135deg, var(--vst-amber-vu) 50%, transparent 50%);
+  background-position: calc(100% - 13px) 50%, calc(100% - 8px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.vst-suite-file-label {
+  cursor: pointer;
+  font-family: var(--vst-font-mono);
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  background: #20262e;
+  border: 1px dashed #4d5868;
+  color: var(--vst-text-muted);
+  transition: all 0.15s ease;
+}
+
+.vst-suite-file-label:hover {
+  color: #fff;
+  border-color: var(--vst-amber-vu);
+}
+
+.vst-suite-file-input {
+  display: none;
+}
+
+/* 19-Inch Studio Hardware Rack Unit Frame */
+.vst-suite-rack-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.vst-suite-rack-unit {
+  position: relative;
+  border-radius: 6px;
+  border: 2px solid #313844;
+  background: var(--vst-bg-panel);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  padding: 14px 28px 16px;
+  overflow: hidden;
+}
+
+/* Authentic 19" Rack Ears & Mounting Screws */
+.vst-suite-rack-ear-left,
+.vst-suite-rack-ear-right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  background: linear-gradient(90deg, #1b1f25 0%, #292f38 50%, #16191e 100%);
+  border-right: 1px solid #0e1014;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  z-index: 2;
+}
+
+.vst-suite-rack-ear-left {
+  left: 0;
+}
+
+.vst-suite-rack-ear-right {
+  right: 0;
+  border-right: none;
+  border-left: 1px solid #0e1014;
+}
+
+.vst-suite-rack-screw {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #6c7684, #282d34 75%);
+  border: 1px solid #121519;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  position: relative;
+}
+
+.vst-suite-rack-screw::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 1px;
+  right: 1px;
+  height: 1.5px;
+  background: #171a1f;
+  transform: rotate(-25deg);
+}
+
+/* Unit Theme Variants */
+.vst-suite-unit-ssl {
+  background: linear-gradient(180deg, #2e343d 0%, #232830 100%);
+  border-color: #454e5c;
+}
+
+.vst-suite-unit-dolby {
+  background: linear-gradient(180deg, #1b1d22 0%, #121418 100%);
+  border-color: #383e49;
+}
+
+.vst-suite-unit-studer {
+  background: linear-gradient(180deg, #23303d 0%, #18212b 100%);
+  border-color: #3d5166;
+}
+
+/* Rack Unit Header */
+.vst-suite-unit-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.vst-suite-unit-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vst-suite-unit-tag {
+  font-family: var(--vst-font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 7px;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.45);
+  color: var(--vst-amber-vu);
+  border: 1px solid rgba(255, 183, 77, 0.35);
+}
+
+.vst-suite-unit-name {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #fff;
+}
+
+.vst-suite-unit-model {
+  font-family: var(--vst-font-mono);
+  font-size: 11px;
+  color: var(--vst-text-muted);
+}
+
+.vst-suite-preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.vst-suite-chip {
+  appearance: none;
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--vst-text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-family: var(--vst-font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.vst-suite-chip:hover,
+.vst-suite-chip.vst-suite-active {
+  background: rgba(255, 183, 77, 0.16);
+  color: var(--vst-amber-vu);
+  border-color: var(--vst-amber-vu);
+}
+
+/* Grid Layouts inside Rack Units */
+.vst-suite-module-grid-3 {
+  display: grid;
+  grid-template-columns: 1.05fr 1.15fr 1.3fr;
+  gap: 12px;
+}
+
+.vst-suite-module-grid-2 {
+  display: grid;
+  grid-template-columns: 1.15fr 1.25fr;
+  gap: 12px;
+}
+
+@media (max-width: 1180px) {
+  .vst-suite-module-grid-3,
+  .vst-suite-module-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sub-Panels (Hardware Faceplate Modules) */
+.vst-suite-subpanel {
+  background: rgba(10, 12, 16, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 5px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vst-suite-subpanel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--vst-font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--vst-amber-vu);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.vst-suite-subpanel-tag {
+  font-size: 10px;
+  color: var(--vst-text-muted);
+  font-weight: 500;
+}
+
+/* Parameter Rows & Sliders */
+.vst-suite-param-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.vst-suite-param-row {
+  display: grid;
+  grid-template-columns: 112px 1fr 64px;
+  align-items: center;
+  gap: 8px;
+}
+
+.vst-suite-param-label {
+  font-size: 11px;
+  color: var(--vst-text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vst-suite-param-val {
+  font-family: var(--vst-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--vst-text-main);
+  text-align: right;
+}
+
+.vst-suite-slider {
+  appearance: none;
+  width: 100%;
+  height: 5px;
+  background: #0d1014;
+  border-radius: 3px;
+  border: 1px solid #2b333e;
+  outline: none;
+  cursor: pointer;
+}
+
+.vst-suite-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 13px;
+  height: 18px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #e2e8f0 0%, #94a3b8 100%);
+  border: 1px solid #0f172a;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+  cursor: grab;
+}
+
+.vst-suite-slider::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  background: var(--vst-amber-vu);
+}
+
+/* Drawmer Traffic-Light Gate Status Box */
+.vst-suite-traffic-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #090b0e;
+  border: 1px solid #262d37;
+  border-radius: 4px;
+  padding: 7px 10px;
+}
+
+.vst-suite-traffic-lights {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vst-suite-lamp-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--vst-font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--vst-text-dim);
+}
+
+.vst-suite-lamp {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #232830;
+  border: 1px solid #101317;
+  transition: background 0.05s ease, box-shadow 0.05s ease;
+}
+
+.vst-suite-lamp.vst-suite-lit-red {
+  background: var(--vst-led-red);
+  box-shadow: 0 0 10px var(--vst-led-red);
+}
+
+.vst-suite-lamp.vst-suite-lit-amber {
+  background: var(--vst-led-amber);
+  box-shadow: 0 0 10px var(--vst-led-amber);
+}
+
+.vst-suite-lamp.vst-suite-lit-green {
+  background: var(--vst-led-green);
+  box-shadow: 0 0 10px var(--vst-led-green);
+}
+
+/* Canvas Scopes & Telemetry Displays */
+.vst-suite-canvas-wrap {
+  position: relative;
+  width: 100%;
+  background: #080a0d;
+  border: 1px solid #2a313c;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.vst-suite-canvas {
+  display: block;
+  width: 100%;
+  height: 170px;
+}
+
+.vst-suite-canvas-tall {
+  height: 205px;
+}
+
+/* Dolby Cat. 22 4-Band Differential Matrix */
+.vst-suite-dolby-bands {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.vst-suite-band-card {
+  background: #0d1015;
+  border: 1px solid #282f3a;
+  border-radius: 4px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.vst-suite-band-card.vst-suite-band-disabled {
+  opacity: 0.45;
+}
+
+.vst-suite-band-title {
+  font-family: var(--vst-font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--vst-amber-vu);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.vst-suite-band-freq {
+  font-family: var(--vst-font-mono);
+  font-size: 9px;
+  color: var(--vst-text-muted);
+}
+
+.vst-suite-meter-track {
+  height: 8px;
+  background: #171c24;
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.vst-suite-meter-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #30d158 0%, #ffb74d 75%, #ff3b30 100%);
+  transition: width 0.05s linear;
+}
+
+/* Adams Smith Zeta-Three 7-Segment SMPTE Timecode Readouts */
+.vst-suite-smpte-display-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr 0.9fr;
+  gap: 10px;
+  background: #07090c;
+  border: 1px solid #2c3744;
+  border-radius: 5px;
+  padding: 10px 12px;
+}
+
+.vst-suite-tc-box {
+  background: #040507;
+  border: 1px solid #1f2630;
+  border-radius: 4px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.vst-suite-tc-label {
+  font-family: var(--vst-font-mono);
+  font-size: 9px;
+  color: var(--vst-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  display: flex;
+  justify-content: space-between;
+}
+
+.vst-suite-tc-digits {
+  font-family: var(--vst-font-mono);
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #ff3b30;
+  text-shadow: 0 0 10px rgba(255, 59, 48, 0.55);
+}
+
+.vst-suite-tc-digits.vst-suite-tc-slave {
+  color: #ffb74d;
+  text-shadow: 0 0 10px rgba(255, 183, 77, 0.45);
+}
+
+.vst-suite-tc-digits.vst-suite-tc-locked {
+  color: #30d158;
+  text-shadow: 0 0 10px rgba(48, 209, 88, 0.5);
+}
+
+/* KPI Pills & Engineering Notes */
+.vst-suite-kpi-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.vst-suite-kpi-pill {
+  background: #0c0f14;
+  border: 1px solid #262e38;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-family: var(--vst-font-mono);
+  font-size: 10px;
+  color: var(--vst-text-muted);
+}
+
+.vst-suite-kpi-pill strong {
+  color: var(--vst-text-main);
+  margin-left: 4px;
+}
+
+.vst-suite-tech-note {
+  background: rgba(255, 183, 77, 0.07);
+  border-left: 3px solid var(--vst-amber-vu);
+  padding: 7px 10px;
+  font-size: 11px;
+  color: var(--vst-text-muted);
+  border-radius: 0 4px 4px 0;
+}
+
+.vst-suite-tech-note strong {
+  color: var(--vst-text-main);
+}

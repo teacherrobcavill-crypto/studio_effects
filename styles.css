@@ -1,0 +1,1020 @@
+/* ============================================================================
+   STAGE 4: Authentic 1960s EMT-140 / Telefunken Studio Hardware Rack UI Styles
+   Features:
+   - German Silver-Sage "Hammerschlag" (Hammer-Tone Enamel) Chassis
+   - Riveted Red & Brushed-Silver "EMT Wilhelm Franz KG" Nameplate
+   - Backlit Warm Glass Mechanical Damping Gondola Scale ("Nachhallzeit")
+   - 1960s Fluted Black Bakelite Skirted Knobs with Spun-Aluminum Caps
+   - Warm Backlit Analog Moving-Coil Needle VU Meters + 12-Segment Peak Ladder
+   - Top Web-App Embed / Copy-Code / Download Toolbar
+   ============================================================================ */
+
+:root {
+  --bg-studio: #0c0d0f;
+  --hammerite-base: #333e42;
+  --hammerite-dark: #232b2e;
+  --hammerite-light: #445257;
+  --bay-surface: #262f33;
+  --bay-border: #4a585e;
+  --bezel-iron: #15191c;
+  --cream-dial: #f5ebd6;
+  --cream-glow: #ffdfa8;
+  --amber-lamp: #ff9d2e;
+  --amber-bright: #ffd080;
+  --emt-red: #b91c1c;
+  --bakelite-black: #141619;
+  --led-green: #22c55e;
+  --led-amber: #f59e0b;
+  --led-red: #ef4444;
+  --text-silk: #f1f5f9;
+  --text-engraved: #cbd5e1;
+  --text-muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-studio);
+  background-image:
+    radial-gradient(circle at 50% 8%, rgba(74, 58, 40, 0.28) 0%, transparent 65%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.01) 0px, rgba(255, 255, 255, 0.01) 1px, transparent 1px, transparent 4px);
+  color: var(--text-silk);
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 16px 28px;
+  gap: 12px;
+  overflow-x: hidden;
+}
+
+/* ----------------------------------------------------------------------------
+   Web App Export / Copy-Code Host Bar
+   ---------------------------------------------------------------------------- */
+.webapp-host-bar {
+  width: 100%;
+  max-width: 1400px;
+  background: linear-gradient(180deg, #1c2127 0%, #12161a 100%);
+  border: 1px solid #38424d;
+  border-radius: 6px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+}
+
+.host-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: #cbd5e1;
+}
+
+.host-badge {
+  background: #0f172a;
+  border: 1px solid #475569;
+  color: var(--amber-bright);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+}
+
+.host-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.host-btn {
+  cursor: pointer;
+  background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
+  border: 1px solid #64748b;
+  color: #f8fafc;
+  padding: 6px 13px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  transition: all 0.15s ease;
+}
+
+.host-btn:hover {
+  background: linear-gradient(180deg, #475569 0%, #334155 100%);
+  border-color: #94a3b8;
+}
+
+.host-btn.primary {
+  background: linear-gradient(180deg, #d97706 0%, #92400e 100%);
+  border-color: #fbbf24;
+  color: #fffbeb;
+  box-shadow: 0 0 12px rgba(217, 119, 6, 0.35);
+}
+
+.host-btn.primary:hover {
+  background: linear-gradient(180deg, #f59e0b 0%, #b45309 100%);
+}
+
+/* ----------------------------------------------------------------------------
+   1960s EMT-140 Hammerite Enamel Rack Enclosure & Mahogany Studio Side Trim
+   ---------------------------------------------------------------------------- */
+.rack-enclosure {
+  position: relative;
+  width: 100%;
+  max-width: 1400px;
+  /* Authentic 1960s German Silver-Sage Hammerschlag (Hammer-Tone) Enamel */
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+    repeating-radial-gradient(circle at 15% 35%, rgba(0, 0, 0, 0.12) 0px, rgba(255, 255, 255, 0.04) 2px, rgba(0, 0, 0, 0.08) 4px),
+    linear-gradient(180deg, #3d494e 0%, #2d373b 48%, #232b2e 100%);
+  border: 3px solid #526066;
+  border-radius: 8px;
+  box-shadow:
+    0 30px 75px rgba(0, 0, 0, 0.9),
+    inset 0 2px 1px rgba(255, 255, 255, 0.22),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.8);
+  display: grid;
+  grid-template-columns: 46px 1fr 46px;
+  overflow: hidden;
+}
+
+/* Rack Ears with Chrome Handles & Slotted Machine Screws */
+.rack-ear {
+  background:
+    linear-gradient(90deg, #2b180d 0%, #462816 30%, #242c30 32%, #313c40 70%, #1c2225 100%);
+  border-right: 2px solid #161b1d;
+  border-left: 2px solid #161b1d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+}
+
+.rack-bolt {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #e2e8f0, #64748b 68%, #1e293b 100%);
+  border: 1px solid #0f172a;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.85), inset 0 1px 1px rgba(255,255,255,0.6);
+  position: relative;
+}
+
+/* Classic 1960s Slotted Screw Head */
+.rack-bolt::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 3px;
+  right: 3px;
+  height: 2.5px;
+  background: #1e293b;
+  transform: rotate(-28deg);
+  box-shadow: inset 0 1px 1px rgba(0,0,0,0.9);
+}
+
+.rack-handle {
+  width: 14px;
+  height: 58%;
+  border-radius: 7px;
+  background: linear-gradient(90deg, #94a3b8 0%, #f8fafc 45%, #475569 100%);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.8), inset 0 2px 3px rgba(255,255,255,0.8);
+  border: 1px solid #1e293b;
+}
+
+/* Main Faceplate Layout */
+.rack-faceplate {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 20px 20px;
+}
+
+/* ----------------------------------------------------------------------------
+   Top Header: 1960s Riveted EMT Nameplate, Gondola Mechanical Dial & Mains Switch
+   ---------------------------------------------------------------------------- */
+.rack-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 18px;
+  padding-bottom: 12px;
+  border-bottom: 2px groove rgba(255, 255, 255, 0.14);
+}
+
+.brand-plate {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Authentic 1960s Red & Silver Riveted EMT Badge */
+.emt-riveted-badge {
+  position: relative;
+  background: linear-gradient(180deg, #b91c1c 0%, #7f1d1d 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 6px 14px;
+  box-shadow:
+    0 3px 8px rgba(0,0,0,0.75),
+    inset 0 1px 1px rgba(255,255,255,0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.emt-riveted-badge .emt-logo-main {
+  font-family: 'Arial Black', 'Inter', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  color: #ffffff;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+
+.emt-riveted-badge .emt-logo-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.54rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #fde047;
+  margin-top: 2px;
+}
+
+.brand-titles h1 {
+  font-size: 0.98rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: #f8fafc;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.85);
+}
+
+.brand-titles p {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: #cbd5e1;
+  margin-top: 3px;
+}
+
+/* Iconic 1960s Backlit Mechanical Damper Gondola Dial ("NACHHALLZEIT") */
+.gondola-dial-housing {
+  background: #121619;
+  border: 2px solid #526068;
+  border-radius: 6px;
+  padding: 6px 14px;
+  box-shadow:
+    inset 0 3px 10px rgba(0,0,0,0.95),
+    0 1px 0 rgba(255,255,255,0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gondola-top-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #cbd5e1;
+}
+
+.gondola-glass-window {
+  position: relative;
+  height: 28px;
+  background:
+    radial-gradient(ellipse at 50% 50%, #fff3d1 0%, #f3d493 65%, #c8963e 100%);
+  border: 1px solid #3b2810;
+  border-radius: 3px;
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.55),
+    0 0 12px rgba(255, 190, 85, 0.25);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.gondola-scale-marks {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #291805;
+  z-index: 2;
+}
+
+.gondola-needle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 35%;
+  width: 3px;
+  background: #dc2626;
+  box-shadow: 0 0 5px rgba(220, 38, 38, 0.8);
+  transition: left 0.08s ease-out;
+  z-index: 3;
+}
+
+.gondola-needle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -4px;
+  border-left: 5.5px solid transparent;
+  border-right: 5.5px solid transparent;
+  border-top: 7px solid #b91c1c;
+}
+
+/* 1960s Mains Amber Pilot Lamp & Toggle Switch */
+.power-cluster {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #1c2226;
+  border: 1px solid #475569;
+  padding: 6px 12px;
+  border-radius: 5px;
+}
+
+.pilot-jewel {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #5c1904, #290802);
+  border: 2px solid #94a3b8;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.9);
+  transition: all 0.25s ease;
+}
+
+.pilot-jewel.active {
+  background: radial-gradient(circle at 40% 40%, #fff7ed 0%, #fb923c 45%, #dc2626 100%);
+  box-shadow:
+    0 0 14px #f97316,
+    0 0 28px rgba(239, 68, 68, 0.75),
+    inset 0 1px 2px #ffffff;
+}
+
+.power-rocker {
+  cursor: pointer;
+  background: linear-gradient(180deg, #7f1d1d 0%, #450a0a 100%);
+  border: 2px solid #94a3b8;
+  border-radius: 4px;
+  padding: 6px 14px;
+  color: #fecaca;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.75), inset 0 1px 1px rgba(255,255,255,0.25);
+  transition: all 0.2s ease;
+}
+
+.power-rocker.active {
+  background: linear-gradient(180deg, #dc2626 0%, #991b1b 100%);
+  color: #ffffff;
+  border-color: #fde047;
+  box-shadow:
+    0 0 16px rgba(220, 38, 38, 0.65),
+    inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+/* ----------------------------------------------------------------------------
+   3D Cutaway Mechanical Plate Crate Inspection Window
+   ---------------------------------------------------------------------------- */
+.viewport-bezel {
+  position: relative;
+  width: 100%;
+  height: 335px;
+  background: var(--bezel-iron);
+  border: 3px solid #1e2428;
+  outline: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  box-shadow:
+    inset 0 8px 24px rgba(0, 0, 0, 0.95),
+    0 2px 4px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+#plate-canvas-container {
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+#plate-canvas-container:active {
+  cursor: grabbing;
+}
+
+.viewport-hud-top {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+}
+
+.hud-pill {
+  background: rgba(15, 19, 22, 0.84);
+  border: 1px solid rgba(203, 213, 225, 0.28);
+  backdrop-filter: blur(4px);
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: #e2e8f0;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.hud-btn {
+  background: #334155;
+  color: #f8fafc;
+  border: 1px solid #64748b;
+  border-radius: 3px;
+  padding: 2px 8px;
+  font-family: inherit;
+  font-size: 0.66rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.hud-btn:hover {
+  background: #475569;
+}
+
+.viewport-hud-bottom {
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66rem;
+  color: #cbd5e1;
+  text-shadow: 0 1px 2px #000;
+}
+
+/* ----------------------------------------------------------------------------
+   Lower 1960s Telefunken/EMT Control Modules + Dual Backlit VU Meters
+   ---------------------------------------------------------------------------- */
+.control-deck {
+  display: grid;
+  grid-template-columns: 1.15fr 1.5fr 1.05fr 235px;
+  gap: 14px;
+  align-items: stretch;
+}
+
+.hw-bay {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(0,0,0,0.28) 100%),
+    var(--bay-surface);
+  border: 2px solid var(--bay-border);
+  border-radius: 6px;
+  padding: 12px 14px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    0 5px 12px rgba(0,0,0,0.55);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.bay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  padding-bottom: 6px;
+}
+
+.bay-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: #f8fafc;
+}
+
+.bay-subtitle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  color: #cbd5e1;
+}
+
+/* Source & Tape/Stem Transport Controls */
+.source-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.source-mode-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.hw-tab-btn {
+  background: #171c1f;
+  border: 1px solid #475569;
+  color: #cbd5e1;
+  padding: 6px 4px;
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.hw-tab-btn.active {
+  background: linear-gradient(180deg, #f5ebd6 0%, #d8c398 100%);
+  color: #1c1917;
+  border-color: #fde047;
+  box-shadow: 0 0 10px rgba(255, 215, 128, 0.45);
+}
+
+.source-sub-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.hw-select {
+  flex: 1;
+  background: #121619;
+  color: #f5ebd6;
+  border: 1px solid #526068;
+  border-radius: 3px;
+  padding: 5px 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.69rem;
+  outline: none;
+}
+
+.hw-action-btn {
+  background: linear-gradient(180deg, #3b464c 0%, #22292d 100%);
+  color: #f8fafc;
+  border: 1px solid #72828a;
+  border-radius: 3px;
+  padding: 6px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.hw-action-btn.trig-btn {
+  background: linear-gradient(180deg, #d97706 0%, #92400e 100%);
+  border-color: #fbbf24;
+  color: #fffbeb;
+}
+
+.hw-action-btn.loop-btn.playing {
+  background: linear-gradient(180deg, #16a34a 0%, #14532d 100%);
+  border-color: #4ade80;
+  color: #f0fdf4;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.45);
+}
+
+/* 1960s Interlocking Ivory/Bakelite Radio Push-Buttons for Plate Metallurgy */
+.material-bank {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.mat-push-btn {
+  background: linear-gradient(180deg, #2d363a 0%, #191f22 100%);
+  border: 1px solid #526068;
+  border-bottom: 4px solid #0e1214;
+  border-radius: 4px;
+  padding: 7px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.mat-push-btn .mat-led {
+  width: 20px;
+  height: 5px;
+  border-radius: 2px;
+  background: #292524;
+  box-shadow: inset 0 1px 1px rgba(0,0,0,0.8);
+}
+
+.mat-push-btn .mat-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #cbd5e1;
+}
+
+.mat-push-btn .mat-spec {
+  font-size: 0.57rem;
+  color: #94a3b8;
+}
+
+.mat-push-btn.active {
+  transform: translateY(2px);
+  border-bottom-width: 1px;
+  background: linear-gradient(180deg, #f5ebd6 0%, #d4be92 100%);
+  border-color: #fbbf24;
+}
+
+.mat-push-btn.active .mat-led {
+  background: #dc2626;
+  box-shadow: 0 0 8px #ef4444;
+}
+
+.mat-push-btn.active .mat-name {
+  color: #1c1917;
+}
+
+.mat-push-btn.active .mat-spec {
+  color: #44403c;
+  font-weight: 700;
+}
+
+/* ----------------------------------------------------------------------------
+   1960s Fluted Black Phenolic Bakelite Knobs with Spun-Aluminum Caps
+   ---------------------------------------------------------------------------- */
+.knobs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.knob-widget {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  width: 96px;
+}
+
+.knob-svg-wrap {
+  width: 80px;
+  height: 80px;
+  cursor: ns-resize;
+  position: relative;
+}
+
+.knob-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.knob-track {
+  fill: none;
+  stroke: #161b1e;
+  stroke-width: 4.5;
+  stroke-linecap: round;
+}
+
+.knob-arc {
+  fill: none;
+  stroke: var(--amber-lamp);
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgba(255, 157, 46, 0.55));
+}
+
+.knob-skirt {
+  fill: #121417;
+  stroke: #475569;
+  stroke-width: 1.4;
+}
+
+.knob-cap-outer {
+  fill: url(#bakeliteGrad);
+  stroke: #090b0d;
+  stroke-width: 1.5;
+}
+
+.knob-cap-silver {
+  fill: url(#spunSilverGrad);
+  stroke: #334155;
+  stroke-width: 0.8;
+}
+
+.knob-pointer {
+  stroke: #ffffff;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+}
+
+.knob-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #f1f5f9;
+  margin-top: 3px;
+  text-align: center;
+}
+
+.knob-readout {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--cream-glow);
+  background: #121619;
+  border: 1px solid #475569;
+  border-radius: 3px;
+  padding: 1px 6px;
+  margin-top: 3px;
+  min-width: 64px;
+  text-align: center;
+}
+
+.knob-tooltip {
+  position: absolute;
+  top: -26px;
+  left: 50%;
+  transform: translateX(-50%) scale(0.92);
+  background: #121619;
+  border: 1px solid var(--amber-lamp);
+  color: var(--amber-bright);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 3px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s, transform 0.12s;
+  z-index: 20;
+}
+
+.knob-widget.dragging .knob-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}
+
+/* 80 Hz Low-Cut Toggle Switch */
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #192024;
+  border: 1px solid #475569;
+  border-radius: 4px;
+  padding: 6px 10px;
+}
+
+.switch-label-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.switch-title {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f1f5f9;
+}
+
+.switch-desc {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.59rem;
+  color: #94a3b8;
+}
+
+.toggle-switch {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: #0f1316;
+  border: 1px solid #64748b;
+  border-radius: 14px;
+  padding: 4px 9px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66rem;
+  font-weight: 800;
+  color: #94a3b8;
+}
+
+.toggle-switch .sw-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #475569;
+}
+
+.toggle-switch.active {
+  border-color: var(--amber-lamp);
+  color: var(--amber-bright);
+}
+
+.toggle-switch.active .sw-dot {
+  background: var(--amber-bright);
+  box-shadow: 0 0 8px var(--amber-lamp);
+}
+
+/* ----------------------------------------------------------------------------
+   Dual 1960s Backlit Analog Needle VU Meter + 12-Segment Peak Ladder Bay
+   ---------------------------------------------------------------------------- */
+.vu-meter-bay {
+  background: #181e22;
+  border: 2px solid var(--bay-border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.85);
+}
+
+/* Warm Backlit Analog Moving-Coil VU Dial */
+.analog-vu-window {
+  background:
+    radial-gradient(circle at 50% 85%, #fff6db 0%, #f1d393 65%, #c7943e 100%);
+  border: 2px solid #0f1316;
+  border-radius: 4px;
+  height: 76px;
+  position: relative;
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.55),
+    0 0 14px rgba(255, 196, 100, 0.22);
+  overflow: hidden;
+}
+
+.analog-vu-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.vu-columns {
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+  flex: 1;
+  gap: 6px;
+}
+
+.vu-channel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.vu-ladder {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2.5px;
+  background: #0b0e10;
+  padding: 5px;
+  border-radius: 4px;
+  border: 1px solid #2b353b;
+}
+
+.vu-seg {
+  width: 22px;
+  height: 5.5px;
+  border-radius: 1px;
+  background: #1c2226;
+}
+
+.vu-seg.green.on {
+  background: var(--led-green);
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.8);
+}
+
+.vu-seg.amber.on {
+  background: var(--led-amber);
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.85);
+}
+
+.vu-seg.red.on {
+  background: var(--led-red);
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.95);
+}
+
+.vu-scale {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.54rem;
+  color: #cbd5e1;
+  padding: 3px 0;
+  text-align: center;
+}
+
+.vu-ch-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: #e2e8f0;
+}
+
+/* Drag-and-Drop Overlay */
+.drop-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 11, 14, 0.88);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.drop-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.drop-box {
+  border: 2px dashed var(--amber-lamp);
+  border-radius: 10px;
+  padding: 40px 60px;
+  text-align: center;
+  background: rgba(23, 26, 32, 0.94);
+}
+
+.drop-box h2 {
+  font-size: 1.25rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber-bright);
+  margin-bottom: 8px;
+}
+
+.drop-box p {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  color: #cbd5e1;
+}
+
+@media (max-width: 1180px) {
+  .rack-header {
+    grid-template-columns: 1fr;
+  }
+  .control-deck {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .rack-enclosure {
+    grid-template-columns: 20px 1fr 20px;
+  }
+  .control-deck {
+    grid-template-columns: 1fr;
+  }
+}
