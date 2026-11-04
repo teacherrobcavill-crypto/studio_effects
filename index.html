@@ -388,14 +388,14 @@
         <span class="hub-badge">STUDIO ACOUSTICS LAB</span>
         <div class="hub-brand-titles">
           <div class="hub-brand-main">
-            <span>4-Era Interactive Audio Engineering Suite</span>
-            <button type="button" class="edu-tip-badge" data-edu-title="How to Use This Interactive Learning Suite" data-edu-tip="Choose any of the 4 historical studio & acoustic simulators across the top bar. Throughout every simulator, click or hover over any '?' badge for pop-up physics & engineering breakdowns, or click any '▼ Unfold' bar to reveal deep-dive notes without cluttering the hardware controls. Switching tabs automatically pauses audio in the previous simulator so audio never overlaps!" data-edu-try="Click the foldable 'Interactive Learning Guide' bar right below the header to view 3 guided listening experiments for the active simulator.">?</button>
+            <span>5-Era Interactive Audio Engineering Suite</span>
+            <button type="button" class="edu-tip-badge" data-edu-title="How to Use This Interactive Learning Suite" data-edu-tip="Choose any of the 5 historical studio & acoustic simulators across the top bar. Throughout every simulator, click or hover over any '?' badge for pop-up physics & engineering breakdowns, or click any '▼ Unfold' bar to reveal deep-dive notes without cluttering the hardware controls. Switching tabs automatically pauses audio in the previous simulator so audio never overlaps!" data-edu-try="Click the foldable 'Interactive Learning Guide' bar right below the header to view 3 guided listening experiments for the active simulator.">?</button>
           </div>
           <div class="hub-brand-sub">Click any <strong>?</strong> badge for pop-up tips • Unfold <strong>▼</strong> drawers for deep notes</div>
         </div>
       </div>
 
-      <!-- 4 Clear Simulator Selector Tabs -->
+      <!-- 5 Clear Simulator Selector Tabs -->
       <div class="app-tabs" id="tab-bar" role="tablist" aria-label="Simulator Selection">
         <button class="app-tab active" data-app-id="app-3d-acoustics" data-url="/app-3d-acoustics.html" role="tab" aria-selected="true">
           <span class="era">MODULE 1 · 3D DSP</span>
@@ -429,6 +429,15 @@
           <div class="tab-text-col">
             <span class="tab-name">Gated Reverb · Dolby · SMPTE</span>
             <span class="tab-desc">SSL/Drawmer Gate · Dolby Air Trick · 24-Trk Sync</span>
+          </div>
+          <span class="tab-audio-dot" title="Audio Status"></span>
+        </button>
+
+        <button class="app-tab" data-app-id="app-lexicon-224" data-url="/app-lexicon-224.html" role="tab" aria-selected="false">
+          <span class="era">MODULE 5 · 1978</span>
+          <div class="tab-text-col">
+            <span class="tab-name">Lexicon 224 Digital Reverb</span>
+            <span class="tab-desc">Wandering Delays · FDN-4 Matrix · Hermite DSP</span>
           </div>
           <span class="tab-audio-dot" title="Audio Status"></span>
         </button>
@@ -582,6 +591,26 @@
             body: 'In Rack 03, click ⏪ TRIGGER SLAVE CHASE (-12 FRAMES) while audio plays to hear Slave Machine B pitch-slew and lock back to Master Machine A.'
           }
         ]
+      },
+      'app-lexicon-224': {
+        tag: 'MODULE 5 · 1978 DIGITAL ALGORITHMIC REVERB',
+        headline: '1978 Lexicon 224 Digital Reverberator — David Griesinger Wandering Delays, 4-Stage Input Diffusers & Unitary Householder Matrix',
+        overview:
+          '<strong>What You Are Learning:</strong> Released in 1978, the Lexicon 224 solved the metallic ringing problem of Schroeder comb filters by continually moving the feedback delay lines using wandering quadrature LFOs. Discover how 4 cascaded all-pass diffusers, 4-channel circulating FDN tanks, one-pole HF damping filters, and 4-point Hermite cubic fractional delay interpolation generate the iconic lush, chorused space heard on classic Vangelis and 80s records.',
+        experiments: [
+          {
+            title: '✨ 1. The "Lexicon Sound": Mod Depth Check',
+            body: 'Click PLAY AUDIO on the 1980s Drum Pattern. Crank MOD DEPTH to 4.5ms to hear the lush wandering chorus bloom, then drop it to 0.0ms to hear how metallic and boxy fixed delay lines sound without modulation!'
+          },
+          {
+            title: '💥 2. Dirac Impulse Acoustic Response',
+            body: 'Click 💥 DIRAC IMPULSE with the Reverb Tail visualizer open to watch a single 1-sample click transform into a smooth, dense, exponentially decaying diffuse soundfield.'
+          },
+          {
+            title: '🌫️ 3. Infinite Bloom Space',
+            body: 'Select Program 05 (INFINITE BLOOM) with 14.5s Decay and 6.0 kHz Damping on the Breathy Vocal Stem to hear an evolving ambient synthesizer soundscape.'
+          }
+        ]
       }
     };
 
@@ -603,7 +632,8 @@
       { id: 'app-3d-acoustics', url: '/app-3d-acoustics.html', title: '3D Acoustic Room Simulator' },
       { id: 'app-1950s-studio', url: '/app-1950s-studio.html', title: '1950s Recording Studio & Lathe' },
       { id: 'app-emt140-plate', url: '/app-emt140-plate.html', title: '1960s EMT-140 Plate Reverb' },
-      { id: 'app-vintage-suite', url: '/app-vintage-suite.html', title: '1970s–90s Vintage Studio Suite' }
+      { id: 'app-vintage-suite', url: '/app-vintage-suite.html', title: '1970s–90s Vintage Studio Suite' },
+      { id: 'app-lexicon-224', url: '/app-lexicon-224.html', title: '1978 Lexicon 224 Digital Reverb' }
     ];
 
     let activeAppId = 'app-3d-acoustics';
@@ -642,6 +672,7 @@
             if (id === 'app-1950s-studio') return '1950s Studio';
             if (id === 'app-emt140-plate') return 'EMT-140';
             if (id === 'app-vintage-suite') return '70s–90s Rack';
+            if (id === 'app-lexicon-224') return 'Lexicon 224';
             return id;
           })
           .join(' + ');

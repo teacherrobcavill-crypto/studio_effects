@@ -12,7 +12,8 @@ export default defineConfig({
         studio1950s: resolve(__dirname, 'app-1950s-studio.html'),
         emt140: resolve(__dirname, 'app-emt140-plate.html'),
         plateReverb: resolve(__dirname, 'plate-reverb.html'),
-        vintageSuite: resolve(__dirname, 'app-vintage-suite.html')
+        vintageSuite: resolve(__dirname, 'app-vintage-suite.html'),
+        lexicon224: resolve(__dirname, 'app-lexicon-224.html')
       }
     }
   }

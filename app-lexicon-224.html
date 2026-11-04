@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1978 Lexicon 224 Digital Reverberator — Algorithmic Reverb Simulator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      background: #0f1015;
+      color: #f1f5f9;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow-x: hidden;
+    }
+    .lexicon-page-wrapper {
+      padding: 16px 12px 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <div class="lexicon-page-wrapper">
+    <div id="lexicon-mount" style="width: 100%; max-width: 960px;"></div>
+  </div>
+  <script type="module" src="/src/main-lexicon-224.js"></script>
+</body>
+</html>
