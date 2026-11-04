@@ -413,14 +413,45 @@
 
         <!-- Lower Spring Reverb Control Deck (4 Hardware Bays) -->
         <div class="control-deck">
-          <!-- BAY I: Historical Era Tank & Input Source Exciter -->
+          <!-- BAY I: Tube Driver & Signal Source (Identical sources as Plate) -->
           <div class="hw-bay">
             <div class="bay-header">
               <span class="bay-title">
-                I. Historical Era &amp; Signal Source
-                <button type="button" class="edu-tip-badge edu-amber" data-edu-title="1930s Bell Labs, 1939 Hammond Oil & 1960 Type 4" data-edu-tip="Compare the 3 historical mechanical delay eras: 1960 Accutronics Type 4 (dual dry counter-wound springs with lively chirp), 1939 Hammond Organ Tank (springs submerged in oil-filled tubes for dark viscous damping), and 1930s Bell Labs (single long telephone delay spring)." data-edu-try="Switch between 1960 TYPE 4 and 1939 HAMMOND OIL while playing the '1962 Surf Guitar' stem!">?</button>
+                I. Tube Driver &amp; Signal Source
+                <button type="button" class="edu-tip-badge edu-amber" data-edu-title="6K6 Pentode Driver & Helical Signal Sources" data-edu-tip="Select from impulse transients, procedural 1960s drum groove, 1962 staccato surf guitar riff, archtop guitar, vocal formant synth, live microphone, or drag-and-drop audio files! Adjust driver input gain and pre-delay." data-edu-try="Select '1962 Staccato Surf Guitar Riff' and click PLAY LOOP to hear how pick attacks drip down the springs!">?</button>
               </span>
-              <span class="bay-subtitle">1930s–1960 EVOLUTION</span>
+              <span class="bay-subtitle">INPUT &amp; SOURCE SELECT</span>
+            </div>
+
+            <div class="source-toolbar">
+              <div class="source-mode-tabs">
+                <button class="hw-tab-btn active" data-spring-source="impulse">IMPULSE</button>
+                <button class="hw-tab-btn" data-spring-source="stem">TAPE STEMS</button>
+                <button class="hw-tab-btn" data-spring-source="mic">LIVE MIC</button>
+                <button class="hw-tab-btn" data-spring-source="file">DROP FILE</button>
+              </div>
+
+              <div class="source-sub-row">
+                <select id="spring-source-sub-select" class="hw-select"></select>
+                <button id="btn-spring-trigger-impulse" class="hw-action-btn trig-btn">⚡ STRIKE / KICK</button>
+                <button id="btn-spring-loop-toggle" class="hw-action-btn loop-btn">PLAY LOOP</button>
+              </div>
+            </div>
+
+            <div class="knobs-row">
+              <div id="knob-spring-input-gain" class="knob-widget"></div>
+              <div id="knob-spring-predelay" class="knob-widget"></div>
+            </div>
+          </div>
+
+          <!-- BAY II: Historical Era Tank & Helical Geometry -->
+          <div class="hw-bay">
+            <div class="bay-header">
+              <span class="bay-title">
+                II. Historical Era &amp; Helical Wire
+                <button type="button" class="edu-tip-badge edu-amber" data-edu-title="1930s Bell Labs, 1939 Hammond Oil & 1960 Type 4" data-edu-tip="Compare 1960 Accutronics Type 4 (dry dual-spring), 1939 Hammond (oil-filled damping tube), and 1930s Bell Labs (single line). Knobs adjust wire radius (r), helix radius (R), and uncurled wire length (L) for Wittrick helical wave equations!" data-edu-try="Switch between 1960 TYPE 4 and 1939 HAMMOND OIL while playing a drum or guitar loop.">?</button>
+              </span>
+              <span class="bay-subtitle">ERA &amp; HELICAL CONSTANTS</span>
             </div>
 
             <div class="material-bank" style="grid-template-columns: repeat(3, 1fr);">
@@ -441,23 +472,19 @@
               </button>
             </div>
 
-            <div class="source-sub-row" style="margin-top:4px;">
-              <button id="btn-spring-surf" class="hw-action-btn trig-btn" style="flex:1;">🎸 PLAY 1962 SURF GUITAR</button>
-              <button id="btn-spring-rimshot" class="hw-action-btn" style="flex:1;">🥁 RIMSHOT DRIP TEST</button>
-            </div>
-
             <div class="knobs-row">
               <div id="knob-spring-r" class="knob-widget"></div>
               <div id="knob-spring-R" class="knob-widget"></div>
+              <div id="knob-spring-L" class="knob-widget"></div>
             </div>
           </div>
 
-          <!-- BAY II: Helical Spring Geometry (r, R, L) & Wittrick Dispersion -->
+          <!-- BAY III: Tube Driver Topology & Recovery Controls -->
           <div class="hw-bay">
             <div class="bay-header">
               <span class="bay-title">
-                II. Helical Geometry &amp; Topology
-                <button type="button" class="edu-tip-badge edu-amber" data-edu-title="Version A (6G15 Standalone) vs. Version B (AB763 Built-in)" data-edu-tip="Version A (1961 Fender 6G15) uses a single-ended 6K6 power pentode driving an 8-ohm step-down transformer ahead of the amp, with full Dwell, Tone, and Mixer controls. Version B (1963 AB763 Twin Reverb) uses a parallel 12AT7 dual-triode with fixed Dwell/Tone, a single Reverb knob, and sympathetic speaker-to-spring acoustic feedback inside the combo cabinet!" data-edu-try="Toggle between VERSION A (6G15) and VERSION B (AB763) and watch the 3D speaker cones and Dwell/Tone lock respond.">?</button>
+                III. Tube Driver &amp; Recovery
+                <button type="button" class="edu-tip-badge edu-amber" data-edu-title="Version A (6G15 Standalone) vs Version B (AB763 Built-In)" data-edu-tip="Version A (1961 Fender 6G15) uses a 6K6 power pentode with Dwell, Tone & Mixer. Version B (1963 AB763 Twin Reverb) uses a parallel 12AT7 dual-triode with single Reverb return and sympathetic speaker-to-spring acoustic feedback!" data-edu-try="Switch to Version B (AB763) and raise SPEAKER LOOP to hear 12-inch speaker cabinet resonance!">?</button>
               </span>
               <span class="bay-subtitle">6G15 6K6 vs. AB763 12AT7</span>
             </div>
@@ -466,7 +493,7 @@
               <button class="mat-push-btn spring-topo-btn active" data-spring-topo="0">
                 <span class="mat-led"></span>
                 <span class="mat-name">VERSION A: 1961 6G15</span>
-                <span class="mat-spec">Standalone 6K6 Pentode + Xfmr</span>
+                <span class="mat-spec">Standalone 6K6 + Xfmr</span>
               </button>
               <button class="mat-push-btn spring-topo-btn" data-spring-topo="1">
                 <span class="mat-led"></span>
@@ -476,31 +503,8 @@
             </div>
 
             <div class="knobs-row">
-              <div id="knob-spring-L" class="knob-widget"></div>
               <div id="knob-spring-dwell" class="knob-widget"></div>
               <div id="knob-spring-tone" class="knob-widget"></div>
-            </div>
-          </div>
-
-          <!-- BAY III: 12AX7 Recovery Mixer & Sympathetic Acoustic Feedback Loop -->
-          <div class="hw-bay">
-            <div class="bay-header">
-              <span class="bay-title">
-                III. Recovery &amp; Acoustic Loop
-                <button type="button" class="edu-tip-badge edu-amber" data-edu-title="12AX7 Recovery & Combo Speaker Feedback" data-edu-tip="A high-gain 12AX7 dual-triode amplifies the millivolt signal from the receiving transducer back to line level. In Version B (AB763 Combo), mounting the spring tank inside the speaker cabinet induces sympathetic mechanical movement in the springs—lengthening the tail and risking microphonic howl!" data-edu-try="In Version B (AB763), turn up ACOUSTIC FEEDBACK to hear the 12-inch speaker cones excite resonant low-mid spring sustain.">?</button>
-              </span>
-              <span class="bay-subtitle">12AX7 + CABINET COUPLING</span>
-            </div>
-
-            <div class="switch-row">
-              <div class="switch-label-group">
-                <span class="switch-title" id="spring-circuit-mode-title">6G15 Controls: Active</span>
-                <span class="switch-desc" id="spring-circuit-mode-desc">Dwell, Tone &amp; Mixer Unlocked</span>
-              </div>
-              <span id="spring-td-pill" class="host-badge">T_D: 69.8 ms</span>
-            </div>
-
-            <div class="knobs-row">
               <div id="knob-spring-mix" class="knob-widget"></div>
               <div id="knob-spring-feedback" class="knob-widget"></div>
             </div>
@@ -510,38 +514,34 @@
           <div class="vu-meter-bay">
             <div class="bay-header">
               <span class="bay-title">DISPERSION / CHIRP</span>
-              <span class="bay-subtitle">T_D &amp; F_c</span>
+              <span class="bay-subtitle">T_D &amp; F_c SCOPE</span>
             </div>
 
             <div class="spring-physics-card">
               <div class="phys-row">
-                <span>Wire Radius ($r$):</span>
+                <span>Wire Radius (r):</span>
                 <strong id="phys-val-r">0.25 mm</strong>
               </div>
               <div class="phys-row">
-                <span>Helix Radius ($R$):</span>
+                <span>Helix Radius (R):</span>
                 <strong id="phys-val-R">3.00 mm</strong>
               </div>
               <div class="phys-row">
-                <span>Wire Length ($L$):</span>
+                <span>Wire Length (L):</span>
                 <strong id="phys-val-L">2.65 m</strong>
               </div>
               <div class="phys-row highlight">
-                <span>Echo Delay ($T_D$):</span>
+                <span>Echo Delay (T_D):</span>
                 <strong id="phys-val-Td">69.8 ms</strong>
               </div>
               <div class="phys-row highlight">
-                <span>Transition ($F_c$):</span>
+                <span>Transition (F_c):</span>
                 <strong id="phys-val-Fc">1495 Hz</strong>
-              </div>
-              <div class="phys-row">
-                <span>Steel ($\rho, E$):</span>
-                <strong>7800 kg/m³ · 200 GPa</strong>
               </div>
             </div>
 
             <button id="btn-spring-crash-bottom" class="hw-action-btn trig-btn" style="width:100%;">
-              💥 KICK SPRING PAN (BOING!)
+              ⚡ KICK TANK (BOING!)
             </button>
           </div>
         </div>

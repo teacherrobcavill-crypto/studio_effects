@@ -1100,17 +1100,263 @@ html, body {
 }
 
 .em-dual-stage.mode-side-by-side {
-  max-width: 1880px;
+  max-width: 100%;
   grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
-.em-dual-stage.mode-side-by-side .control-deck {
-  grid-template-columns: 1fr 1fr;
+/* Scaled chassis & ears for side-by-side view */
+.em-dual-stage.mode-side-by-side .unit-panel {
+  grid-template-columns: 20px 1fr 20px;
+  border-width: 2px;
+}
+
+.em-dual-stage.mode-side-by-side .rack-ear {
+  padding: 8px 0;
+}
+
+.em-dual-stage.mode-side-by-side .rack-bolt {
+  width: 12px;
+  height: 12px;
+}
+
+.em-dual-stage.mode-side-by-side .rack-handle {
+  width: 8px;
+  height: 44%;
+}
+
+.em-dual-stage.mode-side-by-side .rack-faceplate {
+  padding: 8px 10px 12px;
+  gap: 8px;
 }
 
 .em-dual-stage.mode-side-by-side .rack-header {
-  grid-template-columns: 1fr;
-  gap: 10px;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  padding-bottom: 6px;
+}
+
+.em-dual-stage.mode-side-by-side .emt-riveted-badge {
+  padding: 3px 7px;
+}
+
+.em-dual-stage.mode-side-by-side .emt-riveted-badge .emt-logo-main {
+  font-size: 0.82rem;
+  letter-spacing: 0.1em;
+}
+
+.em-dual-stage.mode-side-by-side .emt-riveted-badge .emt-logo-sub {
+  font-size: 0.46rem;
+}
+
+.em-dual-stage.mode-side-by-side .brand-titles h1 {
+  font-size: 0.74rem;
+  letter-spacing: 0.05em;
+}
+
+.em-dual-stage.mode-side-by-side .brand-titles p {
+  font-size: 0.52rem;
+  margin-top: 1px;
+}
+
+.em-dual-stage.mode-side-by-side .gondola-dial-housing {
+  padding: 4px 8px;
+  gap: 2px;
+}
+
+.em-dual-stage.mode-side-by-side .gondola-top-labels {
+  font-size: 0.50rem;
+  letter-spacing: 0.04em;
+}
+
+.em-dual-stage.mode-side-by-side .gondola-glass-window {
+  height: 20px;
+}
+
+.em-dual-stage.mode-side-by-side .gondola-scale-marks {
+  font-size: 0.50rem;
+  padding: 0 4px;
+}
+
+.em-dual-stage.mode-side-by-side .power-cluster {
+  padding: 4px 8px;
+  gap: 8px;
+}
+
+.em-dual-stage.mode-side-by-side .pilot-jewel {
+  width: 13px;
+  height: 13px;
+}
+
+.em-dual-stage.mode-side-by-side .power-rocker {
+  padding: 4px 8px;
+  font-size: 0.60rem;
+}
+
+/* Scaled 3D Viewport in Side-by-Side View */
+.em-dual-stage.mode-side-by-side .viewport-bezel {
+  height: 195px;
+}
+
+.em-dual-stage.mode-side-by-side .viewport-hud-top {
+  top: 5px;
+  left: 8px;
+  right: 8px;
+}
+
+.em-dual-stage.mode-side-by-side .hud-pill {
+  padding: 2px 6px;
+  font-size: 0.56rem;
+  gap: 5px;
+}
+
+.em-dual-stage.mode-side-by-side .hud-btn {
+  padding: 1px 5px;
+  font-size: 0.54rem;
+}
+
+.em-dual-stage.mode-side-by-side .viewport-hud-bottom {
+  bottom: 5px;
+  left: 8px;
+  right: 8px;
+  font-size: 0.54rem;
+}
+
+/* Scaled Control Deck (4 bays side-by-side or 2x2 wrapping) */
+.em-dual-stage.mode-side-by-side .control-deck {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+@media (max-width: 1540px) {
+  .em-dual-stage.mode-side-by-side .control-deck {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+}
+
+.em-dual-stage.mode-side-by-side .hw-bay,
+.em-dual-stage.mode-side-by-side .vu-meter-bay {
+  padding: 6px 8px;
+  gap: 5px;
+}
+
+.em-dual-stage.mode-side-by-side .bay-header {
+  padding-bottom: 3px;
+}
+
+.em-dual-stage.mode-side-by-side .bay-title {
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+}
+
+.em-dual-stage.mode-side-by-side .bay-subtitle {
+  font-size: 0.50rem;
+}
+
+.em-dual-stage.mode-side-by-side .source-mode-tabs {
+  gap: 2px;
+}
+
+.em-dual-stage.mode-side-by-side .hw-tab-btn {
+  padding: 3px 2px;
+  font-size: 0.55rem;
+}
+
+.em-dual-stage.mode-side-by-side .source-sub-row {
+  gap: 4px;
+}
+
+.em-dual-stage.mode-side-by-side .hw-select {
+  padding: 3px 4px;
+  font-size: 0.60rem;
+}
+
+.em-dual-stage.mode-side-by-side .hw-action-btn {
+  padding: 3px 6px;
+  font-size: 0.58rem;
+}
+
+.em-dual-stage.mode-side-by-side .material-bank {
+  gap: 3px;
+}
+
+.em-dual-stage.mode-side-by-side .mat-push-btn {
+  padding: 4px 2px;
+}
+
+.em-dual-stage.mode-side-by-side .mat-push-btn .mat-led {
+  width: 14px;
+  height: 4px;
+}
+
+.em-dual-stage.mode-side-by-side .mat-push-btn .mat-name {
+  font-size: 0.56rem;
+}
+
+.em-dual-stage.mode-side-by-side .mat-push-btn .mat-spec {
+  font-size: 0.48rem;
+}
+
+.em-dual-stage.mode-side-by-side .switch-row {
+  padding: 4px 6px;
+}
+
+.em-dual-stage.mode-side-by-side .switch-title {
+  font-size: 0.58rem;
+}
+
+.em-dual-stage.mode-side-by-side .switch-desc {
+  font-size: 0.50rem;
+}
+
+.em-dual-stage.mode-side-by-side .toggle-switch {
+  padding: 2px 6px;
+  font-size: 0.56rem;
+}
+
+/* Scaled Knobs in Side-by-Side View */
+.em-dual-stage.mode-side-by-side .knobs-row {
+  gap: 2px;
+  padding-top: 1px;
+}
+
+.em-dual-stage.mode-side-by-side .knob-widget {
+  width: 64px;
+}
+
+.em-dual-stage.mode-side-by-side .knob-svg-wrap {
+  width: 56px;
+  height: 56px;
+}
+
+.em-dual-stage.mode-side-by-side .knob-label {
+  font-size: 0.54rem;
+  letter-spacing: 0.03em;
+  margin-top: 1px;
+}
+
+.em-dual-stage.mode-side-by-side .knob-readout {
+  font-size: 0.56rem;
+  padding: 1px 4px;
+  min-width: 46px;
+  margin-top: 2px;
+}
+
+.em-dual-stage.mode-side-by-side .analog-vu-window {
+  height: 54px;
+}
+
+.em-dual-stage.mode-side-by-side .vu-seg {
+  width: 15px;
+  height: 4px;
+}
+
+.em-dual-stage.mode-side-by-side .spring-physics-card {
+  font-size: 0.52rem;
+  padding: 4px 6px;
+  gap: 2px;
 }
 
 /* 1961 Fender 6G15 Blonde/Brownface & 1963 AB763 Blackface Enclosure Styling */

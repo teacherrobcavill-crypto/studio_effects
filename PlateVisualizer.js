@@ -486,14 +486,18 @@ export class PlateVisualizer {
 
   _bindResize() {
     this._onResize = () => {
-      if (!this.container || !this.renderer || !this.camera) return;
-      const w = this.container.clientWidth || 800;
-      const h = this.container.clientHeight || 360;
-      this.camera.aspect = w / h;
-      this.camera.updateProjectionMatrix();
-      this.renderer.setSize(w, h);
+      this.resize();
     };
     window.addEventListener('resize', this._onResize);
+  }
+
+  resize() {
+    if (!this.container || !this.renderer || !this.camera) return;
+    const w = this.container.clientWidth || 800;
+    const h = this.container.clientHeight || 360;
+    this.camera.aspect = w / h;
+    this.camera.updateProjectionMatrix();
+    this.renderer.setSize(w, h);
   }
 
   setMaterialPreset(presetIndex) {

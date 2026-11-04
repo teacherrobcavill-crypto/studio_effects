@@ -905,8 +905,12 @@ export class AudioEngine {
     this.dryGainNode.connect(this.platePathGain);
     this.platePathGain.connect(this.outputGainNode);
 
-    // Path B: Classic Tube-Driven Spring Reverb (Internal Tube Driver + Recovery Mixer routed via springPathGain)
-    this.inputGainNode.connect(this.springWorkletNode);
+    // Path B: Classic Tube-Driven Spring Reverb (Independent Input Gain & Pre-Delay -> Worklet -> springPathGain)
+    this.springInputGainNode = this.ctx.createGain();
+    this.springPreDelayNode = this.ctx.createDelay(0.5);
+    this.inputGainNode.connect(this.springInputGainNode);
+    this.springInputGainNode.connect(this.springPreDelayNode);
+    this.springPreDelayNode.connect(this.springWorkletNode);
     this.springWorkletNode.connect(this.springPathGain);
     this.springPathGain.connect(this.outputGainNode);
 
@@ -976,6 +980,20 @@ export class AudioEngine {
     if (!this.isInitialized) return;
     this.springWorkletNode.parameters.get('tankEra').setValueAtTime(idx, this.ctx.currentTime);
     this.springWorkletNode.port.postMessage({ type: 'SET_TANK_ERA', value: idx });
+  }
+
+  setSpringGain(db) {
+    this.springParams.inputGainDb = Math.max(-24.0, Math.min(12.0, db));
+    if (!this.isInitialized) return;
+    const linear = Math.pow(10.0, this.springParams.inputGainDb / 20.0);
+    this.springInputGainNode.gain.setTargetAtTime(linear, this.ctx.currentTime, 0.015);
+  }
+
+  setSpringPreDelay(ms) {
+    this.springParams.preDelayMs = Math.max(0.0, Math.min(250.0, ms));
+    if (!this.isInitialized) return;
+    const seconds = this.springParams.preDelayMs / 1000.0;
+    this.springPreDelayNode.delayTime.setTargetAtTime(seconds, this.ctx.currentTime, 0.015);
   }
 
   setSpringWireRadius(rMm) {

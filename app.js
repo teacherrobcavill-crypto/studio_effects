@@ -89,6 +89,26 @@ const KNOB_DEFINITIONS = [
 
   // Classic Tube Spring Reverb Knobs (Helical Geometry + 6G15 / AB763 Tube Controls)
   {
+    id: 'knob-spring-input-gain',
+    param: 'springInputGain',
+    label: 'DRIVER INPUT',
+    min: -24.0,
+    max: 12.0,
+    step: 0.1,
+    defaultVal: 0.0,
+    format: (v) => `${v >= 0 ? '+' : ''}${v.toFixed(1)} dB`
+  },
+  {
+    id: 'knob-spring-predelay',
+    param: 'springPreDelay',
+    label: 'PRE-DELAY',
+    min: 0.0,
+    max: 250.0,
+    step: 1.0,
+    defaultVal: 0.0,
+    format: (v) => `${Math.round(v)} ms`
+  },
+  {
     id: 'knob-spring-r',
     param: 'springWireRadius',
     label: 'WIRE RADIUS (r)',
@@ -212,6 +232,9 @@ class PlateReverbApp {
     this.subSelect = document.getElementById('source-sub-select');
     this.trigBtn = document.getElementById('btn-trigger-impulse');
     this.loopBtn = document.getElementById('btn-loop-toggle');
+    this.springSubSelect = document.getElementById('spring-source-sub-select');
+    this.springTrigBtn = document.getElementById('btn-spring-trigger-impulse');
+    this.springLoopBtn = document.getElementById('btn-spring-loop-toggle');
     this.fileInput = document.getElementById('hidden-file-input');
     this.lowCutSwitch = document.getElementById('switch-lowcut');
     this.dropOverlay = document.getElementById('drop-overlay');
@@ -465,6 +488,12 @@ class PlateReverbApp {
         break;
 
       // Spring Reverb Knobs
+      case 'springInputGain':
+        this.audioEngine.setSpringGain(value);
+        break;
+      case 'springPreDelay':
+        this.audioEngine.setSpringPreDelay(value);
+        break;
       case 'springWireRadius':
         this.audioEngine.setSpringWireRadius(value);
         if (this.springVisualizer) this.springVisualizer.setSpringGeometryParams({ wireRadiusMm: value });
@@ -759,6 +788,92 @@ class PlateReverbApp {
         this._updatePowerUI(true);
       });
     }
+
+    // Spring Reverb Dedicated Signal Sources (Mirroring Plate Reverb Sources)
+    const springSourceTabs = document.querySelectorAll('.hw-tab-btn[data-spring-source]');
+    springSourceTabs.forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const srcType = btn.getAttribute('data-spring-source');
+        springSourceTabs.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Also synchronize plate source tabs
+        document.querySelectorAll('.hw-tab-btn[data-source]').forEach((b) => {
+          b.classList.toggle('active', b.getAttribute('data-source') === srcType);
+        });
+
+        this._populateSubSelect(srcType, this.springSubSelect);
+        this._populateSubSelect(srcType, this.subSelect);
+
+        try {
+          this.audioEngine.setActiveUnit('spring');
+          await this.audioEngine.setSourceType(srcType);
+          this._updatePowerUI(true);
+          if (srcType === 'stem') {
+            this.audioEngine.startLoop();
+          } else if (srcType === 'file' && !this.audioEngine.customFileBuffer) {
+            this.fileInput.click();
+          }
+          this._syncTransportButtons();
+        } catch (_) {
+          this._populateSubSelect('impulse', this.springSubSelect);
+          this._populateSubSelect('impulse', this.subSelect);
+        }
+      });
+    });
+
+    if (this.springSubSelect) {
+      this.springSubSelect.addEventListener('change', (e) => {
+        const val = e.target.value;
+        this.audioEngine.setActiveUnit('spring');
+        if (this.subSelect) this.subSelect.value = val;
+        if (this.audioEngine.sourceType === 'impulse') {
+          this.audioEngine.impulseSubType = val;
+          this.audioEngine.triggerImpulse(val);
+          this._updatePowerUI(true);
+        } else if (this.audioEngine.sourceType === 'stem') {
+          this.audioEngine.stemSubType = val;
+          if (this.audioEngine.isLoopPlaying) {
+            this.audioEngine.startLoop();
+          }
+        }
+      });
+    }
+
+    if (this.springTrigBtn) {
+      this.springTrigBtn.addEventListener('click', async () => {
+        this.audioEngine.setActiveUnit('spring');
+        if (this.audioEngine.sourceType === 'impulse') {
+          await this.audioEngine.triggerImpulse(this.audioEngine.impulseSubType);
+        } else {
+          await this.audioEngine.kickSpringTank();
+          if (this.springVisualizer) this.springVisualizer.triggerMechanicalKick();
+        }
+        this._updatePowerUI(true);
+      });
+    }
+
+    if (this.springLoopBtn) {
+      this.springLoopBtn.addEventListener('click', async () => {
+        this.audioEngine.setActiveUnit('spring');
+        if (this.audioEngine.sourceType === 'impulse') {
+          this.audioEngine.sourceType = 'stem';
+          springSourceTabs.forEach((b) => {
+            b.classList.toggle('active', b.getAttribute('data-spring-source') === 'stem');
+          });
+          document.querySelectorAll('.hw-tab-btn[data-source]').forEach((b) => {
+            b.classList.toggle('active', b.getAttribute('data-source') === 'stem');
+          });
+          this._populateSubSelect('stem', this.springSubSelect);
+          this._populateSubSelect('stem', this.subSelect);
+        }
+        await this.audioEngine.toggleLoopPlayback();
+        this._updatePowerUI(true);
+        this._syncTransportButtons();
+      });
+    }
+
+    this._populateSubSelect('impulse', this.springSubSelect);
   }
 
   // ---------------------------------------------------------------------------
@@ -786,7 +901,13 @@ class PlateReverbApp {
         sourceTabs.forEach((b) => b.classList.remove('active'));
         btn.classList.add('active');
 
-        this._populateSubSelect(srcType);
+        // Also synchronize spring source tabs
+        document.querySelectorAll('.hw-tab-btn[data-spring-source]').forEach((b) => {
+          b.classList.toggle('active', b.getAttribute('data-spring-source') === srcType);
+        });
+
+        this._populateSubSelect(srcType, this.subSelect);
+        this._populateSubSelect(srcType, this.springSubSelect);
 
         try {
           await this.audioEngine.setSourceType(srcType);
@@ -798,7 +919,8 @@ class PlateReverbApp {
           }
           this._syncTransportButtons();
         } catch (_) {
-          this._populateSubSelect('impulse');
+          this._populateSubSelect('impulse', this.subSelect);
+          this._populateSubSelect('impulse', this.springSubSelect);
         }
       });
     });
@@ -877,9 +999,9 @@ class PlateReverbApp {
     this._populateSubSelect('impulse');
   }
 
-  _populateSubSelect(sourceType) {
-    if (!this.subSelect) return;
-    this.subSelect.innerHTML = '';
+  _populateSubSelect(sourceType, targetEl = this.subSelect) {
+    if (!targetEl) return;
+    targetEl.innerHTML = '';
 
     if (sourceType === 'impulse') {
       const opts = [
@@ -892,9 +1014,9 @@ class PlateReverbApp {
         opt.value = o.value;
         opt.textContent = o.label;
         if (o.value === this.audioEngine.impulseSubType) opt.selected = true;
-        this.subSelect.appendChild(opt);
+        targetEl.appendChild(opt);
       });
-      this.subSelect.disabled = false;
+      targetEl.disabled = false;
     } else if (sourceType === 'stem') {
       const opts = [
         { value: 'drums', label: '1960s Studio Drum Groove (110 BPM)' },
@@ -907,27 +1029,28 @@ class PlateReverbApp {
         opt.value = o.value;
         opt.textContent = o.label;
         if (o.value === this.audioEngine.stemSubType) opt.selected = true;
-        this.subSelect.appendChild(opt);
+        targetEl.appendChild(opt);
       });
-      this.subSelect.disabled = false;
+      targetEl.disabled = false;
     } else if (sourceType === 'mic') {
       const opt = document.createElement('option');
       opt.value = 'mic';
       opt.textContent = 'Live Studio Microphone Input';
-      this.subSelect.appendChild(opt);
-      this.subSelect.disabled = true;
+      targetEl.appendChild(opt);
+      targetEl.disabled = true;
     } else if (sourceType === 'file') {
       const opt = document.createElement('option');
       opt.value = 'file';
       opt.textContent = this.audioEngine.customFileName || 'Drop or Select Audio File (.wav/.mp3/.ogg/.flac)';
-      this.subSelect.appendChild(opt);
-      this.subSelect.disabled = true;
+      targetEl.appendChild(opt);
+      targetEl.disabled = true;
     }
   }
 
   _syncTransportButtons() {
+    const isPlaying = Boolean(this.audioEngine && this.audioEngine.isLoopPlaying);
     if (this.loopBtn) {
-      if (this.audioEngine.isLoopPlaying) {
+      if (isPlaying) {
         this.loopBtn.classList.add('playing');
         this.loopBtn.textContent = 'STOP LOOP';
       } else {
@@ -935,10 +1058,19 @@ class PlateReverbApp {
         this.loopBtn.textContent = 'PLAY LOOP';
       }
     }
+    if (this.springLoopBtn) {
+      if (isPlaying) {
+        this.springLoopBtn.classList.add('playing');
+        this.springLoopBtn.textContent = 'STOP LOOP';
+      } else {
+        this.springLoopBtn.classList.remove('playing');
+        this.springLoopBtn.textContent = 'PLAY LOOP';
+      }
+    }
     const surfBtn = document.getElementById('btn-spring-surf');
     if (surfBtn) {
       surfBtn.textContent =
-        this.audioEngine.isLoopPlaying && this.audioEngine.stemSubType === 'surf'
+        isPlaying && this.audioEngine.stemSubType === 'surf'
           ? '⏹ STOP SURF GUITAR'
           : '🎸 PLAY 1962 SURF GUITAR';
     }
@@ -990,7 +1122,11 @@ class PlateReverbApp {
       document.querySelectorAll('.hw-tab-btn[data-source]').forEach((b) => {
         b.classList.toggle('active', b.getAttribute('data-source') === 'file');
       });
-      this._populateSubSelect('file');
+      document.querySelectorAll('.hw-tab-btn[data-spring-source]').forEach((b) => {
+        b.classList.toggle('active', b.getAttribute('data-spring-source') === 'file');
+      });
+      this._populateSubSelect('file', this.subSelect);
+      this._populateSubSelect('file', this.springSubSelect);
       this._syncTransportButtons();
     } catch (err) {
       console.error('Failed to decode dropped audio file:', err);
