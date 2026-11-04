@@ -46,107 +46,143 @@ export class Lexicon224AudioEngine {
     this.timeDomainOut = new Float32Array(512);
     this.freqDomainOut = new Uint8Array(256);
 
+    // Queued parameters set before workletNode is created
+    this.queuedParams = {
+      preDelay: 24.0,
+      decay: 2.8,
+      damping: 4500.0,
+      diffusion: 0.72,
+      modRate: 0.85,
+      modDepth: 1.5,
+      mix: 0.40,
+      bypass: 0.0
+    };
+    this.initPromise = null;
+
     // Callbacks
     this.onTelemetryUpdate = null;
     this.onPlayStateChange = null;
   }
 
   /**
-   * Lazily initializes the audio context and registers the AudioWorklet.
+   * Synchronously prepares the AudioContext and external slot bus connections
+   * so VintageStudioSuite's synchronous rebuildSeriesRouting() always sees our slot!
    */
-  async ensureAudioContext() {
-    if (this.isInitialized && this.ctx && this.workletNode) {
-      if (this.ctx.state === 'suspended') {
-        await this.ctx.resume();
-      }
-      return this.ctx;
-    }
-
+  prepareSyncRouting() {
     if (!this.ctx && this.externalCtxGetter) {
       this.ctx = this.externalCtxGetter();
     }
-
     if (!this.ctx) {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       this.ctx = new AudioCtx({ latencyHint: 'interactive' });
       this.ownsContext = true;
     }
 
+    if (!this.inputGainNode) {
+      this.inputGainNode = this.ctx.createGain();
+      this.inputGainNode.gain.value = 1.0;
+
+      this.masterGainNode = this.ctx.createGain();
+      this.masterGainNode.gain.value = 0.9;
+
+      // Dual stereo analysers for visual feedback
+      this.analyserIn = this.ctx.createAnalyser();
+      this.analyserIn.fftSize = 1024;
+      this.analyserIn.smoothingTimeConstant = 0.8;
+
+      this.analyserOut = this.ctx.createAnalyser();
+      this.analyserOut.fftSize = 1024;
+      this.analyserOut.smoothingTimeConstant = 0.8;
+
+      this.inputGainNode.connect(this.analyserIn);
+      this.analyserOut.connect(this.masterGainNode);
+
+      // Connect external source if running inside an FX rack
+      if (this.externalSourceGetter) {
+        const srcNode = this.externalSourceGetter();
+        if (srcNode) {
+          try { srcNode.connect(this.inputGainNode); } catch (_) {}
+        }
+      }
+
+      const dest = (this.externalDestGetter ? this.externalDestGetter() : null) || this.externalDest || this.ctx.destination;
+      this.masterGainNode.connect(dest);
+
+      // Preload Procedural Stems synchronously
+      this.stemBuffers['drums'] = ProceduralStemGenerator.create80sDrumStem(this.ctx);
+      this.stemBuffers['vocal'] = ProceduralStemGenerator.createVocalPadStem(this.ctx);
+      this.stemBuffers['calibration'] = ProceduralStemGenerator.createCalibrationStem(this.ctx);
+    }
+
+    return this.ctx;
+  }
+
+  /**
+   * Lazily initializes the audio context and registers the AudioWorklet.
+   */
+  async ensureAudioContext() {
+    this.prepareSyncRouting();
+
     if (this.ctx.state === 'suspended') {
       await this.ctx.resume();
     }
 
-    // Register AudioWorklet using Blob URL for seamless dev & prod execution
-    try {
-      const blob = new Blob([lexiconWorkletSource], { type: 'application/javascript; charset=utf-8' });
-      const moduleUrl = URL.createObjectURL(blob);
-      await this.ctx.audioWorklet.addModule(moduleUrl);
-      URL.revokeObjectURL(moduleUrl);
-    } catch (err) {
-      console.warn('Blob worklet load fallback, attempting direct path:', err);
-      await this.ctx.audioWorklet.addModule('/src/audio/worklets/Lexicon224Worklet.js');
+    if (this.isInitialized && this.workletNode) {
+      return this.ctx;
     }
 
-    // Instantiate AudioWorkletNode
-    this.workletNode = new AudioWorkletNode(this.ctx, 'lexicon-224-processor', {
-      numberOfInputs: 1,
-      numberOfOutputs: 1,
-      outputChannelCount: [2],
-      channelCount: 2,
-      channelCountMode: 'explicit'
-    });
+    if (this.initPromise) {
+      await this.initPromise;
+      return this.ctx;
+    }
 
-    // Telemetry message bridge from AudioWorklet
-    this.workletNode.port.onmessage = (event) => {
-      if (event.data && event.data.type === 'LEXICON_224_TELEMETRY') {
-        this.telemetry.tankEnergies = event.data.energies;
-        this.telemetry.lfoPhases = event.data.lfoPhases;
-        if (this.onTelemetryUpdate) {
-          this.onTelemetryUpdate(this.telemetry);
+    this.initPromise = (async () => {
+      // Register AudioWorklet using Blob URL for seamless dev & prod execution
+      try {
+        const blob = new Blob([lexiconWorkletSource], { type: 'application/javascript; charset=utf-8' });
+        const moduleUrl = URL.createObjectURL(blob);
+        await this.ctx.audioWorklet.addModule(moduleUrl);
+        URL.revokeObjectURL(moduleUrl);
+      } catch (err) {
+        console.warn('Blob worklet load fallback, attempting direct path:', err);
+        await this.ctx.audioWorklet.addModule('/src/audio/worklets/Lexicon224Worklet.js');
+      }
+
+      // Instantiate AudioWorkletNode
+      this.workletNode = new AudioWorkletNode(this.ctx, 'lexicon-224-processor', {
+        numberOfInputs: 1,
+        numberOfOutputs: 1,
+        outputChannelCount: [2],
+        channelCount: 2,
+        channelCountMode: 'explicit'
+      });
+
+      // Apply any queued parameter values
+      const now = this.ctx.currentTime;
+      for (const [k, v] of Object.entries(this.queuedParams)) {
+        const p = this.workletNode.parameters.get(k);
+        if (p) p.setValueAtTime(v, now);
+      }
+
+      // Telemetry message bridge from AudioWorklet
+      this.workletNode.port.onmessage = (event) => {
+        if (event.data && event.data.type === 'LEXICON_224_TELEMETRY') {
+          this.telemetry.tankEnergies = event.data.energies;
+          this.telemetry.lfoPhases = event.data.lfoPhases;
+          if (this.onTelemetryUpdate) {
+            this.onTelemetryUpdate(this.telemetry);
+          }
         }
-      }
-    };
+      };
 
-    // Build Web Audio Routing
-    this.inputGainNode = this.ctx.createGain();
-    this.inputGainNode.gain.value = 1.0;
+      // Connect worklet between inputGainNode and analyserOut
+      this.inputGainNode.connect(this.workletNode);
+      this.workletNode.connect(this.analyserOut);
 
-    // Connect external source if running inside an FX rack
-    if (this.externalSourceGetter) {
-      const srcNode = this.externalSourceGetter();
-      if (srcNode) {
-        try { srcNode.connect(this.inputGainNode); } catch (_) {}
-      }
-    }
+      this.isInitialized = true;
+    })();
 
-    this.masterGainNode = this.ctx.createGain();
-    this.masterGainNode.gain.value = 0.9;
-
-    // Dual stereo analysers for visual feedback
-    this.analyserIn = this.ctx.createAnalyser();
-    this.analyserIn.fftSize = 1024;
-    this.analyserIn.smoothingTimeConstant = 0.8;
-
-    this.analyserOut = this.ctx.createAnalyser();
-    this.analyserOut.fftSize = 1024;
-    this.analyserOut.smoothingTimeConstant = 0.8;
-
-    // Routing Graph:
-    // inputGainNode -> analyserIn -> workletNode -> analyserOut -> masterGainNode -> destination
-    this.inputGainNode.connect(this.analyserIn);
-    this.inputGainNode.connect(this.workletNode);
-    this.workletNode.connect(this.analyserOut);
-    this.analyserOut.connect(this.masterGainNode);
-
-    const dest = (this.externalDestGetter ? this.externalDestGetter() : null) || this.externalDest || this.ctx.destination;
-    this.masterGainNode.connect(dest);
-
-    // Preload Procedural Stems
-    this.stemBuffers['drums'] = ProceduralStemGenerator.create80sDrumStem(this.ctx);
-    this.stemBuffers['vocal'] = ProceduralStemGenerator.createBreathyVocalStem(this.ctx);
-    this.stemBuffers['calibration'] = ProceduralStemGenerator.createCalibrationStem(this.ctx);
-
-    this.isInitialized = true;
+    await this.initPromise;
     return this.ctx;
   }
 
@@ -154,7 +190,8 @@ export class Lexicon224AudioEngine {
    * Set AudioParam with exponential or linear smoothing ramp
    */
   setParam(name, value, rampTime = 0.03) {
-    if (!this.workletNode) return;
+    this.queuedParams[name] = value;
+    if (!this.workletNode || !this.ctx) return;
     const param = this.workletNode.parameters.get(name);
     if (!param) return;
     const t = this.ctx.currentTime;

@@ -47,7 +47,9 @@ export class Lexicon224Module {
   }
 
   render() {
-    this.containerEl.innerHTML = `
+    const unit = document.createElement('section');
+    unit.className = 'lex-root-wrapper';
+    unit.innerHTML = `
       <div class="lex-root">
         <!-- Top Status & Hardware Header -->
         <header class="lex-chassis-header">
@@ -296,8 +298,10 @@ export class Lexicon224Module {
       </div>
     `;
 
+    this.unitEl = unit;
+    this.containerEl.appendChild(unit);
     this.injectStyles();
-    this.canvas = this.containerEl.querySelector('#lex-visualizer-canvas');
+    this.canvas = this.unitEl.querySelector('#lex-visualizer-canvas');
     this.canvasCtx = this.canvas.getContext('2d');
   }
 
@@ -769,8 +773,8 @@ export class Lexicon224Module {
 
   bindEvents() {
     // 1. Program Presets
-    const progButtons = this.containerEl.querySelectorAll('.lex-prog-btn');
-    const progNameDisplay = this.containerEl.querySelector('#lex-prog-name');
+    const progButtons = this.unitEl.querySelectorAll('.lex-prog-btn');
+    const progNameDisplay = this.unitEl.querySelector('#lex-prog-name');
     progButtons.forEach((btn) => {
       btn.addEventListener('click', () => {
         const preset = btn.getAttribute('data-preset');
@@ -788,8 +792,8 @@ export class Lexicon224Module {
 
     // 2. Sliders
     const bindSlider = (id, paramKey, scale = 1, isKhz = false) => {
-      const slider = this.containerEl.querySelector(`#slider-${id}`);
-      const disp = this.containerEl.querySelector(`#disp-${id}`);
+      const slider = this.unitEl.querySelector(`#slider-${id}`);
+      const disp = this.unitEl.querySelector(`#disp-${id}`);
       if (!slider || !disp) return;
 
       slider.addEventListener('input', (e) => {
@@ -815,8 +819,8 @@ export class Lexicon224Module {
     bindSlider('modDepth', 'modDepth', 1);
 
     // Wet/dry mix slider
-    const mixSlider = this.containerEl.querySelector('#slider-mix');
-    const mixDisp = this.containerEl.querySelector('#disp-mix');
+    const mixSlider = this.unitEl.querySelector('#slider-mix');
+    const mixDisp = this.unitEl.querySelector('#disp-mix');
     mixSlider.addEventListener('input', (e) => {
       const pct = parseFloat(e.target.value);
       this.params.mix = pct / 100.0;
@@ -825,7 +829,7 @@ export class Lexicon224Module {
     });
 
     // Master volume
-    const masterVol = this.containerEl.querySelector('#lex-master-vol');
+    const masterVol = this.unitEl.querySelector('#lex-master-vol');
     masterVol.addEventListener('input', (e) => {
       const v = parseFloat(e.target.value);
       this.params.masterVol = v;
@@ -835,7 +839,7 @@ export class Lexicon224Module {
     });
 
     // Bypass toggle
-    const bypassBtn = this.containerEl.querySelector('#lex-bypass-btn');
+    const bypassBtn = this.unitEl.querySelector('#lex-bypass-btn');
     bypassBtn.addEventListener('click', () => {
       this.params.bypass = !this.params.bypass;
       this.engine.setParam('bypass', this.params.bypass ? 1.0 : 0.0);
@@ -851,8 +855,8 @@ export class Lexicon224Module {
     });
 
     // Visualizer tabs
-    const btnTail = this.containerEl.querySelector('#btn-vis-tail');
-    const btnSpec = this.containerEl.querySelector('#btn-vis-spectrum');
+    const btnTail = this.unitEl.querySelector('#btn-vis-tail');
+    const btnSpec = this.unitEl.querySelector('#btn-vis-spectrum');
     btnTail.addEventListener('click', () => {
       this.visualizerMode = 'tail';
       btnTail.classList.add('active');
@@ -865,8 +869,8 @@ export class Lexicon224Module {
     });
 
     // Audio Play / Stem Transport
-    const playBtn = this.containerEl.querySelector('#lex-play-btn');
-    const stemSelect = this.containerEl.querySelector('#lex-stem-select');
+    const playBtn = this.unitEl.querySelector('#lex-play-btn');
+    const stemSelect = this.unitEl.querySelector('#lex-stem-select');
     playBtn.addEventListener('click', async () => {
       if (this.engine.isPlaying) {
         this.engine.stopStem();
@@ -883,18 +887,18 @@ export class Lexicon224Module {
     });
 
     // Instant Auditions
-    const hitSnareBtn = this.containerEl.querySelector('#btn-hit-snare');
+    const hitSnareBtn = this.unitEl.querySelector('#btn-hit-snare');
     hitSnareBtn.addEventListener('click', () => {
       this.engine.triggerSnareHit();
     });
 
-    const hitImpulseBtn = this.containerEl.querySelector('#btn-hit-impulse');
+    const hitImpulseBtn = this.unitEl.querySelector('#btn-hit-impulse');
     hitImpulseBtn.addEventListener('click', () => {
       this.engine.triggerDiracImpulse();
     });
 
     // Custom Audio File
-    const fileInput = this.containerEl.querySelector('#lex-file-input');
+    const fileInput = this.unitEl.querySelector('#lex-file-input');
     fileInput.addEventListener('change', async (e) => {
       if (e.target.files && e.target.files[0]) {
         const filename = await this.engine.loadCustomAudioFile(e.target.files[0]);
@@ -912,8 +916,8 @@ export class Lexicon224Module {
 
   syncSlidersFromParams() {
     const setVal = (id, val, isKhz = false) => {
-      const slider = this.containerEl.querySelector(`#slider-${id}`);
-      const disp = this.containerEl.querySelector(`#disp-${id}`);
+      const slider = this.unitEl.querySelector(`#slider-${id}`);
+      const disp = this.unitEl.querySelector(`#disp-${id}`);
       if (!slider || !disp) return;
       slider.value = val;
       if (isKhz) {
@@ -932,8 +936,8 @@ export class Lexicon224Module {
     setVal('modRate', this.params.modRate);
     setVal('modDepth', this.params.modDepth);
 
-    const mixSlider = this.containerEl.querySelector('#slider-mix');
-    const mixDisp = this.containerEl.querySelector('#disp-mix');
+    const mixSlider = this.unitEl.querySelector('#slider-mix');
+    const mixDisp = this.unitEl.querySelector('#disp-mix');
     if (mixSlider && mixDisp) {
       const pct = Math.round(this.params.mix * 100);
       mixSlider.value = pct;
@@ -942,8 +946,8 @@ export class Lexicon224Module {
   }
 
   updatePlayButtonUI(isPlaying) {
-    const playBtn = this.containerEl.querySelector('#lex-play-btn');
-    const playTxt = this.containerEl.querySelector('#lex-play-txt');
+    const playBtn = this.unitEl.querySelector('#lex-play-btn');
+    const playTxt = this.unitEl.querySelector('#lex-play-txt');
     if (!playBtn || !playTxt) return;
     playBtn.classList.toggle('playing', isPlaying);
     playBtn.querySelector('.icon').textContent = isPlaying ? '⏹' : '▶';
@@ -953,13 +957,13 @@ export class Lexicon224Module {
   startRenderLoop() {
     const canvas = this.canvas;
     const ctx = this.canvasCtx;
-    const inMeter = this.containerEl.querySelector('#meter-in');
-    const outMeter = this.containerEl.querySelector('#meter-out');
+    const inMeter = this.unitEl.querySelector('#meter-in');
+    const outMeter = this.unitEl.querySelector('#meter-out');
     const lfoDots = [
-      this.containerEl.querySelector('#lfo-dot-0'),
-      this.containerEl.querySelector('#lfo-dot-1'),
-      this.containerEl.querySelector('#lfo-dot-2'),
-      this.containerEl.querySelector('#lfo-dot-3')
+      this.unitEl.querySelector('#lfo-dot-0'),
+      this.unitEl.querySelector('#lfo-dot-1'),
+      this.unitEl.querySelector('#lfo-dot-2'),
+      this.unitEl.querySelector('#lfo-dot-3')
     ];
 
     const historyBuffer = new Float32Array(300);
@@ -1144,5 +1148,8 @@ export class Lexicon224Module {
       this.rafId = null;
     }
     this.suspend();
+    if (this.unitEl && this.unitEl.parentNode) {
+      this.unitEl.parentNode.removeChild(this.unitEl);
+    }
   }
 }

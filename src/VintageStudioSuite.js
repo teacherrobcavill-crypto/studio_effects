@@ -437,7 +437,8 @@ export class VintageStudioSuite {
       this.activeModules.push(new SmpteSynchronizerModule(this.rackStackEl, createSlotBag(idx)));
     }
     if (moduleName === 'lexicon-224' || moduleName === 'all') {
-      this.activeModules.push(new Lexicon224Module(this.rackStackEl, createSlotBag()));
+      const idx = this.activeModules.length;
+      this.activeModules.push(new Lexicon224Module(this.rackStackEl, createSlotBag(idx)));
     }
 
     // When all 3 rack units are mounted, automatically switch active audio monitoring
