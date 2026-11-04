@@ -398,6 +398,9 @@ export class DolbyCompanderModule {
           <button type="button" class="vst-suite-chip" data-mode="air-trick">✨ "Dolby A Air Trick" (Encode-Only Exciter)</button>
           <button type="button" class="vst-suite-chip" data-mode="raw-tape">Raw Analog Tape (No NR)</button>
           <button type="button" class="vst-suite-chip" data-mode="mistracked">Miscalibrated Tape (-6.5 dB Error)</button>
+          <button type="button" class="vst-suite-chip vst-suite-chip-expand" data-action="toggle-expand" title="Toggle between single expanded view and all rack units">
+            ${this.contextBag && this.contextBag.isSingleMode && this.contextBag.isSingleMode() ? '🗗 ALL RACK UNITS' : '⛶ EXPAND VIEW'}
+          </button>
         </div>
       </div>
 
@@ -541,6 +544,22 @@ export class DolbyCompanderModule {
         sig
       );
     });
+
+    // Expand / Collapse Single Unit View
+    const expandBtn = this.unitEl.querySelector('[data-action="toggle-expand"]');
+    if (expandBtn) {
+      expandBtn.addEventListener(
+        'click',
+        () => {
+          if (this.contextBag && this.contextBag.isSingleMode && this.contextBag.isSingleMode()) {
+            if (this.contextBag.onShowAllUnits) this.contextBag.onShowAllUnits();
+          } else {
+            if (this.contextBag.onExpandUnit) this.contextBag.onExpandUnit();
+          }
+        },
+        sig
+      );
+    }
 
     this.unitEl.querySelectorAll('[data-param]').forEach((el) => {
       const param = el.getAttribute('data-param');

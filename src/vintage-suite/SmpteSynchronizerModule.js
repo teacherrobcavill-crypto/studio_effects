@@ -330,6 +330,9 @@ export class SmpteSynchronizerModule {
           <button type="button" class="vst-suite-btn" data-action="dropout">⚠️ SIMULATE TAPE DROPOUT (1.5s)</button>
           <button type="button" class="edu-tip-badge edu-amber" data-edu-title="Simulate Damaged Timecode Tape (1.5s Dropout)" data-edu-tip="Simulates a 1.5-second worn spot on Track 24 where the timecode clock signal disappears. If 'Jam Sync Protection' is ON, the Lynx synthesizer freewheels smoothly at 100% speed. If Jam Sync is OFF, Machine B loses its clock reference and slows down!" data-edu-try="Turn OFF 'Jam Sync Protection' below, then click 'Simulate Tape Dropout' to hear Machine B lose sync!">?</button>
           <button type="button" class="vst-suite-btn" data-action="locate-zero">⏮ REWIND TO 01:00:00:00</button>
+          <button type="button" class="vst-suite-chip vst-suite-chip-expand" data-action="toggle-expand" title="Toggle between single expanded view and all rack units">
+            ${this.contextBag && this.contextBag.isSingleMode && this.contextBag.isSingleMode() ? '🗗 ALL RACK UNITS' : '⛶ EXPAND VIEW'}
+          </button>
         </div>
       </div>
 
@@ -533,6 +536,22 @@ export class SmpteSynchronizerModule {
           this.ensureAudioGraph();
           this.syncState.masterTimeSec = 3600.0;
           this.syncState.slaveTimeSec = 3599.65; // Slight chase on locate
+        },
+        sig
+      );
+    }
+
+    // Expand / Collapse Single Unit View
+    const expandBtn = this.unitEl.querySelector('[data-action="toggle-expand"]');
+    if (expandBtn) {
+      expandBtn.addEventListener(
+        'click',
+        () => {
+          if (this.contextBag && this.contextBag.isSingleMode && this.contextBag.isSingleMode()) {
+            if (this.contextBag.onShowAllUnits) this.contextBag.onShowAllUnits();
+          } else {
+            if (this.contextBag.onExpandUnit) this.contextBag.onExpandUnit();
+          }
         },
         sig
       );

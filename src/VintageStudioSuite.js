@@ -3,7 +3,6 @@ import { ProceduralStemGenerator } from './vintage-suite/ProceduralStemGenerator
 import { GatedReverbModule } from './vintage-suite/GatedReverbModule.js';
 import { DolbyCompanderModule } from './vintage-suite/DolbyCompanderModule.js';
 import { SmpteSynchronizerModule } from './vintage-suite/SmpteSynchronizerModule.js';
-import { Lexicon224Module } from './ui/Lexicon224Module.js';
 import {
   initDeclarativeTips,
   registerHubAudioCoordinator,
@@ -151,7 +150,6 @@ export class VintageStudioSuite {
           <button type="button" class="vst-suite-tab-btn" data-mount="gated-reverb">01 · GATED REVERB</button>
           <button type="button" class="vst-suite-tab-btn" data-mount="dolby-compander">02 · DOLBY A/B + AIR</button>
           <button type="button" class="vst-suite-tab-btn" data-mount="smpte-sync">03 · SMPTE 24-TRK SYNC</button>
-          <button type="button" class="vst-suite-tab-btn" data-mount="lexicon-224">04 · LEXICON 224</button>
         </nav>
 
         <div class="vst-suite-transport-strip">
@@ -382,6 +380,14 @@ export class VintageStudioSuite {
    */
   mount(moduleName = 'all') {
     this.currentModuleName = moduleName;
+    const isSingleMode = moduleName !== 'all';
+
+    if (this.rootEl) {
+      this.rootEl.classList.toggle('vst-suite-single-mode', isSingleMode);
+    }
+    if (this.rackStackEl) {
+      this.rackStackEl.classList.toggle('vst-suite-single-mode', isSingleMode);
+    }
 
     // Cleanly tear down existing mounted modules
     this.activeModules.forEach((m) => m.destroy());
@@ -401,7 +407,7 @@ export class VintageStudioSuite {
 
     this.activeSlotIndex = 0;
 
-    const createSlotBag = (slotIndex) => {
+    const createSlotBag = (slotIndex, modKey) => {
       let slotObj = null;
       const ensureSlot = () => {
         const ctx = this.ensureAudioContext();
@@ -420,25 +426,24 @@ export class VintageStudioSuite {
         ensureAudioContext: () => this.ensureAudioContext(),
         getInputNode: () => ensureSlot().in,
         getOutputNode: () => ensureSlot().out,
-        onTriggerSingleHit: () => this.triggerSingleSnareHit()
+        onTriggerSingleHit: () => this.triggerSingleSnareHit(),
+        isSingleMode: () => this.currentModuleName !== 'all',
+        onExpandUnit: () => this.mount(modKey),
+        onShowAllUnits: () => this.mount('all')
       };
     };
 
     if (moduleName === 'gated-reverb' || moduleName === 'all') {
       const idx = this.activeModules.length;
-      this.activeModules.push(new GatedReverbModule(this.rackStackEl, createSlotBag(idx)));
+      this.activeModules.push(new GatedReverbModule(this.rackStackEl, createSlotBag(idx, 'gated-reverb')));
     }
     if (moduleName === 'dolby-compander' || moduleName === 'all') {
       const idx = this.activeModules.length;
-      this.activeModules.push(new DolbyCompanderModule(this.rackStackEl, createSlotBag(idx)));
+      this.activeModules.push(new DolbyCompanderModule(this.rackStackEl, createSlotBag(idx, 'dolby-compander')));
     }
     if (moduleName === 'smpte-sync' || moduleName === 'all') {
       const idx = this.activeModules.length;
-      this.activeModules.push(new SmpteSynchronizerModule(this.rackStackEl, createSlotBag(idx)));
-    }
-    if (moduleName === 'lexicon-224' || moduleName === 'all') {
-      const idx = this.activeModules.length;
-      this.activeModules.push(new Lexicon224Module(this.rackStackEl, createSlotBag(idx)));
+      this.activeModules.push(new SmpteSynchronizerModule(this.rackStackEl, createSlotBag(idx, 'smpte-sync')));
     }
 
     // When all 3 rack units are mounted, automatically switch active audio monitoring
