@@ -258,35 +258,40 @@ class StudioApp {
 
   async _ensureAudioReady() {
     if (!this.audio.isInitialized) {
-      await this.audio.init();
-      // If user dragged mics/sources/gobos on the preview canvas before audio started, copy their positions
-      if (this.previewRoom) {
-        for (let i = 0; i < 4; i++) {
-          this.audio.liveRoom.sources[i].x = this.previewRoom.sources[i].x;
-          this.audio.liveRoom.sources[i].y = this.previewRoom.sources[i].y;
-          this.audio.liveRoom.mics[i].x = this.previewRoom.mics[i].x;
-          this.audio.liveRoom.mics[i].y = this.previewRoom.mics[i].y;
-          this.audio.liveRoom.mics[i].angle = this.previewRoom.mics[i].angle;
-        }
-        for (let g = 0; g < this.previewRoom.gobos.length; g++) {
-          this.audio.liveRoom.gobos[g].x = this.previewRoom.gobos[g].x;
-          this.audio.liveRoom.gobos[g].y = this.previewRoom.gobos[g].y;
-          this.audio.liveRoom.gobos[g].angle = this.previewRoom.gobos[g].angle;
-        }
-        this.audio.syncRoomToConsoleProximity();
+      if (!this._initPromise) {
+        this._initPromise = (async () => {
+          await this.audio.init();
+          // If user dragged mics/sources/gobos on the preview canvas before audio started, copy their positions
+          if (this.previewRoom) {
+            for (let i = 0; i < 4; i++) {
+              this.audio.liveRoom.sources[i].x = this.previewRoom.sources[i].x;
+              this.audio.liveRoom.sources[i].y = this.previewRoom.sources[i].y;
+              this.audio.liveRoom.mics[i].x = this.previewRoom.mics[i].x;
+              this.audio.liveRoom.mics[i].y = this.previewRoom.mics[i].y;
+              this.audio.liveRoom.mics[i].angle = this.previewRoom.mics[i].angle;
+            }
+            for (let g = 0; g < this.previewRoom.gobos.length; g++) {
+              this.audio.liveRoom.gobos[g].x = this.previewRoom.gobos[g].x;
+              this.audio.liveRoom.gobos[g].y = this.previewRoom.gobos[g].y;
+              this.audio.liveRoom.gobos[g].angle = this.previewRoom.gobos[g].angle;
+            }
+            this.audio.syncRoomToConsoleProximity();
+          }
+          // Point the existing RoomCanvas instance to the live room engine so active drags aren't interrupted
+          if (this.fallbackRoomCanvas) {
+            this.fallbackRoomCanvas.room = this.audio.liveRoom;
+            this.fallbackRoomCanvas.onRoomChanged = () => this.audio.syncRoomToConsoleProximity();
+            this.roomCanvas = this.fallbackRoomCanvas;
+          } else {
+            this.roomCanvas = new RoomCanvas(
+              document.getElementById('room-canvas'),
+              this.audio.liveRoom,
+              () => this.audio.syncRoomToConsoleProximity()
+            );
+          }
+        })();
       }
-      // Point the existing RoomCanvas instance to the live room engine so active drags aren't interrupted
-      if (this.fallbackRoomCanvas) {
-        this.fallbackRoomCanvas.room = this.audio.liveRoom;
-        this.fallbackRoomCanvas.onRoomChanged = () => this.audio.syncRoomToConsoleProximity();
-        this.roomCanvas = this.fallbackRoomCanvas;
-      } else {
-        this.roomCanvas = new RoomCanvas(
-          document.getElementById('room-canvas'),
-          this.audio.liveRoom,
-          () => this.audio.syncRoomToConsoleProximity()
-        );
-      }
+      await this._initPromise;
     } else if (this.audio.ctx.state === 'suspended') {
       await this.audio.ctx.resume();
     }
@@ -523,8 +528,19 @@ class StudioApp {
           occludedByGobo: s !== m && Math.abs(s - m) === 1
         }))
       ),
-      updateAcoustics() {}
+      updateAcoustics() {
+        for (let s = 0; s < 4; s++) {
+          const src = this.sources[s];
+          for (let m = 0; m < 4; m++) {
+            const mic = this.mics[m];
+            const distFt = Math.max(0.35, Math.hypot(src.x - mic.x, src.y - mic.y, src.z - mic.z));
+            this.matrixCells[s][m].distanceFt = distFt;
+            this.matrixCells[s][m].delayMs = (distFt / 1125.0) * 1000.0;
+          }
+        }
+      }
     };
+    this.previewRoom.updateAcoustics();
 
     this.fallbackRoomCanvas = new RoomCanvas(
       document.getElementById('room-canvas'),

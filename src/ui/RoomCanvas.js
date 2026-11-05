@@ -62,6 +62,7 @@ export class RoomCanvas {
         e.preventDefault();
         this.canvas.setPointerCapture(e.pointerId);
         this.dragTarget = hit;
+        if (this.onRoomChanged) this.onRoomChanged();
       }
     });
 
