@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roland RE-201 Space Echo (1974) &amp; Watkins Copicat (1958) — Interactive Tape Echo Lab</title>
+  <meta name="description" content="Interactive browser-based software reconstructions of the 1974 Roland RE-201 Space Echo and late-1950s Watkins Copicat with animated cutaway tape transports, multi-head routing, and historical curriculum." />
+  <style>
+    :root {
+      --bg-page: #0a0c10;
+      --bg-card: #12161f;
+      --re-green: #52b788;
+      --re-green-bright: #74c69d;
+      --re-green-dim: rgba(82, 183, 136, 0.16);
+      --cc-teal: #2dd4bf;
+      --cc-cream: #f5f0e1;
+      --amber: #f59e0b;
+      --red-peak: #ef4444;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border-subtle: rgba(255, 255, 255, 0.11);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100vh;
+      background: var(--bg-page);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+      overflow-x: hidden;
+    }
+
+    .te-page-wrapper {
+      width: 100%;
+      max-width: 1680px;
+      margin: 0 auto;
+      padding: 10px 14px 28px;
+    }
+
+    .te-module-shell {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* ── Top Studio Transport & Input Drive Header ── */
+    .te-master-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      background: linear-gradient(180deg, #161b26 0%, #10141d 100%);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    }
+
+    .te-master-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .te-era-pill {
+      padding: 4px 9px;
+      border-radius: 5px;
+      background: rgba(82, 183, 136, 0.15);
+      border: 1px solid rgba(82, 183, 136, 0.45);
+      color: var(--re-green-bright);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    .te-title-block h1 {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      color: #ffffff;
+    }
+
+    .te-title-block p {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .te-transport-cluster {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .te-btn {
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .te-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .te-btn-play {
+      background: rgba(82, 183, 136, 0.18);
+      border-color: var(--re-green);
+      color: #d8f3dc;
+      min-width: 118px;
+    }
+
+    .te-btn-play.is-playing {
+      background: var(--re-green);
+      color: #081c15;
+      box-shadow: 0 0 14px rgba(82, 183, 136, 0.5);
+    }
+
+    .te-btn-oneshot {
+      background: rgba(245, 158, 11, 0.13);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: #fde68a;
+    }
+
+    .te-btn-oneshot:hover {
+      background: rgba(245, 158, 11, 0.25);
+    }
+
+    .te-select-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #0c0f16;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      padding: 4px 8px;
+    }
+
+    .te-select-label {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 9.5px;
+      font-weight: 800;
+      color: var(--text-muted);
+    }
+
+    .te-select {
+      background: transparent;
+      border: none;
+      color: #f8fafc;
+      font-size: 11.5px;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .te-select option {
+      background: #111827;
+      color: #f8fafc;
+    }
+
+    .te-oneshot-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .te-routing-pills {
+      display: inline-flex;
+      background: #0b0e14;
+      padding: 3px;
+      border-radius: 7px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      gap: 3px;
+    }
+
+    .te-route-btn {
+      padding: 5px 9px;
+      border-radius: 5px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 10px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .te-route-btn.active {
+      background: rgba(45, 212, 191, 0.2);
+      color: #5eead4;
+      box-shadow: inset 0 0 0 1px rgba(45, 212, 191, 0.45);
+    }
+
+    /* Input Drive Box */
+    .te-input-drive-box {
+      min-width: 245px;
+      background: rgba(12, 15, 22, 0.85);
+      border: 1px solid rgba(245, 158, 11, 0.32);
+      border-radius: 8px;
+      padding: 6px 10px;
+    }
+
+    .te-drive-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 10px;
+      font-weight: 800;
+      color: #fcd34d;
+      margin-bottom: 4px;
+    }
+
+    .te-drive-readout {
+      color: #fff;
+    }
+
+    .te-drive-slider-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .te-peak-led {
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #2b1416;
+      border: 1px solid #5c2125;
+      color: #7f1d1d;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 9.5px;
+      font-weight: 900;
+      transition: all 0.12s ease;
+    }
+
+    .te-peak-led.is-peaking {
+      background: #ef4444;
+      border-color: #fca5a5;
+      color: #fff;
+      box-shadow: 0 0 12px #ef4444;
+    }
+
+    /* ── Contextual "Helpful Hints" Tracker Bar & Overlay Card ── */
+    .te-hints-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 7px 14px;
+      background: rgba(18, 23, 33, 0.92);
+      border: 1px solid rgba(245, 158, 11, 0.28);
+      border-left: 4px solid var(--amber);
+      border-radius: 8px;
+    }
+
+    .te-hints-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .te-hints-tag {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 10.5px;
+      font-weight: 800;
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.14);
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+
+    .te-hints-sub {
+      font-size: 11.5px;
+      color: #cbd5e1;
+    }
+
+    .te-hints-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .te-hint-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.04);
+      color: #e2e8f0;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .te-hint-pill:hover {
+      border-color: var(--amber);
+      background: rgba(245, 158, 11, 0.12);
+    }
+
+    .te-hint-pill.unlocked {
+      border-color: var(--re-green);
+      background: rgba(82, 183, 136, 0.16);
+      color: #d8f3dc;
+    }
+
+    .te-hint-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #64748b;
+    }
+
+    .te-hint-pill.unlocked .te-hint-dot {
+      background: #52b788;
+      box-shadow: 0 0 8px #52b788;
+    }
+
+    .te-hint-cond {
+      font-size: 10px;
+      font-weight: 500;
+      color: #94a3b8;
+    }
+
+    .te-hint-overlay {
+      background: linear-gradient(180deg, rgba(24, 29, 42, 0.98) 0%, rgba(14, 18, 26, 0.98) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.6);
+      border-left: 5px solid var(--amber);
+      border-radius: 10px;
+      padding: 12px 16px;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.65);
+      animation: hintSlideIn 0.2s ease-out;
+    }
+
+    @keyframes hintSlideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .te-hint-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .te-hint-card-badge {
+      display: inline-block;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 10px;
+      font-weight: 800;
+      color: #fbbf24;
+      letter-spacing: 0.05em;
+    }
+
+    .te-hint-card-titles h3 {
+      font-size: 15px;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 2px 0;
+    }
+
+    .te-hint-trigger-meta {
+      font-size: 11px;
+      color: #fde68a;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+
+    .te-hint-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .te-btn-hint-try {
+      background: rgba(245, 158, 11, 0.2);
+      border-color: var(--amber);
+      color: #fef3c7;
+    }
+
+    .te-hint-close {
+      padding: 6px 10px;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.06);
+      color: #cbd5e1;
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .te-hint-card-body {
+      font-size: 12.5px;
+      line-height: 1.52;
+      color: #e2e8f0;
+    }
+
+    /* ── Split-Screen Dual Hardware Stage (Left: Roland RE-201 | Right: Watkins Copicat) ── */
+    .te-dual-stage {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .te-unit-panel {
+      display: flex;
+      flex-direction: column;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #12161e;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+    }
+
+    .te-panel-re201 {
+      border: 2px solid #2d4a3e;
+    }
+
+    .te-panel-copicat {
+      border: 2px solid #1f4e54;
+    }
+
+    .te-unit-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .re201-header {
+      background: linear-gradient(180deg, #16241f 0%, #0f1815 100%);
+    }
+
+    .copicat-header {
+      background: linear-gradient(180deg, #132f35 0%, #0d2024 100%);
+    }
+
+    .te-unit-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .re201-badge,
+    .copicat-badge {
+      padding: 4px 8px;
+      border-radius: 5px;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+    }
+
+    .re201-badge {
+      background: rgba(82, 183, 136, 0.2);
+      border: 1px solid var(--re-green);
+      color: var(--re-green-bright);
+    }
+
+    .copicat-badge {
+      background: rgba(45, 212, 191, 0.2);
+      border: 1px solid var(--cc-teal);
+      color: #5eead4;
+    }
+
+    .te-unit-brand h2 {
+      font-size: 15px;
+      font-weight: 800;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .te-unit-brand p {
+      font-size: 10px;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+    }
+
+    .te-unit-telemetry {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .te-telem-chip {
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(82, 183, 136, 0.12);
+      border: 1px solid rgba(82, 183, 136, 0.35);
+      color: #b7e4c7;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .te-telem-chip.cc-chip {
+      background: rgba(45, 212, 191, 0.12);
+      border-color: rgba(45, 212, 191, 0.35);
+      color: #99f6e4;
+    }
+
+    /* ── Cutaway Mechanical Viewport & Component Hotspots ── */
+    .te-cutaway-wrap {
+      position: relative;
+      width: 100%;
+      background: #090d0c;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .te-cutaway-canvas {
+      display: block;
+      width: 100%;
+      height: 245px;
+    }
+
+    .te-hotspot-layer {
+      position: absolute;
+      inset: 0 0 28px 0;
+      pointer-events: none;
+    }
+
+    .te-hw-hotspot {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      pointer-events: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(13, 19, 17, 0.88);
+      border: 1px solid rgba(116, 198, 157, 0.55);
+      color: #d8f3dc;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 9.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.65);
+    }
+
+    .te-hw-hotspot:hover {
+      background: var(--re-green);
+      color: #071710;
+      transform: translate(-50%, -50%) scale(1.07);
+      z-index: 20;
+    }
+
+    .te-hw-hotspot.cc-spot {
+      border-color: rgba(45, 212, 191, 0.55);
+      color: #ccfbf1;
+    }
+
+    .te-hw-hotspot.cc-spot:hover {
+      background: var(--cc-teal);
+      color: #062024;
+    }
+
+    .te-hotspot-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .te-cutaway-footer-bar {
+      padding: 5px 12px;
+      background: rgba(9, 12, 16, 0.95);
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      font-size: 11px;
+      color: #cbd5e1;
+      min-height: 28px;
+      display: flex;
+      align-items: center;
+    }
+
+    .te-cutaway-footer-bar strong {
+      color: #fde68a;
+    }
+
+    /* ── Roland RE-201 Control Faceplate ── */
+    .re201-faceplate,
+    .copicat-faceplate {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+      background: linear-gradient(180deg, #151921 0%, #0f1218 100%);
+    }
+
+    .te-control-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+
+    .re201-mode-bay {
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(116, 198, 157, 0.22);
+      border-radius: 8px;
+      padding: 9px 11px;
+    }
+
+    .re201-mode-main {
+      display: grid;
+      grid-template-columns: 104px 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .re201-rotary-wrap {
+      position: relative;
+      width: 98px;
+      height: 98px;
+      cursor: pointer;
+      margin: 0 auto;
+    }
+
+    .re201-rotary-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .re201-mode-num-badge {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      background: var(--re-green);
+      color: #061810;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .re201-bank-label {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 9.5px;
+      color: #74c69d;
+      margin-bottom: 5px;
+    }
+
+    .re201-mode-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 4px;
+    }
+
+    .re-mode-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4px 2px;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.03);
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+
+    .re-mode-btn:hover {
+      border-color: var(--re-green);
+      background: rgba(82, 183, 136, 0.12);
+    }
+
+    .re-mode-btn.active {
+      background: var(--re-green);
+      border-color: #b7e4c7;
+      color: #071911;
+      font-weight: 800;
+    }
+
+    .re-mode-btn .m-num {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .re-mode-btn .m-heads {
+      font-size: 8.5px;
+      opacity: 0.85;
+    }
+
+    .re201-active-mode-desc {
+      margin-top: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #d8f3dc;
+    }
+
+    .te-knobs-grid-6 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .te-knob-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 7px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .te-knob-card.re-accent {
+      border-color: rgba(82, 183, 136, 0.35);
+      background: rgba(82, 183, 136, 0.05);
+    }
+
+    .te-knob-card.cc-accent {
+      border-color: rgba(45, 212, 191, 0.35);
+      background: rgba(45, 212, 191, 0.05);
+    }
+
+    .te-knob-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 10.5px;
+      font-weight: 800;
+      color: #e2e8f0;
+    }
+
+    .te-knob-val {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: #95d5b2;
+      text-align: right;
+    }
+
+    .cc-accent .te-knob-val {
+      color: #5eead4;
+    }
+
+    .te-range {
+      width: 100%;
+      cursor: pointer;
+      accent-color: var(--re-green);
+    }
+
+    .te-range-teal {
+      accent-color: var(--cc-teal);
+    }
+
+    .te-range-amber {
+      accent-color: var(--amber);
+    }
+
+    /* ── Watkins Copicat Push-Buttons & Motor Switch ── */
+    .copicat-switches-bay {
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(45, 212, 191, 0.24);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .cc-buttons-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr) 1.35fr;
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .cc-push-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 10px 6px;
+      border-radius: 8px;
+      border: 2px solid #475569;
+      background: linear-gradient(180deg, #27303f 0%, #171d26 100%);
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: all 0.14s ease;
+    }
+
+    .cc-push-btn.active {
+      background: linear-gradient(180deg, #f5f0e1 0%, #dfd6be 100%);
+      border-color: var(--cc-teal);
+      color: #0f172a;
+      box-shadow: 0 0 14px rgba(45, 212, 191, 0.35), inset 0 2px 4px rgba(0, 0, 0, 0.25);
+      transform: translateY(1px);
+    }
+
+    .cc-btn-lamp {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #475569;
+    }
+
+    .cc-push-btn.active .cc-btn-lamp {
+      background: #0d9488;
+      box-shadow: 0 0 8px #14b8a6;
+    }
+
+    .cc-btn-cap {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .cc-btn-sub {
+      font-size: 9.5px;
+      font-weight: 700;
+      opacity: 0.8;
+    }
+
+    .cc-motor-box {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .cc-motor-toggle {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 6px 8px;
+      border-radius: 7px;
+      border: 2px solid #dc2626;
+      background: rgba(127, 29, 29, 0.25);
+      color: #fecaca;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .cc-motor-toggle.active {
+      border-color: var(--cc-teal);
+      background: rgba(13, 148, 136, 0.24);
+      color: #ccfbf1;
+    }
+
+    .cc-motor-led {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+    }
+
+    .cc-motor-toggle.active .cc-motor-led {
+      background: #2dd4bf;
+      box-shadow: 0 0 8px #2dd4bf;
+    }
+
+    .cc-motor-label {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .cc-motor-sub {
+      font-size: 9px;
+      opacity: 0.8;
+    }
+
+    .cc-slur-btn {
+      padding: 5px 8px;
+      border-radius: 5px;
+      border: 1px solid rgba(245, 158, 11, 0.5);
+      background: rgba(245, 158, 11, 0.16);
+      color: #fde68a;
+      font-size: 10px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .cc-slur-btn:hover {
+      background: rgba(245, 158, 11, 0.3);
+    }
+
+    .cc-knobs-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .cc-preset-strip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .cc-preset-label {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 9.5px;
+      font-weight: 800;
+      color: var(--text-muted);
+    }
+
+    .cc-preset-btn {
+      padding: 5px 9px;
+      border-radius: 5px;
+      border: 1px solid rgba(45, 212, 191, 0.32);
+      background: rgba(45, 212, 191, 0.08);
+      color: #ccfbf1;
+      font-size: 10.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.14s ease;
+    }
+
+    .cc-preset-btn:hover {
+      background: rgba(45, 212, 191, 0.2);
+      border-color: var(--cc-teal);
+    }
+
+    /* ── Persistent Modular Historical Curriculum Panel Below ── */
+    .te-curriculum-panel {
+      background: linear-gradient(180deg, #131822 0%, #0d1118 100%);
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      border-radius: 12px;
+      padding: 14px 16px;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+    }
+
+    .te-curr-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .te-curr-tag {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 10px;
+      font-weight: 800;
+      color: #5eead4;
+      letter-spacing: 0.06em;
+    }
+
+    .te-curr-title-group h3 {
+      font-size: 15px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-top: 2px;
+    }
+
+    .te-curr-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .te-curr-tab {
+      padding: 6px 11px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .te-curr-tab.active {
+      background: rgba(82, 183, 136, 0.2);
+      border-color: var(--re-green);
+      color: #ffffff;
+    }
+
+    .te-curr-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .te-curr-grid.single-col {
+      grid-template-columns: 1fr;
+    }
+
+    .te-curr-card {
+      display: flex;
+      flex-direction: column;
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 9px;
+      overflow: hidden;
+    }
+
+    .te-curr-card-head {
+      padding: 9px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .te-curr-card-head.cc-border {
+      border-left: 4px solid var(--cc-teal);
+    }
+
+    .te-curr-card-head.re-border {
+      border-left: 4px solid var(--re-green);
+    }
+
+    .te-curr-card-head.cmp-border {
+      border-left: 4px solid var(--amber);
+    }
+
+    .te-curr-num {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 9.5px;
+      font-weight: 800;
+      color: #94a3b8;
+    }
+
+    .te-curr-card-head h4 {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-top: 2px;
+    }
+
+    .te-curr-card-body {
+      padding: 11px 13px;
+      font-size: 12px;
+      line-height: 1.54;
+      color: #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .te-curr-card-body strong {
+      color: #ffffff;
+    }
+
+    .te-curr-card-body ul {
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .te-cmp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11.2px;
+      margin-top: 2px;
+    }
+
+    .te-cmp-table th,
+    .te-cmp-table td {
+      padding: 6px 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .te-cmp-table th {
+      background: rgba(255, 255, 255, 0.06);
+      color: #fde68a;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 10.5px;
+    }
+
+    @media (max-width: 1260px) {
+      .te-dual-stage {
+        grid-template-columns: 1fr;
+      }
+      .te-curr-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="te-page-wrapper">
+    <div id="tape-echoes-mount"></div>
+  </div>
+  <script type="module" src="/src/main-tape-echoes.js"></script>
+</body>
+</html>

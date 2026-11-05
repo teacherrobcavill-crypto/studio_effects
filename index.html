@@ -432,11 +432,20 @@
           </div>
           <span class="tab-audio-dot" title="Audio Status"></span>
         </button>
+
+        <button class="app-tab" data-app-id="app-tape-echoes" data-url="/app-tape-echoes.html" role="tab" aria-selected="false">
+          <span class="era">MODULE 6 · 1958–74</span>
+          <div class="tab-text-col">
+            <span class="tab-name">Roland RE-201 &amp; Watkins Copicat</span>
+            <span class="tab-desc">Free-Floating Tank vs. Tensioned Loop · Multi-Head Echo</span>
+          </div>
+          <span class="tab-audio-dot" title="Audio Status"></span>
+        </button>
       </div>
 
       <!-- Audio Coordinator & View Controls -->
       <div class="hub-actions">
-        <button id="btn-silence-all" class="btn-action btn-silence" title="Immediately pause and suspend audio across all 5 simulators">
+        <button id="btn-silence-all" class="btn-action btn-silence" title="Immediately pause and suspend audio across all simulators">
           🔇 Mute All
         </button>
       </div>
@@ -590,6 +599,26 @@
           {
             title: '🌫️ 3. Infinite Bloom Space',
             body: 'Select Program 05 (INFINITE BLOOM) with 14.5s Decay and 6.0 kHz Damping on the Breathy Vocal Stem to hear an evolving ambient synthesizer soundscape.'
+          }
+        ]
+      },
+      'app-tape-echoes': {
+        tag: 'MODULE 6 · 1958–1974 MAGNETIC TAPE ECHOES',
+        headline: 'Roland RE-201 Space Echo (1974) vs. Watkins Copicat (1958) — Free-Floating Tape Tank vs. Tensioned Loop, Multi-Head Rhythm & Self-Oscillation',
+        overview:
+          '<strong>What You Are Learning:</strong> Contrast Charlie Watkins’ 1958 portable British tape echo (short 21-inch tensioned endless loop with 3 push-button heads and mechanical motor start/stop pitch-slur) against Ikutaro Kakehashi’s 1974 Roland RE-201 Space Echo (27-foot free-floating ballistic tape tank, 12-position multi-head + spring reverb rotary selector, and continuous DC capstan Repeat Rate sweeps).',
+        experiments: [
+          {
+            title: '🌀 1. RE-201 Dub Pitch Shift & Runaway Feedback',
+            body: 'In the left panel (RE-201), select Mode 11, push INTENSITY above 85% to launch warm analog self-oscillation, and sweep REPEAT RATE to bend pitch like King Tubby!'
+          },
+          {
+            title: '🎸 2. Copicat Multi-Head "Apache" & Motor Slur',
+            body: 'In the right panel (Copicat), engage HEADS 1 + 2 + 3 for The Shadows galloping rhythm, then click ⚡ Trigger Motor Pitch-Slur to hear the capstan coast and ramp back up!'
+          },
+          {
+            title: '💡 3. Unlock All 3 Contextual Helpful Hints',
+            body: 'Push Input Gain above 150% (Magnetic Saturation), inspect the animated tape transports (Wow & Flutter), and maximize Intensity/Sustain (Runaway Feedback).'
           }
         ]
       }

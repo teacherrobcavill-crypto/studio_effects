@@ -13,7 +13,8 @@ export default defineConfig({
         emt140: resolve(__dirname, 'app-emt140-plate.html'),
         plateReverb: resolve(__dirname, 'plate-reverb.html'),
         vintageSuite: resolve(__dirname, 'app-vintage-suite.html'),
-        lexicon224: resolve(__dirname, 'app-lexicon-224.html')
+        lexicon224: resolve(__dirname, 'app-lexicon-224.html'),
+        tapeEchoes: resolve(__dirname, 'app-tape-echoes.html')
       }
     }
   }
