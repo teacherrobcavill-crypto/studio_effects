@@ -80,6 +80,31 @@
       font-size: 10.5px;
       color: var(--muted);
     }
+    .btn-fullscreen {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      border: 1px solid rgba(0, 245, 212, 0.45);
+      background: rgba(0, 245, 212, 0.12);
+      color: var(--cyan);
+      font-size: 10.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn-fullscreen:hover {
+      background: rgba(0, 245, 212, 0.24);
+      border-color: var(--cyan);
+      color: #ffffff;
+    }
+    .btn-fullscreen.is-fullscreen {
+      background: rgba(255, 146, 43, 0.18);
+      border-color: var(--amber);
+      color: #ffd8a8;
+    }
 
     /* ── 5-Module Selector Cards (Spread across top bar) ── */
     .app-tabs {
@@ -380,7 +405,11 @@
         <div class="hub-brand-titles">
           <div class="hub-brand-main">
             <span>Studio FX Eras</span>
-            <button type="button" class="edu-tip-badge" data-edu-title="How to Use Studio FX Eras" data-edu-tip="Choose any of the 5 historical studio & acoustic simulators across the top bar. Throughout every simulator, click or hover over any '?' badge for pop-up physics & engineering breakdowns, or click any '▼ Unfold' bar to reveal deep-dive notes without cluttering the hardware controls. Switching tabs automatically pauses audio in the previous simulator so audio never overlaps!" data-edu-try="Click the foldable 'Interactive Learning Guide' bar right below the header to view 3 guided listening experiments for the active simulator.">?</button>
+            <button type="button" class="edu-tip-badge" data-edu-title="How to Use Studio FX Eras" data-edu-tip="Choose any of the historical studio & acoustic simulators across the top bar. Throughout every simulator, click or hover over any '?' badge for pop-up physics & engineering breakdowns, or click any '▼ Unfold' bar to reveal deep-dive notes without cluttering the hardware controls. Switching tabs automatically pauses audio in the previous simulator so audio never overlaps!" data-edu-try="Click the foldable 'Interactive Learning Guide' bar right below the header to view 3 guided listening experiments for the active simulator.">?</button>
+            <button type="button" id="btn-fullscreen" class="btn-fullscreen" title="Toggle Full Screen (Hides browser address bar & tabs for maximum workspace)">
+              <span id="fullscreen-icon">⛶</span>
+              <span id="fullscreen-label">Full Screen</span>
+            </button>
           </div>
           <div class="hub-brand-sub">Click any <strong>?</strong> badge for tips • Unfold <strong>▼</strong> for notes</div>
         </div>
@@ -722,6 +751,55 @@
     if (silenceAllBtn) {
       silenceAllBtn.addEventListener('click', () => silenceAllSimulators());
     }
+
+    // Full Screen Toggle Button (top-left Studio FX Eras header)
+    const fullscreenBtn = document.getElementById('btn-fullscreen');
+    const fullscreenIcon = document.getElementById('fullscreen-icon');
+    const fullscreenLabel = document.getElementById('fullscreen-label');
+
+    function getFullscreenElement() {
+      return (
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+    }
+
+    function updateFullscreenButtonUI() {
+      const isFs = Boolean(getFullscreenElement());
+      if (!fullscreenBtn) return;
+      fullscreenBtn.classList.toggle('is-fullscreen', isFs);
+      if (fullscreenIcon) fullscreenIcon.textContent = isFs ? '🗗' : '⛶';
+      if (fullscreenLabel) fullscreenLabel.textContent = isFs ? 'Exit Full Screen' : 'Full Screen';
+    }
+
+    if (fullscreenBtn) {
+      fullscreenBtn.addEventListener('click', async () => {
+        try {
+          if (!getFullscreenElement()) {
+            const docEl = document.documentElement;
+            if (docEl.requestFullscreen) {
+              await docEl.requestFullscreen();
+            } else if (docEl.webkitRequestFullscreen) {
+              docEl.webkitRequestFullscreen();
+            }
+          } else {
+            if (document.exitFullscreen) {
+              await document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+              document.webkitExitFullscreen();
+            }
+          }
+        } catch (err) {
+          console.warn('Fullscreen request failed:', err);
+        }
+        updateFullscreenButtonUI();
+      });
+    }
+
+    document.addEventListener('fullscreenchange', updateFullscreenButtonUI);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenButtonUI);
 
     // Listen for live audio state updates from child simulator iframes
     window.addEventListener('message', (e) => {
