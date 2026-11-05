@@ -83,15 +83,20 @@ export class ConsoleEngine {
       const analyser = this.ctx.createAnalyser();
       analyser.fftSize = 256;
 
-      // Connect strip: Input -> MicPreampWorklet -> Fader -> Panner -> SummingBus
+      // Solo Gate Node (Post-Fader so fader level still works normally when soloed, while gating non-soloed mic channels)
+      const soloGateNode = this.ctx.createGain();
+      soloGateNode.gain.value = 1.0;
+
+      // Connect strip: Input -> MicPreampWorklet -> Fader -> SoloGate -> Panner -> SummingBus
       inputNode.connect(micWorklet);
       micWorklet.connect(faderNode);
-      faderNode.connect(analyser);
-      faderNode.connect(pannerNode);
+      faderNode.connect(soloGateNode);
+      soloGateNode.connect(analyser);
+      soloGateNode.connect(pannerNode);
       pannerNode.connect(this.summingBus);
 
-      // Post-fader Aux Send to Slapback Tape Echo
-      faderNode.connect(auxSendNode);
+      // Post-fader Aux Send to Slapback Tape Echo (also gated by solo so non-soloed mics don't feed slapback)
+      soloGateNode.connect(auxSendNode);
       auxSendNode.connect(this.auxSendBus);
 
       this.channels.push({
@@ -100,6 +105,7 @@ export class ConsoleEngine {
         inputNode,
         micWorklet,
         faderNode,
+        soloGateNode,
         pannerNode,
         auxSendNode,
         analyser,
@@ -110,7 +116,8 @@ export class ConsoleEngine {
           panPos: cfg.panPos,
           auxSend: cfg.auxSend,
           pad: false,
-          phaseInvert: false
+          phaseInvert: false,
+          solo: false
         }
       });
     }
@@ -207,6 +214,22 @@ export class ConsoleEngine {
     if (!ch) return;
     ch.state.phaseInvert = Boolean(inverted);
     ch.micWorklet.parameters.get('phaseInvert').setValueAtTime(inverted ? 1 : 0, this.ctx.currentTime);
+  }
+
+  setChannelSolo(chIdx, solo) {
+    const ch = this.channels[chIdx];
+    if (!ch) return;
+    ch.state.solo = Boolean(solo);
+    this._updateSoloGates();
+  }
+
+  _updateSoloGates() {
+    const anySolo = this.channels.some((c) => c.state.solo);
+    const now = this.ctx.currentTime;
+    for (const ch of this.channels) {
+      const open = !anySolo || ch.state.solo;
+      ch.soloGateNode.gain.setTargetAtTime(open ? 1.0 : 0.0, now, 0.015);
+    }
   }
 
   /**

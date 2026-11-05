@@ -117,6 +117,7 @@ export class AudioEngine {
     // Stage S-01: 4 Acoustic Stems -> Stage S-02: Live Room 4x4 Acoustic Matrix + Dry A/B Reference
     const s01Sum = this.ctx.createGain();
     s01Sum.gain.value = 0.4;
+    this.dryChannelScales = [];
 
     for (let i = 0; i < 4; i++) {
       // Connect stem i into Live Room Source i
@@ -128,6 +129,7 @@ export class AudioEngine {
       dryPan.pan.value = this.consoleEngine.channels[i].state.panPos;
       const dryScale = this.ctx.createGain();
       dryScale.gain.value = 0.38;
+      this.dryChannelScales.push(dryScale);
       this.stemGenerator.outputNodes[i].connect(dryScale);
       dryScale.connect(dryPan);
       dryPan.connect(this.dryReferenceBus);
@@ -180,13 +182,36 @@ export class AudioEngine {
   }
 
   /**
+   * Solos a microphone/channel element so you hear that microphone (plus any 4x4 room bleed
+   * picked up by that mic when 4x4 bleed is ON) while keeping all sources active in the Live Room
+   * and keeping the mixer channel faders working as normal.
+   */
+  setElementSolo(idx, solo) {
+    if (!this.stemGenerator || !this.consoleEngine) return;
+    this.stemGenerator.setSolo(idx, solo);
+    this.consoleEngine.setChannelSolo(idx, solo);
+    this._updateDryReferenceRouting();
+  }
+
+  _updateDryReferenceRouting() {
+    if (!this.dryChannelScales || !this.stemGenerator) return;
+    const anySolo = this.stemGenerator.sources.some((s) => s.solo);
+    const now = this.ctx.currentTime;
+    for (let i = 0; i < 4; i++) {
+      const s = this.stemGenerator.sources[i];
+      const active = !anySolo || s.solo;
+      this.dryChannelScales[i].gain.setTargetAtTime(active ? 0.38 : 0.0, now, 0.015);
+    }
+  }
+
+  /**
    * Synchronizes primary Source-to-Mic distances from the 2D Room into each channel's MicWorklet
    * so moving a microphone closer to its source dynamically increases 1st-order Proximity Bass Boost!
    */
   syncRoomToConsoleProximity() {
     if (!this.liveRoom || !this.consoleEngine) return;
     for (let m = 0; m < 4; m++) {
-      const distFt = this.liveRoom.getPrimaryMicDistance(m);
+      const distFt = this.liveRoom.getNearestSourceDistance(m);
       this.consoleEngine.setChannelDistance(m, distFt);
       this.liveRoom.mics[m].micModel = this.consoleEngine.channels[m].state.micModel;
     }

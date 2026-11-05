@@ -192,11 +192,12 @@ export class RoomCanvas {
   /**
    * Renders the 2D Live Room Floorplan, Polar Lobes, Acoustic Bleed Rays, Gobos, and Sources/Mics
    */
-  draw(channelPeaks = [0, 0, 0, 0]) {
+  draw(channelPeaks = [0, 0, 0, 0], soloStates = [false, false, false, false]) {
     this.pulsePhase = (this.pulsePhase + 0.06) % (Math.PI * 2);
     const w = this.canvas.width;
     const h = this.canvas.height;
     const ctx = this.ctx;
+    const anySolo = soloStates.some(Boolean);
 
     ctx.clearRect(0, 0, w, h);
 
@@ -252,6 +253,7 @@ export class RoomCanvas {
 
       for (let m = 0; m < 4; m++) {
         if (!this.room.bleedEnabled && s !== m) continue;
+        if (anySolo && !soloStates[m]) continue;
         const mic = this.room.mics[m];
         const mp = this._ftToPx(mic.x, mic.y);
         const cell = this.room.matrixCells[s][m];
@@ -269,6 +271,11 @@ export class RoomCanvas {
           ctx.strokeStyle = src.color;
           ctx.globalAlpha = 0.75;
           ctx.lineWidth = 2.6;
+        } else if (soloStates[m]) {
+          ctx.setLineDash([4, 4]);
+          ctx.strokeStyle = src.color;
+          ctx.globalAlpha = 0.55;
+          ctx.lineWidth = 1.8;
         } else {
           ctx.setLineDash([3, 5]);
           ctx.strokeStyle = 'rgba(226, 223, 215, 0.25)';
@@ -277,13 +284,13 @@ export class RoomCanvas {
         ctx.stroke();
         ctx.restore();
 
-        // Draw primary Source-to-Mic distance & propagation delay label
-        if (s === m) {
+        // Draw Source-to-Mic distance & propagation delay label (primary path, or all active bleed paths into a soloed mic)
+        if (s === m || (anySolo && soloStates[m] && this.room.bleedEnabled)) {
           const midX = (sp.px + mp.px) * 0.5;
           const midY = (sp.py + mp.py) * 0.5;
           ctx.fillStyle = 'rgba(14, 16, 18, 0.9)';
           ctx.fillRect(midX - 34, midY - 9, 68, 17);
-          ctx.fillStyle = cell.occludedByGobo ? '#f87171' : '#fcd34d';
+          ctx.fillStyle = cell.occludedByGobo ? '#f87171' : s === m ? '#fcd34d' : src.color;
           ctx.font = 'bold 10.5px "Courier Prime", monospace';
           ctx.textAlign = 'center';
           ctx.fillText(`${cell.distanceFt.toFixed(1)}' (${cell.delayMs.toFixed(1)}ms)`, midX, midY + 3);
@@ -293,6 +300,7 @@ export class RoomCanvas {
 
     // 3. Draw Microphone Polar Pattern Lobes P(theta) = (1 - beta) + beta * cos(theta)
     for (let m = 0; m < 4; m++) {
+      if (anySolo && !soloStates[m]) continue;
       const mic = this.room.mics[m];
       const mp = this._ftToPx(mic.x, mic.y);
       const lobeRadiusPx = 56;
@@ -420,6 +428,10 @@ export class RoomCanvas {
       const mp = this._ftToPx(mic.x, mic.y);
       const aimX = mp.px + Math.cos(mic.angle) * 28;
       const aimY = mp.py + Math.sin(mic.angle) * 28;
+      const isDimmed = anySolo && !soloStates[m];
+
+      ctx.save();
+      if (isDimmed) ctx.globalAlpha = 0.35;
 
       // Aim vector line & handle
       ctx.strokeStyle = '#fbbf24';
@@ -435,9 +447,9 @@ export class RoomCanvas {
       ctx.fill();
 
       // Mic body capsule
-      ctx.fillStyle = '#292d32';
-      ctx.strokeStyle = '#f59e0b';
-      ctx.lineWidth = 2.5;
+      ctx.fillStyle = soloStates[m] ? '#451a03' : '#292d32';
+      ctx.strokeStyle = soloStates[m] ? '#fbbf24' : '#f59e0b';
+      ctx.lineWidth = soloStates[m] ? 3.2 : 2.5;
       ctx.beginPath();
       ctx.arc(mp.px, mp.py, 13.5, 0, Math.PI * 2);
       ctx.fill();
@@ -451,7 +463,12 @@ export class RoomCanvas {
 
       ctx.fillStyle = '#fcd34d';
       ctx.font = 'bold 10px "Courier Prime", monospace';
-      ctx.fillText(micCodes[mic.micModel] || 'U47', mp.px, mp.py + 22);
+      ctx.fillText(
+        soloStates[m] ? `${micCodes[mic.micModel] || 'U47'} [SOLO]` : (micCodes[mic.micModel] || 'U47'),
+        mp.px,
+        mp.py + 22
+      );
+      ctx.restore();
     }
   }
 }

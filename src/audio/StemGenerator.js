@@ -382,19 +382,14 @@ export class StemGenerator {
 
   setSolo(stemIndex, solo) {
     this.sources[stemIndex].solo = Boolean(solo);
-    this._updateGainRouting();
   }
 
   _updateGainRouting() {
-    const anySolo = this.sources.some((s) => s.solo);
     const now = this.ctx.currentTime;
 
     for (let i = 0; i < 4; i++) {
       const s = this.sources[i];
-      let active = !s.muted;
-      if (anySolo) {
-        active = s.solo && !s.muted;
-      }
+      const active = !s.muted;
       this.outputNodes[i].gain.setTargetAtTime(active ? 1.0 : 0.0, now, 0.015);
     }
   }

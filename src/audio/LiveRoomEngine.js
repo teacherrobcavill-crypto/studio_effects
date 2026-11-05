@@ -325,6 +325,23 @@ export class LiveRoomEngine {
     return this.matrixCells[micIndex][micIndex].distanceFt;
   }
 
+  /**
+   * Returns the distance (ft) from Mic m to the closest active sound source in the room
+   * (or its paired primary source when 4x4 bleed is disabled) so moving a mic near any instrument
+   * dynamically engages realistic proximity effect.
+   */
+  getNearestSourceDistance(micIndex) {
+    if (!this.bleedEnabled) {
+      return this.matrixCells[micIndex][micIndex].distanceFt;
+    }
+    let minDist = Infinity;
+    for (let s = 0; s < 4; s++) {
+      const d = this.matrixCells[s][micIndex].distanceFt;
+      if (d < minDist) minDist = d;
+    }
+    return minDist;
+  }
+
   setRoomDamping(dampingVal) {
     this.roomDamping = Math.max(0.1, Math.min(0.85, dampingVal));
     this.updateAcoustics();

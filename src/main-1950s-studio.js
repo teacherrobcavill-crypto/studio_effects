@@ -8,7 +8,6 @@ import { AudioEngine } from './audio/Studio1950AudioEngine.js';
 import { RackController } from './ui/RackController.js';
 import { VUMeterCanvas } from './ui/VUMeterCanvas.js';
 import { RoomCanvas } from './ui/RoomCanvas.js';
-import { SignalFlowCanvas } from './ui/SignalFlowCanvas.js';
 import {
   initDeclarativeTips,
   registerHubAudioCoordinator,
@@ -33,12 +32,6 @@ class StudioApp {
       mode: 'gr',
       label: '660 VARI-MU'
     });
-
-    // Signal Flow Canvas (Stages S-01 through S-09)
-    this.signalFlowCanvas = new SignalFlowCanvas(
-      document.getElementById('signal-flow-canvas'),
-      (stageId, bypassed) => this._handleStageBypassFromCanvas(stageId, bypassed)
-    );
 
     this.roomCanvas = null;
     this.lastFrameTime = performance.now();
@@ -118,8 +111,10 @@ class StudioApp {
         await this._ensureAudioReady();
         const idx = parseInt(btn.dataset.stemSolo, 10);
         const next = !this.audio.stemGenerator.sources[idx].solo;
-        this.audio.stemGenerator.setSolo(idx, next);
-        btn.classList.toggle('active', next);
+        this.audio.setElementSolo(idx, next);
+        document.querySelectorAll(`[data-stem-solo="${idx}"]`).forEach((b) => {
+          b.classList.toggle('active', next);
+        });
       });
     });
 
@@ -129,7 +124,9 @@ class StudioApp {
         const idx = parseInt(btn.dataset.stemMute, 10);
         const next = !this.audio.stemGenerator.sources[idx].muted;
         this.audio.stemGenerator.setMute(idx, next);
-        btn.classList.toggle('active', next);
+        document.querySelectorAll(`[data-stem-mute="${idx}"]`).forEach((b) => {
+          b.classList.toggle('active', next);
+        });
       });
     });
 
@@ -262,12 +259,34 @@ class StudioApp {
   async _ensureAudioReady() {
     if (!this.audio.isInitialized) {
       await this.audio.init();
-      // Attach interactive 2D RoomCanvas once LiveRoomEngine is initialized
-      this.roomCanvas = new RoomCanvas(
-        document.getElementById('room-canvas'),
-        this.audio.liveRoom,
-        () => this.audio.syncRoomToConsoleProximity()
-      );
+      // If user dragged mics/sources/gobos on the preview canvas before audio started, copy their positions
+      if (this.previewRoom) {
+        for (let i = 0; i < 4; i++) {
+          this.audio.liveRoom.sources[i].x = this.previewRoom.sources[i].x;
+          this.audio.liveRoom.sources[i].y = this.previewRoom.sources[i].y;
+          this.audio.liveRoom.mics[i].x = this.previewRoom.mics[i].x;
+          this.audio.liveRoom.mics[i].y = this.previewRoom.mics[i].y;
+          this.audio.liveRoom.mics[i].angle = this.previewRoom.mics[i].angle;
+        }
+        for (let g = 0; g < this.previewRoom.gobos.length; g++) {
+          this.audio.liveRoom.gobos[g].x = this.previewRoom.gobos[g].x;
+          this.audio.liveRoom.gobos[g].y = this.previewRoom.gobos[g].y;
+          this.audio.liveRoom.gobos[g].angle = this.previewRoom.gobos[g].angle;
+        }
+        this.audio.syncRoomToConsoleProximity();
+      }
+      // Point the existing RoomCanvas instance to the live room engine so active drags aren't interrupted
+      if (this.fallbackRoomCanvas) {
+        this.fallbackRoomCanvas.room = this.audio.liveRoom;
+        this.fallbackRoomCanvas.onRoomChanged = () => this.audio.syncRoomToConsoleProximity();
+        this.roomCanvas = this.fallbackRoomCanvas;
+      } else {
+        this.roomCanvas = new RoomCanvas(
+          document.getElementById('room-canvas'),
+          this.audio.liveRoom,
+          () => this.audio.syncRoomToConsoleProximity()
+        );
+      }
     } else if (this.audio.ctx.state === 'suspended') {
       await this.audio.ctx.resume();
     }
@@ -285,12 +304,12 @@ class StudioApp {
     label.textContent = playing ? 'STOP STUDIO SESSION' : 'START STUDIO SESSION';
 
     if (playing) {
-      badge.textContent = 'ON AIR — RECORDING 48kHz / 32-BIT FLOAT WORKLETS';
-      badge.className = 'text-[11px] px-2 py-0.5 rounded bg-red-950/90 text-red-300 border border-red-500/60 font-bold';
+      badge.textContent = 'ON AIR';
+      badge.className = 'text-[10px] px-1.5 py-0.5 rounded bg-red-950/90 text-red-300 border border-red-500/60 font-bold whitespace-nowrap';
       powerLamp.className = 'jewel-lamp active-red';
     } else {
-      badge.textContent = 'READY — SESSION PAUSED';
-      badge.className = 'text-[11px] px-2 py-0.5 rounded bg-stone-900 text-amber-400 border border-amber-500/40 font-bold';
+      badge.textContent = 'PAUSED';
+      badge.className = 'text-[10px] px-1.5 py-0.5 rounded bg-stone-900 text-amber-400 border border-amber-500/40 font-bold whitespace-nowrap';
       powerLamp.className = 'jewel-lamp active-amber';
     }
 
@@ -339,12 +358,6 @@ class StudioApp {
       btn.classList.toggle('active', !bypassed);
       btn.textContent = bypassed ? 'LATHE BYP' : 'LATHE IN';
     }
-    this.signalFlowCanvas.setStageBypassState(stageId, bypassed);
-  }
-
-  _handleStageBypassFromCanvas(stageId, bypassed) {
-    if (!this.audio.isInitialized) return;
-    this._setStageBypass(stageId, bypassed);
   }
 
   /**
@@ -474,25 +487,25 @@ class StudioApp {
    */
   _startRenderLoop() {
     // Create offline preview RoomCanvas before audio starts so the 2D floorplan is visible immediately
-    const previewRoom = {
+    this.previewRoom = {
       roomDims: { width: 35.0, depth: 25.0, height: 14.0 },
       rt60: 0.54,
       bleedEnabled: true,
       sources: [
-        { id: 0, name: 'Upright Bass', x: 6.2, y: 5.5, z: 3.5, color: '#f59e0b' },
-        { id: 1, name: 'Archtop Guitar', x: 28.8, y: 5.5, z: 3.0, color: '#38bdf8' },
-        { id: 2, name: 'Calfskin Kit', x: 17.5, y: 3.8, z: 3.5, color: '#10b981' },
-        { id: 3, name: 'Lead Vocal', x: 17.5, y: 21.0, z: 5.2, color: '#f43f5e' }
+        { id: 0, name: 'Upright Bass', x: 6.5, y: 7.0, z: 3.5, color: '#f59e0b' },
+        { id: 1, name: 'Archtop Guitar', x: 28.5, y: 7.0, z: 3.0, color: '#38bdf8' },
+        { id: 2, name: 'Calfskin Kit', x: 17.5, y: 4.2, z: 3.5, color: '#10b981' },
+        { id: 3, name: 'Lead Vocal', x: 17.5, y: 20.8, z: 5.2, color: '#f43f5e' }
       ],
       mics: [
-        { id: 0, name: 'Mic 1', x: 6.8, y: 9.2, z: 3.5, angle: -Math.PI / 2, micModel: 1 },
-        { id: 1, name: 'Mic 2', x: 28.2, y: 9.0, z: 3.0, angle: -Math.PI / 2, micModel: 2 },
-        { id: 2, name: 'Mic 3', x: 17.5, y: 7.8, z: 6.2, angle: -Math.PI / 2, micModel: 0 },
-        { id: 3, name: 'Mic 4', x: 17.5, y: 17.6, z: 5.2, angle: Math.PI / 2, micModel: 0 }
+        { id: 0, name: 'Mic 1 (Bass)', x: 7.2, y: 10.5, z: 3.5, angle: -Math.PI / 2, micModel: 1 },
+        { id: 1, name: 'Mic 2 (Guitar)', x: 27.8, y: 10.5, z: 3.0, angle: -Math.PI / 2, micModel: 2 },
+        { id: 2, name: 'Mic 3 (Drums OH)', x: 17.5, y: 8.6, z: 6.2, angle: -Math.PI / 2, micModel: 0 },
+        { id: 3, name: 'Mic 4 (Vocal)', x: 17.5, y: 17.2, z: 5.2, angle: Math.PI / 2, micModel: 0 }
       ],
       gobos: [
-        { id: 0, name: 'Gobo A', x: 11.8, y: 11.2, angle: 0.38, length: 8.5 },
-        { id: 1, name: 'Gobo B', x: 23.2, y: 11.2, angle: -0.38, length: 8.5 }
+        { id: 0, name: 'Gobo A', x: 11.8, y: 13.0, angle: 0.38, length: 8.5 },
+        { id: 1, name: 'Gobo B', x: 23.2, y: 13.0, angle: -0.38, length: 8.5 }
       ],
       getGoboEndpoints(g) {
         const half = g.length * 0.5;
@@ -513,9 +526,9 @@ class StudioApp {
       updateAcoustics() {}
     };
 
-    const fallbackRoomCanvas = new RoomCanvas(
+    this.fallbackRoomCanvas = new RoomCanvas(
       document.getElementById('room-canvas'),
-      previewRoom,
+      this.previewRoom,
       async () => {
         await this._ensureAudioReady();
       }
@@ -535,22 +548,22 @@ class StudioApp {
       this.vuGr.updateAndDraw(telemetry.variMuGrDb || 0, 0, dt);
 
       // 2. Update 2D Live Room Floorplan
-      const activeRoomCanvas = this.roomCanvas || fallbackRoomCanvas;
+      const activeRoomCanvas = this.roomCanvas || this.fallbackRoomCanvas;
       const chPeaks = this.audio.isInitialized
         ? this.audio.consoleEngine.telemetry.channelPeaks
         : [0.15, 0.15, 0.15, 0.15];
-      activeRoomCanvas.draw(chPeaks);
+      const soloStates = this.audio.isInitialized
+        ? this.audio.consoleEngine.channels.map((ch) => ch.state.solo)
+        : [false, false, false, false];
+      activeRoomCanvas.draw(chPeaks, soloStates);
 
-      // 3. Update Animated Signal Flow Block Diagram (Stages S-01 through S-09)
-      this.signalFlowCanvas.draw(telemetry);
-
-      // 4. Update Telemetry Summary Bar
+      // 3. Update Telemetry Summary in Header
       if (this.audio.isInitialized && summaryEl) {
         summaryEl.textContent =
           `RT60: ${(telemetry.rt60 || 0.54).toFixed(2)}s | ` +
-          `Slapback: ${telemetry.slapDelayMs || 135}ms (${this.state.slapSpeedIps} IPS) | ` +
-          `Stylus Velocity: ${telemetry.latheIps || 19.5} ips | ` +
-          `Groove HF Cutoff: ${((telemetry.latheScanHz || 14500) / 1000).toFixed(1)} kHz`;
+          `Slap: ${telemetry.slapDelayMs || 135}ms | ` +
+          `Lathe: ${telemetry.latheIps || 19.5} ips | ` +
+          `HF: ${((telemetry.latheScanHz || 14500) / 1000).toFixed(1)} kHz`;
       }
 
       requestAnimationFrame(tick);
