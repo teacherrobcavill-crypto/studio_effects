@@ -637,7 +637,9 @@ class PlateReverbApp {
 
         if (mode === 'spring') {
           this.audioEngine.setActiveUnit('spring');
-        } else if (mode === 'plate') {
+        } else if (mode === 'side-by-side' || mode === 'side') {
+          this.audioEngine.setActiveUnit('side-by-side');
+        } else {
           this.audioEngine.setActiveUnit('plate');
         }
 
@@ -648,19 +650,19 @@ class PlateReverbApp {
       });
     });
 
-    // Clicking inside either panel in Side-by-Side mode activates its audio path automatically
+    // In single-panel modes, clicking a panel focuses it. In side-by-side, both remain active.
     const platePanel = document.getElementById('unit-panel-plate');
     const springPanel = document.getElementById('unit-panel-spring');
     if (platePanel) {
       platePanel.addEventListener('pointerdown', () => {
-        if (this.audioEngine.activeUnit !== 'plate') {
+        if (this.audioEngine.activeUnit !== 'side-by-side' && this.audioEngine.activeUnit !== 'plate') {
           this.audioEngine.setActiveUnit('plate');
         }
       });
     }
     if (springPanel) {
       springPanel.addEventListener('pointerdown', () => {
-        if (this.audioEngine.activeUnit !== 'spring') {
+        if (this.audioEngine.activeUnit !== 'side-by-side' && this.audioEngine.activeUnit !== 'spring') {
           this.audioEngine.setActiveUnit('spring');
         }
       });
@@ -748,7 +750,13 @@ class PlateReverbApp {
 
     // Kick Tank (Mechanical Spring Crash) Buttons
     const triggerKick = async () => {
-      this.audioEngine.setActiveUnit('spring');
+      if (!this.audioEngine.isInitialized) await this.audioEngine.init();
+      await this.audioEngine.setPower(true);
+      if (this.audioEngine.activeUnit !== 'side-by-side') {
+        this.audioEngine.setActiveUnit('spring');
+      } else if (this.audioEngine.springPathGain) {
+        this.audioEngine.springPathGain.gain.setTargetAtTime(1.0, this.audioEngine.ctx.currentTime, 0.015);
+      }
       await this.audioEngine.kickSpringTank();
       if (this.springVisualizer) this.springVisualizer.triggerMechanicalKick();
       this._updatePowerUI(true);
@@ -763,15 +771,20 @@ class PlateReverbApp {
     const surfBtn = document.getElementById('btn-spring-surf');
     if (surfBtn) {
       surfBtn.addEventListener('click', async () => {
-        this.audioEngine.setActiveUnit('spring');
+        if (!this.audioEngine.isInitialized) await this.audioEngine.init();
+        await this.audioEngine.setPower(true);
+        if (this.audioEngine.activeUnit !== 'side-by-side') {
+          this.audioEngine.setActiveUnit('spring');
+        } else if (this.audioEngine.springPathGain) {
+          this.audioEngine.springPathGain.gain.setTargetAtTime(1.0, this.audioEngine.ctx.currentTime, 0.015);
+        }
         this.audioEngine.sourceType = 'stem';
         this.audioEngine.stemSubType = 'surf';
         if (this.audioEngine.isLoopPlaying) {
           this.audioEngine.stopLoop();
           surfBtn.textContent = '🎸 PLAY 1962 SURF GUITAR';
         } else {
-          await this.audioEngine.init();
-          this.audioEngine.startLoop();
+          await this.audioEngine.startLoop();
           surfBtn.textContent = '⏹ STOP SURF GUITAR';
         }
         this._updatePowerUI(true);
@@ -783,7 +796,13 @@ class PlateReverbApp {
     const rimBtn = document.getElementById('btn-spring-rimshot');
     if (rimBtn) {
       rimBtn.addEventListener('click', async () => {
-        this.audioEngine.setActiveUnit('spring');
+        if (!this.audioEngine.isInitialized) await this.audioEngine.init();
+        await this.audioEngine.setPower(true);
+        if (this.audioEngine.activeUnit !== 'side-by-side') {
+          this.audioEngine.setActiveUnit('spring');
+        } else if (this.audioEngine.springPathGain) {
+          this.audioEngine.springPathGain.gain.setTargetAtTime(1.0, this.audioEngine.ctx.currentTime, 0.015);
+        }
         await this.audioEngine.triggerImpulse('rimshot');
         this._updatePowerUI(true);
       });
@@ -806,11 +825,17 @@ class PlateReverbApp {
         this._populateSubSelect(srcType, this.subSelect);
 
         try {
-          this.audioEngine.setActiveUnit('spring');
+          if (!this.audioEngine.isInitialized) await this.audioEngine.init();
+          await this.audioEngine.setPower(true);
+          if (this.audioEngine.activeUnit !== 'side-by-side') {
+            this.audioEngine.setActiveUnit('spring');
+          } else if (this.audioEngine.springPathGain) {
+            this.audioEngine.springPathGain.gain.setTargetAtTime(1.0, this.audioEngine.ctx.currentTime, 0.015);
+          }
           await this.audioEngine.setSourceType(srcType);
           this._updatePowerUI(true);
           if (srcType === 'stem') {
-            this.audioEngine.startLoop();
+            await this.audioEngine.startLoop();
           } else if (srcType === 'file' && !this.audioEngine.customFileBuffer) {
             this.fileInput.click();
           }
@@ -823,18 +848,24 @@ class PlateReverbApp {
     });
 
     if (this.springSubSelect) {
-      this.springSubSelect.addEventListener('change', (e) => {
+      this.springSubSelect.addEventListener('change', async (e) => {
         const val = e.target.value;
-        this.audioEngine.setActiveUnit('spring');
+        if (!this.audioEngine.isInitialized) await this.audioEngine.init();
+        await this.audioEngine.setPower(true);
+        if (this.audioEngine.activeUnit !== 'side-by-side') {
+          this.audioEngine.setActiveUnit('spring');
+        } else if (this.audioEngine.springPathGain) {
+          this.audioEngine.springPathGain.gain.setTargetAtTime(1.0, this.audioEngine.ctx.currentTime, 0.015);
+        }
         if (this.subSelect) this.subSelect.value = val;
         if (this.audioEngine.sourceType === 'impulse') {
           this.audioEngine.impulseSubType = val;
-          this.audioEngine.triggerImpulse(val);
+          await this.audioEngine.triggerImpulse(val);
           this._updatePowerUI(true);
         } else if (this.audioEngine.sourceType === 'stem') {
           this.audioEngine.stemSubType = val;
           if (this.audioEngine.isLoopPlaying) {
-            this.audioEngine.startLoop();
+            await this.audioEngine.startLoop();
           }
         }
       });
@@ -842,7 +873,13 @@ class PlateReverbApp {
 
     if (this.springTrigBtn) {
       this.springTrigBtn.addEventListener('click', async () => {
-        this.audioEngine.setActiveUnit('spring');
+        if (!this.audioEngine.isInitialized) await this.audioEngine.init();
+        await this.audioEngine.setPower(true);
+        if (this.audioEngine.activeUnit !== 'side-by-side') {
+          this.audioEngine.setActiveUnit('spring');
+        } else if (this.audioEngine.springPathGain) {
+          this.audioEngine.springPathGain.gain.setTargetAtTime(1.0, this.audioEngine.ctx.currentTime, 0.015);
+        }
         if (this.audioEngine.sourceType === 'impulse') {
           await this.audioEngine.triggerImpulse(this.audioEngine.impulseSubType);
         } else {
@@ -855,7 +892,13 @@ class PlateReverbApp {
 
     if (this.springLoopBtn) {
       this.springLoopBtn.addEventListener('click', async () => {
-        this.audioEngine.setActiveUnit('spring');
+        if (!this.audioEngine.isInitialized) await this.audioEngine.init();
+        await this.audioEngine.setPower(true);
+        if (this.audioEngine.activeUnit !== 'side-by-side') {
+          this.audioEngine.setActiveUnit('spring');
+        } else if (this.audioEngine.springPathGain) {
+          this.audioEngine.springPathGain.gain.setTargetAtTime(1.0, this.audioEngine.ctx.currentTime, 0.015);
+        }
         if (this.audioEngine.sourceType === 'impulse') {
           this.audioEngine.sourceType = 'stem';
           springSourceTabs.forEach((b) => {

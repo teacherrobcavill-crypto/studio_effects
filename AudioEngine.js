@@ -776,6 +776,8 @@ export class AudioEngine {
     this.springParams = {
       topology: 0,           // 0 = Version A (1961 Fender 6G15 Standalone 6K6), 1 = Version B (1963 AB763 Twin Reverb 12AT7)
       tankEra: 0,            // 0 = 1960 Accutronics Type 4, 1 = 1939 Hammond Oil-Damped, 2 = 1930s Bell Labs Delay Line
+      inputGainDb: 0.0,      // Driver input gain in dB
+      preDelayMs: 0.0,       // Pre-delay in ms
       wireRadiusMm: 0.25,    // r (mm)
       helixRadiusMm: 3.0,    // R (mm)
       wireLengthM: 2.65,     // L (m)
@@ -922,7 +924,11 @@ export class AudioEngine {
     this._synthesizeImpulses();
     this._synthesizeProceduralStems();
 
-    // Apply initial parameter values
+    // Mark as initialized and powered FIRST so parameter setters and ramps execute
+    this.isInitialized = true;
+    this.isPowered = true;
+
+    // Apply initial Plate parameter values
     this.setGain(this.params.inputGainDb);
     this.setPreDelay(this.params.preDelayMs);
     this.setDecay(this.params.decaySeconds);
@@ -934,6 +940,8 @@ export class AudioEngine {
     this.setOutputLevel(this.params.outputGainDb);
 
     // Apply initial Spring Reverb parameters
+    this.setSpringGain(this.springParams.inputGainDb);
+    this.setSpringPreDelay(this.springParams.preDelayMs);
     this.setSpringTopology(this.springParams.topology);
     this.setSpringTankEra(this.springParams.tankEra);
     this.setSpringWireRadius(this.springParams.wireRadiusMm);
@@ -945,17 +953,24 @@ export class AudioEngine {
     this.setSpringAcousticFeedback(this.springParams.acousticFeedback);
 
     this.setActiveUnit(this.activeUnit);
-
-    this.isInitialized = true;
-    this.isPowered = true;
   }
 
   setActiveUnit(unitName) {
-    this.activeUnit = unitName === 'spring' ? 'spring' : 'plate';
+    if (unitName === 'spring') {
+      this.activeUnit = 'spring';
+    } else if (unitName === 'side' || unitName === 'side-by-side' || unitName === 'split' || unitName === 'both') {
+      this.activeUnit = 'side-by-side';
+    } else {
+      this.activeUnit = 'plate';
+    }
+
     if (!this.isInitialized) return;
     const now = this.ctx.currentTime;
     if (this.activeUnit === 'spring') {
       this.platePathGain.gain.setTargetAtTime(0.0, now, 0.015);
+      this.springPathGain.gain.setTargetAtTime(1.0, now, 0.015);
+    } else if (this.activeUnit === 'side-by-side') {
+      this.platePathGain.gain.setTargetAtTime(1.0, now, 0.015);
       this.springPathGain.gain.setTargetAtTime(1.0, now, 0.015);
     } else {
       this.platePathGain.gain.setTargetAtTime(1.0, now, 0.015);
@@ -1052,9 +1067,13 @@ export class AudioEngine {
       .setTargetAtTime(this.springParams.acousticFeedback, this.ctx.currentTime, 0.015);
   }
 
-   async kickSpringTank() {
+  async kickSpringTank() {
     if (!this.isInitialized) await this.init();
+    await this.setPower(true);
     if (this.ctx.state === 'suspended') await this.ctx.resume();
+    if (this.springPathGain) {
+      this.springPathGain.gain.setTargetAtTime(1.0, this.ctx.currentTime, 0.015);
+    }
     this.springWorkletNode.port.postMessage({ type: 'KICK_TANK' });
   }
 
@@ -1196,6 +1215,7 @@ export class AudioEngine {
 
   async triggerImpulse(subType = this.impulseSubType) {
     if (!this.isInitialized) await this.init();
+    await this.setPower(true);
     if (this.ctx.state === 'suspended') await this.ctx.resume();
 
     this.impulseSubType = subType;
@@ -1210,6 +1230,7 @@ export class AudioEngine {
 
   async toggleLoopPlayback() {
     if (!this.isInitialized) await this.init();
+    await this.setPower(true);
     if (this.ctx.state === 'suspended') await this.ctx.resume();
 
     if (this.isLoopPlaying) {
