@@ -60,7 +60,7 @@ export class SceneManager {
     // 3D Acoustic Ray Tracer & Wavefront Visualizer
     this.rayTracer = new RayTracer3D(this.scene);
 
-    // Custom Raycast Plane-Intersection Dragging (XZ horizontal + Shift for Y vertical)
+    // Custom Raycast Plane-Intersection Dragging (XZ horizontal + Shift/Alt modifier for Y vertical)
     this.raycaster = new THREE.Raycaster();
     this.pointer = new THREE.Vector2();
     this.dragPlane = new THREE.Plane();
@@ -68,6 +68,9 @@ export class SceneManager {
     this.dragOffset = new THREE.Vector3();
     this.activeDragTarget = null; // 'source' | 'mic' | null
     this.hoveredTarget = null;
+    this.activePointerId = null;
+    this.lastPointerScreenPos = { x: 0, y: 0 };
+    this.isModifierDown = false;
 
     this._bindEvents();
 
@@ -258,8 +261,8 @@ export class SceneManager {
 
     // Invisible larger hit sphere for effortless mouse/touch grabbing
     const hitSphere = new THREE.Mesh(
-      new THREE.SphereGeometry(0.42, 12, 12),
-      new THREE.MeshBasicMaterial({ visible: false })
+      new THREE.SphereGeometry(0.48, 16, 16),
+      new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
     );
     hitSphere.userData = { dragId: 'source' };
     group.add(hitSphere);
@@ -320,12 +323,12 @@ export class SceneManager {
 
     // Invisible hit sphere for easy dragging
     const hitSphere = new THREE.Mesh(
-      new THREE.SphereGeometry(0.42, 12, 12),
-      new THREE.MeshBasicMaterial({ visible: false })
+      new THREE.SphereGeometry(0.45, 16, 16),
+      new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })
     );
     hitSphere.userData = { dragId: 'mic' };
     group.add(hitSphere);
-    this.draggableRoots.push(hitSphere, capsule);
+    this.draggableRoots.push(hitSphere, capsule, ring);
 
     // Vertical floor stand line
     const stemGeom = new THREE.BufferGeometry().setFromPoints([
@@ -452,6 +455,36 @@ export class SceneManager {
     };
   }
 
+  _isVerticalModifier(e) {
+    return Boolean(e && (e.shiftKey || e.altKey || e.ctrlKey || e.metaKey));
+  }
+
+  _updateElevationTooltip(visible) {
+    const badge = document.getElementById('hud-elevation-badge');
+    const hint = document.getElementById('interaction-hint');
+    const isVertical = this.isModifierDown;
+
+    if (hint) {
+      hint.classList.toggle('active-vertical', Boolean(this.activeDragTarget && isVertical));
+    }
+
+    if (!badge) return;
+
+    if (!visible || !this.activeDragTarget) {
+      badge.style.display = 'none';
+      return;
+    }
+
+    const isMic = this.activeDragTarget === 'mic';
+    const pos = isMic ? this.state.micPos : this.state.sourcePos;
+    const label = isMic ? 'Microphone' : 'Sound Source';
+    const hMax = this.state.dimensions.height;
+
+    badge.className = `elevation-badge ${isMic ? 'cyan' : 'amber'}`;
+    badge.innerHTML = `⇕ ${label} Height (Y): <strong>${pos.y.toFixed(2)} m</strong> <span style="opacity:0.75; font-size:9.5px; margin-left:4px;">[Ceiling: ${hMax.toFixed(1)}m · Floor: 0.0m]</span>`;
+    badge.style.display = 'inline-flex';
+  }
+
   _bindEvents() {
     const dom = this.renderer.domElement;
 
@@ -461,7 +494,36 @@ export class SceneManager {
       this.pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
     };
 
+    const updateCursor = (e) => {
+      const isVertical = this._isVerticalModifier(e) || this.isModifierDown;
+      if (this.activeDragTarget) {
+        dom.style.cursor = isVertical ? 'ns-resize' : 'grabbing';
+      } else if (this.hoveredTarget) {
+        dom.style.cursor = isVertical ? 'ns-resize' : 'grab';
+      } else {
+        dom.style.cursor = 'default';
+      }
+      this._updateElevationTooltip(Boolean(this.activeDragTarget));
+    };
+
+    // Keyboard modifier tracking for dynamic elevation cursor & immediate mode switching
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Shift' || e.key === 'Alt' || e.key === 'Control' || e.key === 'Meta') {
+        this.isModifierDown = true;
+        updateCursor(e);
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.key === 'Shift' || e.key === 'Alt' || e.key === 'Control' || e.key === 'Meta') {
+        this.isModifierDown = this._isVerticalModifier(e);
+        updateCursor(e);
+      }
+    });
+
+    // Capture phase pointerdown intercepts interaction before OrbitControls can pan
     dom.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return; // Only primary mouse button drags entities
       updatePointer(e);
       this.raycaster.setFromCamera(this.pointer, this.camera);
       const hits = this.raycaster.intersectObjects(this.draggableRoots, true);
@@ -473,70 +535,126 @@ export class SceneManager {
         }
         const dragId = obj?.userData?.dragId;
         if (dragId) {
+          e.stopPropagation();
+          e.stopImmediatePropagation();
           this.activeDragTarget = dragId;
+          this.activePointerId = e.pointerId;
+          try {
+            dom.setPointerCapture(e.pointerId);
+          } catch (_) {}
+
           this.controls.enabled = false;
-          dom.style.cursor = 'grabbing';
+          this.lastPointerScreenPos = { x: e.clientX, y: e.clientY };
+
+          const isVertical = this._isVerticalModifier(e) || this.isModifierDown;
+          dom.style.cursor = isVertical ? 'ns-resize' : 'grabbing';
 
           const targetGroup = dragId === 'source' ? this.sourceGroup : this.micGroup;
-          if (e.shiftKey) {
-            // Shift + Drag = Vertical Y elevation plane facing camera horizontally
-            const camDir = new THREE.Vector3();
-            this.camera.getWorldDirection(camDir);
-            camDir.y = 0;
-            camDir.normalize();
-            this.dragPlane.setFromNormalAndCoplanarPoint(camDir, targetGroup.position);
-          } else {
-            // Default Drag = Horizontal XZ plane at the object's current height Y
-            this.dragPlane.setFromNormalAndCoplanarPoint(
-              new THREE.Vector3(0, 1, 0),
-              targetGroup.position
-            );
-          }
+          this.dragPlane.setFromNormalAndCoplanarPoint(
+            new THREE.Vector3(0, 1, 0),
+            targetGroup.position
+          );
 
           if (this.raycaster.ray.intersectPlane(this.dragPlane, this.dragIntersectPoint)) {
             this.dragOffset.copy(targetGroup.position).sub(this.dragIntersectPoint);
           }
+
+          this._updateElevationTooltip(true);
         }
       }
-    });
+    }, { capture: true });
 
     window.addEventListener('pointermove', (e) => {
       updatePointer(e);
       this.raycaster.setFromCamera(this.pointer, this.camera);
 
       if (this.activeDragTarget) {
-        if (this.raycaster.ray.intersectPlane(this.dragPlane, this.dragIntersectPoint)) {
-          const newPos = this.dragIntersectPoint.clone().add(this.dragOffset);
-          const posObj =
-            this.activeDragTarget === 'source' ? this.state.sourcePos : this.state.micPos;
+        const isVertical = this._isVerticalModifier(e) || this.isModifierDown;
+        dom.style.cursor = isVertical ? 'ns-resize' : 'grabbing';
 
-          if (e.shiftKey) {
-            posObj.y = newPos.y;
-          } else {
+        const posObj =
+          this.activeDragTarget === 'source' ? this.state.sourcePos : this.state.micPos;
+        const targetGroup =
+          this.activeDragTarget === 'source' ? this.sourceGroup : this.micGroup;
+
+        if (isVertical) {
+          // Vertical elevation adjustment directly driven by vertical mouse movement
+          const deltaScreenY = this.lastPointerScreenPos.y - e.clientY;
+          const rect = dom.getBoundingClientRect();
+          const camDist = this.camera.position.distanceTo(targetGroup.position);
+          const vFovRad = (this.camera.fov * Math.PI) / 180;
+          const visibleHeightAtDist = 2 * Math.tan(vFovRad / 2) * camDist;
+          const metersPerPixel = visibleHeightAtDist / Math.max(1, rect.height);
+
+          posObj.y += deltaScreenY * metersPerPixel;
+          const margin = 0.22;
+          posObj.y = Math.max(margin, Math.min(this.state.dimensions.height - margin, posObj.y));
+
+          // Keep horizontal drag plane & offset synced with new Y position
+          this.dragPlane.setFromNormalAndCoplanarPoint(
+            new THREE.Vector3(0, 1, 0),
+            new THREE.Vector3(posObj.x, posObj.y, posObj.z)
+          );
+          if (this.raycaster.ray.intersectPlane(this.dragPlane, this.dragIntersectPoint)) {
+            this.dragOffset.copy(new THREE.Vector3(posObj.x, posObj.y, posObj.z)).sub(this.dragIntersectPoint);
+          }
+        } else {
+          // Horizontal floor XZ plane dragging
+          this.dragPlane.setFromNormalAndCoplanarPoint(
+            new THREE.Vector3(0, 1, 0),
+            new THREE.Vector3(posObj.x, posObj.y, posObj.z)
+          );
+          if (this.raycaster.ray.intersectPlane(this.dragPlane, this.dragIntersectPoint)) {
+            const newPos = this.dragIntersectPoint.clone().add(this.dragOffset);
             posObj.x = newPos.x;
             posObj.z = newPos.z;
           }
-
-          this.setPositions(this.state.sourcePos, this.state.micPos, this.state.micYawDeg);
-          if (this.onPositionsChanged) {
-            this.onPositionsChanged(this.activeDragTarget);
-          }
         }
+
+        this.lastPointerScreenPos = { x: e.clientX, y: e.clientY };
+        this.setPositions(this.state.sourcePos, this.state.micPos, this.state.micYawDeg);
+        if (this.onPositionsChanged) {
+          this.onPositionsChanged(this.activeDragTarget);
+        }
+        this._updateElevationTooltip(true);
         return;
       }
 
-      // Hover cursor feedback
+      // Hover feedback when not actively dragging
       const hits = this.raycaster.intersectObjects(this.draggableRoots, true);
-      dom.style.cursor = hits.length > 0 ? 'grab' : 'default';
+      if (hits.length > 0) {
+        let obj = hits[0].object;
+        while (obj && !obj.userData?.dragId) {
+          obj = obj.parent;
+        }
+        this.hoveredTarget = obj?.userData?.dragId || null;
+      } else {
+        this.hoveredTarget = null;
+      }
+
+      const isVertical = this._isVerticalModifier(e) || this.isModifierDown;
+      dom.style.cursor = this.hoveredTarget ? (isVertical ? 'ns-resize' : 'grab') : 'default';
+      this.lastPointerScreenPos = { x: e.clientX, y: e.clientY };
     });
 
-    window.addEventListener('pointerup', () => {
+    const endDrag = (e) => {
       if (this.activeDragTarget) {
+        if (this.activePointerId !== null && dom.hasPointerCapture(this.activePointerId)) {
+          try {
+            dom.releasePointerCapture(this.activePointerId);
+          } catch (_) {}
+        }
         this.activeDragTarget = null;
+        this.activePointerId = null;
         this.controls.enabled = true;
-        dom.style.cursor = 'default';
+        const isVertical = this._isVerticalModifier(e) || this.isModifierDown;
+        dom.style.cursor = this.hoveredTarget ? (isVertical ? 'ns-resize' : 'grab') : 'default';
+        this._updateElevationTooltip(false);
       }
-    });
+    };
+
+    window.addEventListener('pointerup', endDrag);
+    window.addEventListener('pointercancel', endDrag);
 
     window.addEventListener('resize', () => {
       if (!this.container) return;
