@@ -14,7 +14,8 @@ export default defineConfig({
         plateReverb: resolve(__dirname, 'plate-reverb.html'),
         vintageSuite: resolve(__dirname, 'app-vintage-suite.html'),
         lexicon224: resolve(__dirname, 'app-lexicon-224.html'),
-        tapeEchoes: resolve(__dirname, 'app-tape-echoes.html')
+        tapeEchoes: resolve(__dirname, 'app-tape-echoes.html'),
+        tapeFlanging: resolve(__dirname, 'app-tape-flanging.html')
       }
     }
   }

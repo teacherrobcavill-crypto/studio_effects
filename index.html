@@ -470,6 +470,15 @@
           </div>
           <span class="tab-audio-dot" title="Audio Status"></span>
         </button>
+
+        <button class="app-tab" data-app-id="app-tape-flanging" data-url="/app-tape-flanging.html" role="tab" aria-selected="false">
+          <span class="era">MODULE 7 · 1966–68</span>
+          <div class="tab-text-col">
+            <span class="tab-name">Studer J37 Tape Flanging</span>
+            <span class="tab-desc">Through-Zero · Thumb Braking · BPO Varispeed · Comb Filters</span>
+          </div>
+          <span class="tab-audio-dot" title="Audio Status"></span>
+        </button>
       </div>
 
       <!-- Audio Coordinator & View Controls -->
@@ -648,6 +657,26 @@
           {
             title: '💡 3. Unlock All 3 Contextual Helpful Hints',
             body: 'Push Input Gain above 150% (Magnetic Saturation), inspect the animated tape transports (Wow & Flutter), and maximize Intensity/Sustain (Runaway Feedback).'
+          }
+        ]
+      },
+      'app-tape-flanging': {
+        tag: 'MODULE 7 · 1966–1968 TAPE FLANGING & ADT',
+        headline: '1966 Dual Studer J37 Mechanical Flanger ("Through the Zero") — Ken Townsend BPO Varispeed, Thumb Braking & Comb Filtering',
+        overview:
+          '<strong>What You Are Learning:</strong> Discover the authentic mechanical method used at Abbey Road and Olympic Studios. By feeding identical audio to twin Studer J37 tape transports and varying Deck B’s speed via physical thumb friction or BPO Varispeed oscillation, the delay offset sweeps across The Zero Point (Δt = 0 ms). When 180° polarity inversion is engaged, total destructive phase cancellation produces the iconic jet-plane swoosh.',
+        experiments: [
+          {
+            title: '🎯 1. Lab 1: Finding The Null (Through-Zero)',
+            body: 'Load the Drums or Noise stem, engage the red 180° Phase Invert button, set Mix to 100%, and tune the BPO Vernier dial until Δt = 0.00 ms for total acoustic cancellation!'
+          },
+          {
+            title: '✈️ 2. Lab 2: Manual Thumb Flanging ("Itchycoo Park")',
+            body: 'Click and drag directly on Deck B’s supply reel rim to drag tape delay past 10 ms, then release to let motor inertia spring across zero and unleash the jet swoosh.'
+          },
+          {
+            title: '👥 3. Lab 3: Flanging vs. ADT (The Haas Boundary)',
+            body: 'Select the Vocals stem. Notice how sweeps below 15 ms sound hollow and comb-filtered, while delays beyond 15–20 ms split into two distinct vocalists (Haas Effect).'
           }
         ]
       }
