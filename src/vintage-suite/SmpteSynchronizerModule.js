@@ -115,6 +115,8 @@ export class SmpteSynchronizerModule {
     );
 
     this.isAudioGraphBuilt = true;
+    this._lastTargetDelay = undefined;
+    this._lastLtcFreq = undefined;
     this.syncAudioParams();
   }
 
@@ -149,11 +151,11 @@ export class SmpteSynchronizerModule {
 
   formatSmpte(totalSeconds) {
     const fps = this.params.frameRate === 29.97 ? 30 : this.params.frameRate;
-    const absSec = Math.max(0, totalSeconds);
+    const absSec = Math.max(0, totalSeconds) + 1e-6;
     const hh = Math.floor(absSec / 3600) % 24;
     const mm = Math.floor((absSec % 3600) / 60);
     const ss = Math.floor(absSec % 60);
-    const ff = Math.floor((absSec - Math.floor(absSec)) * fps);
+    const ff = Math.min(fps - 1, Math.floor((absSec - Math.floor(absSec)) * fps));
     const sep = this.params.frameRate === 29.97 ? ';' : ':';
     const pad = (n) => String(n).padStart(2, '0');
     return {
@@ -206,18 +208,25 @@ export class SmpteSynchronizerModule {
     this.syncState.lastFrameMs = nowMs;
 
     if (this.syncState.dropoutRemainingMs > 0) {
+      const prevDropout = this.syncState.dropoutRemainingMs;
       this.syncState.dropoutRemainingMs = Math.max(
         0,
         this.syncState.dropoutRemainingMs - dtSec * 1000
       );
-      this.syncAudioParams();
+      if (this.syncState.dropoutRemainingMs === 0 && prevDropout > 0) {
+        this.syncAudioParams();
+      }
     }
 
     if (this.syncState.transportRunning) {
-      // Error between Master TC and Slave TC (in seconds)
+      // Advance Master Machine A steady 100% crystal capstan clock
+      this.syncState.masterTimeSec += dtSec;
+
+      // Project Slave Machine B forward at nominal 1.0x speed to measure true drift error
+      const nominalSlaveSec = this.syncState.slaveTimeSec + dtSec;
       const targetSlaveSec =
         this.syncState.masterTimeSec - this.params.subFramePhaseMs / 1000;
-      const errorSec = targetSlaveSec - this.syncState.slaveTimeSec;
+      const errorSec = targetSlaveSec - nominalSlaveSec;
       const absErrFrames = Math.abs(errorSec) * this.params.frameRate;
 
       if (this.syncState.dropoutRemainingMs > 0) {
@@ -230,40 +239,43 @@ export class SmpteSynchronizerModule {
           this.syncState.lockStatus = 'DROPOUT UNLOCK!';
           this.syncState.slaveVarispeedRatio = 0.86;
         }
-        this.syncState.masterTimeSec += dtSec;
         this.syncState.slaveTimeSec += dtSec * this.syncState.slaveVarispeedRatio;
       } else if (absErrFrames > 1.5) {
         // CHASE MODE: Fast capstan varispeed slewing
         this.syncState.lockStatus = 'CHASE SLEW';
         const slew = Math.max(-0.42, Math.min(0.42, errorSec * 3.0));
         this.syncState.slaveVarispeedRatio = 1.0 + slew;
-        this.syncState.masterTimeSec += dtSec;
         this.syncState.slaveTimeSec += dtSec * this.syncState.slaveVarispeedRatio;
-      } else if (absErrFrames > 0.008) {
-        // PHASE LOCK MODE: Brisk proportional-derivative capstan servo pull-in through the flam zone
+      } else if (absErrFrames > 0.025) {
+        // PHASE LOCK MODE: Smooth proportional-derivative capstan servo pull-in through the flam zone
         this.syncState.lockStatus = 'PHASE LOCKING';
-        const fine = Math.max(-0.18, Math.min(0.18, errorSec * 9.5));
+        const fine = Math.max(-0.18, Math.min(0.18, errorSec * 8.5));
         this.syncState.slaveVarispeedRatio = 1.0 + fine;
-        this.syncState.masterTimeSec += dtSec;
         this.syncState.slaveTimeSec += dtSec * this.syncState.slaveVarispeedRatio;
       } else {
-        // HARD LOCK (< 0.25 ms error): Snap slave capstan to exact phase lock (zero flam!)
+        // HARD LOCK: Snap slave capstan to exact phase lock (zero drift, zero flam!)
         this.syncState.lockStatus =
           this.params.subFramePhaseMs > 0.1 ? 'PHASE OFFSET LOCK' : 'HARD SYNC LOCK';
         this.syncState.slaveVarispeedRatio = 1.0;
-        this.syncState.masterTimeSec += dtSec;
-        this.syncState.slaveTimeSec =
-          this.syncState.masterTimeSec - this.params.subFramePhaseMs / 1000;
+        this.syncState.slaveTimeSec = targetSlaveSec;
+        this.syncState.slaveReelAngle = this.syncState.masterReelAngle;
       }
 
       // Rotate 14-inch NAB reels proportional to IPS & varispeed
       const baseOmega = this.params.tapeSpeedIps === 30 ? 3.2 : 1.6;
       this.syncState.masterReelAngle =
         (this.syncState.masterReelAngle + baseOmega * dtSec) % (Math.PI * 2);
-      this.syncState.slaveReelAngle =
-        (this.syncState.slaveReelAngle +
-          baseOmega * this.syncState.slaveVarispeedRatio * dtSec) %
-        (Math.PI * 2);
+      if (
+        this.syncState.lockStatus === 'HARD SYNC LOCK' ||
+        this.syncState.lockStatus === 'PHASE OFFSET LOCK'
+      ) {
+        this.syncState.slaveReelAngle = this.syncState.masterReelAngle;
+      } else {
+        this.syncState.slaveReelAngle =
+          (this.syncState.slaveReelAngle +
+            baseOmega * this.syncState.slaveVarispeedRatio * dtSec) %
+          (Math.PI * 2);
+      }
     }
 
     // Update 80-bit SMPTE LTC frame bits & modulate Bi-Phase Mark oscillator between 1200 Hz ('0') and 2400 Hz ('1')
@@ -278,25 +290,27 @@ export class SmpteSynchronizerModule {
       const bitIndex = Math.floor(((nowMs / 2) % 80));
       const bitVal = this.syncState.current80Bits[bitIndex];
       const baseFreq = this.params.frameRate * 80; // ~2400 Hz for '1', ~1200 Hz for '0'
-      this.ltcCarrierOsc.frequency.setTargetAtTime(
-        bitVal ? baseFreq : baseFreq * 0.5,
-        now,
-        0.002
-      );
+      const targetFreq = bitVal ? baseFreq : baseFreq * 0.5;
+      if (this._lastLtcFreq !== targetFreq) {
+        this._lastLtcFreq = targetFreq;
+        this.ltcCarrierOsc.frequency.setTargetAtTime(targetFreq, now, 0.002);
+      }
 
       // Update Slave Machine B variable delay line:
-      // In HARD SYNC LOCK with 0.0 ms Sub-Frame Offset, delay is strictly 0.0s (zero flamming / comb filtering).
+      // Smoothly converge to 0.0s in HARD SYNC LOCK without buffer-jump clicks.
       const timeDiffSec = Math.abs(
         this.syncState.masterTimeSec - this.syncState.slaveTimeSec
       );
       const isHardZeroLock =
         this.syncState.lockStatus === 'HARD SYNC LOCK' && this.params.subFramePhaseMs <= 0.05;
-      if (isHardZeroLock) {
-        this.slaveServoDelay.delayTime.cancelScheduledValues(now);
-        this.slaveServoDelay.delayTime.setValueAtTime(0.0, now);
-      } else {
-        const clampedDelay = Math.min(0.08, timeDiffSec);
-        this.slaveServoDelay.delayTime.setTargetAtTime(clampedDelay, now, 0.018);
+      const targetDelay = isHardZeroLock ? 0.0 : Math.min(0.08, timeDiffSec);
+      if (this._lastTargetDelay === undefined || Math.abs(this._lastTargetDelay - targetDelay) > 1e-6) {
+        this._lastTargetDelay = targetDelay;
+        if (targetDelay === 0.0 && Math.abs(this.slaveServoDelay.delayTime.value) < 0.0002) {
+          this.slaveServoDelay.delayTime.setValueAtTime(0.0, now);
+        } else {
+          this.slaveServoDelay.delayTime.setTargetAtTime(targetDelay, now, 0.016);
+        }
       }
     }
   }
@@ -546,6 +560,14 @@ export class SmpteSynchronizerModule {
       const handler = () => {
         this.ensureAudioGraph();
         this.params[param] = parseFloat(el.value);
+        if (
+          param === 'subFramePhaseMs' &&
+          (this.syncState.lockStatus === 'HARD SYNC LOCK' ||
+            this.syncState.lockStatus === 'PHASE OFFSET LOCK')
+        ) {
+          this.syncState.slaveTimeSec =
+            this.syncState.masterTimeSec - this.params.subFramePhaseMs / 1000;
+        }
         this.syncAudioParams();
         this.syncUIFromParams();
       };
