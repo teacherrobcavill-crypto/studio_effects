@@ -9,7 +9,7 @@ export const SCENARIOS = [
     title: '1950s Live Tracking Room (Sabine Balance)',
     subtitle: 'Classic Columbia 30th St / Capitol Studio A proportions with warm oak & plaster decay',
     badge: 'RT60 & Critical Distance',
-    instrument: 'guitar',
+    instrument: 'drums',
     dimensions: { width: 8.5, height: 4.2, depth: 10.0 },
     surfaceMaterials: {
       floor: 'wood_oak',

@@ -1459,6 +1459,24 @@ html, body {
 /* ----------------------------------------------------------------------------
    Spring Reverb 2x2 Knobs Layout & Responsive Width Balancing (Matches Plate)
    ---------------------------------------------------------------------------- */
+.unit-panel {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Ensure bays never force overflow on smaller screens */
+.hw-bay,
+.vu-meter-bay {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.spring-faceplate {
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
 .spring-knobs-4 {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1528,10 +1546,58 @@ html, body {
   line-height: 1.35;
 }
 
+.spring-faceplate .knobs-row {
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+
+.spring-faceplate .knob-widget {
+  min-width: 0;
+  max-width: 86px;
+}
+
+.spring-faceplate .knob-svg-wrap {
+  width: 68px;
+  height: 68px;
+}
+
+@media (max-width: 1280px) {
+  .control-deck {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .rack-header {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
 @media (max-width: 900px) {
   .spring-math-grid {
     grid-template-columns: 1fr;
     gap: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .control-deck {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .rack-enclosure {
+    grid-template-columns: 24px 1fr 24px;
+  }
+  .rack-faceplate {
+    padding: 10px 10px 14px;
+  }
+  .webapp-host-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .em-unit-switcher {
+    width: 100%;
+    overflow-x: auto;
   }
 }
 
@@ -1561,5 +1627,3 @@ html, body {
     height: 60px;
   }
 }
-
-

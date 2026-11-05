@@ -11,7 +11,7 @@ export class SoundSynthesizer {
     this.onTransient = onTransientCallback;
 
     this.isPlaying = false;
-    this.instrument = 'guitar'; // 'guitar' | 'bass' | 'drums' | 'test_pulse'
+    this.instrument = 'drums'; // 'drums' | 'guitar' | 'bass' | 'test_pulse'
     this.stepIndex = 0;
     this.timerId = null;
 
