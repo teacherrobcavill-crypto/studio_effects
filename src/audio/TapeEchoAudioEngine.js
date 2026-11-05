@@ -27,6 +27,9 @@ export class TapeEchoAudioEngine {
     this.queuedParams = {
       routingMode: 0, // 0 = Dual Side-by-Side, 1 = RE-201 Solo, 2 = Copicat Solo
       inputGain: 1.0,
+      // Unit Bypass / Mute Controls: 1 = Bypassed (Muted), 0 = Active (Engaged)
+      reBypass: 1,
+      ccBypass: 1,
       // Roland RE-201 Space Echo
       reMode: 11,
       reRepeatRate: 0.52,
@@ -161,6 +164,22 @@ export class TapeEchoAudioEngine {
 
   getParam(name) {
     return this.queuedParams[name];
+  }
+
+  setReBypass(bypassed) {
+    this.setParam('reBypass', bypassed ? 1 : 0, 0.02);
+  }
+
+  setCcBypass(bypassed) {
+    this.setParam('ccBypass', bypassed ? 1 : 0, 0.02);
+  }
+
+  isReBypassed() {
+    return (this.queuedParams.reBypass ?? 1) > 0.5;
+  }
+
+  isCcBypassed() {
+    return (this.queuedParams.ccBypass ?? 1) > 0.5;
   }
 
   async playStem(stemId = this.currentStemId) {

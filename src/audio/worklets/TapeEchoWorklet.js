@@ -17,6 +17,11 @@ class TapeEchoWorkletProcessor extends AudioWorkletProcessor {
       // Shared or Independent Input Gain (0.0 to 2.0, >1.3 triggers Magnetic Saturation Hint)
       { name: 'inputGain', defaultValue: 1.0, minValue: 0.0, maxValue: 2.5, automationRate: 'k-rate' },
 
+      // Unit FX Bypass / Mute Controls: 1 = Bypassed (Muted), 0 = Active (Engaged)
+      // Defaults to 1 (both units bypassed on load)
+      { name: 'reBypass', defaultValue: 1, minValue: 0, maxValue: 1, automationRate: 'k-rate' },
+      { name: 'ccBypass', defaultValue: 1, minValue: 0, maxValue: 1, automationRate: 'k-rate' },
+
       // ── Roland RE-201 Space Echo Parameters ──
       { name: 'reMode', defaultValue: 11, minValue: 1, maxValue: 12, automationRate: 'k-rate' },
       { name: 'reRepeatRate', defaultValue: 0.52, minValue: 0.0, maxValue: 1.0, automationRate: 'k-rate' },
@@ -46,6 +51,10 @@ class TapeEchoWorkletProcessor extends AudioWorkletProcessor {
     this.reTapeBuf = new Float32Array(this.bufSize);
     this.ccTapeBuf = new Float32Array(this.bufSize);
     this.writeIdx = 0;
+
+    // Unit bypass smoothed gain multipliers (0.0 = bypassed / muted, 1.0 = active / engaged)
+    this.reBypassGain = 0.0;
+    this.ccBypassGain = 0.0;
 
     // ── Roland RE-201 State ──
     // Smoothed delay time for Head 1 (Head 2 = 1.92x, Head 3 = 2.86x physical head spacing)
@@ -228,10 +237,22 @@ class TapeEchoWorkletProcessor extends AudioWorkletProcessor {
       : 1.0 - Math.exp(-1.0 / (0.19 * this.sr));
     const ccDelaySlewAlpha = 1.0 - Math.exp(-1.0 / (0.045 * this.sr));
 
+    // Unit bypass parameters (1 = Bypassed/Muted, 0 = Active/Engaged)
+    const reBypassed = (parameters.reBypass ? parameters.reBypass[0] : 1.0) > 0.5;
+    const ccBypassed = (parameters.ccBypass ? parameters.ccBypass[0] : 1.0) > 0.5;
+    const reBypassTarget = reBypassed ? 0.0 : 1.0;
+    const ccBypassTarget = ccBypassed ? 0.0 : 1.0;
+    // ~25ms pop-free crossfade slew coefficient
+    const bypassAlpha = 1.0 - Math.exp(-1.0 / (0.025 * this.sr));
+
     const invSr = 1.0 / this.sr;
     const twoPi = 2.0 * Math.PI;
 
     for (let i = 0; i < outL.length; i++) {
+      // Slew bypass gains smoothly to prevent switching clicks
+      this.reBypassGain += bypassAlpha * (reBypassTarget - this.reBypassGain);
+      this.ccBypassGain += bypassAlpha * (ccBypassTarget - this.ccBypassGain);
+
       // Mono sum input
       const rawIn = inL ? 0.5 * (inL[i] + (inR ? inR[i] : inL[i])) : 0.0;
       const gainedIn = rawIn * inputGain;
@@ -335,7 +356,9 @@ class TapeEchoWorkletProcessor extends AudioWorkletProcessor {
         springWet = combSum * 0.42;
       }
 
-      const reWetTotal = reEqEcho * reEchoVol + springWet * reReverbVol;
+      const rawReWet = reEqEcho * reEchoVol + springWet * reReverbVol;
+      const reWetTotal = rawReWet * this.reBypassGain;
+      const effectiveSpringWet = springWet * this.reBypassGain;
       const reOutSample = gainedIn * 0.85 + reWetTotal;
       const absRe = Math.abs(reWetTotal) + Math.abs(gainedIn * 0.5);
       if (absRe > this.rePeakAcc) this.rePeakAcc = absRe;
@@ -414,7 +437,7 @@ class TapeEchoWorkletProcessor extends AudioWorkletProcessor {
         );
       }
 
-      const ccWetTotal = ccHeadsSum * ccSwell;
+      const ccWetTotal = ccHeadsSum * ccSwell * this.ccBypassGain;
       const ccOutSample = gainedIn * 0.85 + ccWetTotal;
       const absCc = Math.abs(ccWetTotal) + Math.abs(gainedIn * 0.5);
       if (absCc > this.ccPeakAcc) this.ccPeakAcc = absCc;
@@ -425,7 +448,7 @@ class TapeEchoWorkletProcessor extends AudioWorkletProcessor {
       if (routingMode === 1) {
         // Solo Roland RE-201 Space Echo
         outL[i] = Math.tanh(reOutSample * 0.9);
-        outR[i] = Math.tanh((gainedIn * 0.85 + reWetTotal * 0.96 - springWet * 0.18) * 0.9);
+        outR[i] = Math.tanh((gainedIn * 0.85 + reWetTotal * 0.96 - effectiveSpringWet * 0.18) * 0.9);
       } else if (routingMode === 2) {
         // Solo Watkins Copicat
         outL[i] = Math.tanh(ccOutSample * 0.9);
@@ -453,7 +476,9 @@ class TapeEchoWorkletProcessor extends AudioWorkletProcessor {
         saturation: this.satAmountAcc,
         reDelayMs: Math.round((this.reSmoothedBaseDelaySamples / this.sr) * 1000),
         ccDelayMs: Math.round((this.ccSmoothedHead1Samples / this.sr) * 1000),
-        ccMotorSpeed: this.ccMotorSpeed
+        ccMotorSpeed: this.ccMotorSpeed,
+        reBypassed: reBypassed,
+        ccBypassed: ccBypassed
       });
       this.inPeakAcc *= 0.65;
       this.rePeakAcc *= 0.65;

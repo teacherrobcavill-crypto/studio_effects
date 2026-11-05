@@ -130,6 +130,10 @@ export class TapeEchoModule {
     // Curriculum active tab ('all', 'copicat', 'space-echo', 'comparison')
     this.activeCurriculumTab = 'all';
 
+    // Unit FX bypass states (both delay units start in bypass / muted on load)
+    this.reBypass = true;
+    this.ccBypass = true;
+
     this._render();
     this._bindEvents();
     initDeclarativeTips(this.mountEl);
@@ -271,9 +275,16 @@ export class TapeEchoModule {
                   <p>FREE-FLOATING TAPE TANK • 3 PLAYBACK HEADS + SPRING REVERB • SOLID-STATE BAXANDALL EQ</p>
                 </div>
               </div>
-              <div class="te-unit-telemetry">
-                <span class="te-telem-chip" id="re-speed-readout">SPEED: 3.4 IPS</span>
-                <span class="te-telem-chip" id="re-delay-readout">H1: 115ms · H2: 221ms · H3: 329ms</span>
+              <div class="te-unit-header-right">
+                <div class="te-unit-telemetry">
+                  <span class="te-telem-chip" id="re-speed-readout">SPEED: 3.4 IPS</span>
+                  <span class="te-telem-chip" id="re-delay-readout">H1: 115ms · H2: 221ms · H3: 329ms</span>
+                </div>
+                <button type="button" id="re-btn-bypass" class="te-btn-mute-fx is-bypassed" aria-pressed="true" title="Roland RE-201 FX is currently BYPASSED (muted). Click to engage FX.">
+                  <span class="te-mute-led"></span>
+                  <span class="te-mute-text">MUTE THIS FX</span>
+                  <span class="te-mute-status">BYPASSED</span>
+                </button>
               </div>
             </header>
 
@@ -514,9 +525,16 @@ export class TapeEchoModule {
                   <p>TENSIONED ENDLESS TAPE LOOP • 3 PUSH-BUTTON HEADS • VALVE SUSTAIN • MOTOR PITCH-SLUR</p>
                 </div>
               </div>
-              <div class="te-unit-telemetry">
-                <span class="te-telem-chip cc-chip" id="cc-motor-readout">MOTOR: 3.75 IPS (STABLE)</span>
-                <span class="te-telem-chip cc-chip" id="cc-heads-readout">ACTIVE: HEAD 1 + HEAD 2</span>
+              <div class="te-unit-header-right">
+                <div class="te-unit-telemetry">
+                  <span class="te-telem-chip cc-chip" id="cc-motor-readout">MOTOR: 3.75 IPS (STABLE)</span>
+                  <span class="te-telem-chip cc-chip" id="cc-heads-readout">ACTIVE: HEAD 1 + HEAD 2</span>
+                </div>
+                <button type="button" id="cc-btn-bypass" class="te-btn-mute-fx is-bypassed" aria-pressed="true" title="Watkins Copicat FX is currently BYPASSED (muted). Click to engage FX.">
+                  <span class="te-mute-led"></span>
+                  <span class="te-mute-text">MUTE THIS FX</span>
+                  <span class="te-mute-status">BYPASSED</span>
+                </button>
               </div>
             </header>
 
@@ -903,6 +921,21 @@ export class TapeEchoModule {
       });
     }
 
+    // ── Delay Unit Mute / Bypass Buttons (Top Card) ──
+    const reBypassBtn = q('#re-btn-bypass');
+    if (reBypassBtn) {
+      reBypassBtn.addEventListener('click', () => {
+        this.setReBypass(!this.reBypass);
+      });
+    }
+
+    const ccBypassBtn = q('#cc-btn-bypass');
+    if (ccBypassBtn) {
+      ccBypassBtn.addEventListener('click', () => {
+        this.setCcBypass(!this.ccBypass);
+      });
+    }
+
     // ── Roland RE-201 Controls ──
     // 12-Position Mode Buttons & Rotary Dial
     qa('.re-mode-btn').forEach((btn) => {
@@ -1145,6 +1178,53 @@ export class TapeEchoModule {
     });
   }
 
+  setReBypass(bypassed) {
+    this.reBypass = Boolean(bypassed);
+    this.engine.setReBypass(this.reBypass);
+    this._updateBypassUI('re');
+  }
+
+  setCcBypass(bypassed) {
+    this.ccBypass = Boolean(bypassed);
+    this.engine.setCcBypass(this.ccBypass);
+    this._updateBypassUI('cc');
+  }
+
+  _updateBypassUI(unit = 'both') {
+    const q = (sel) => this.mountEl.querySelector(sel);
+    if (unit === 're' || unit === 'both') {
+      const btn = q('#re-btn-bypass');
+      if (btn) {
+        btn.classList.toggle('is-bypassed', this.reBypass);
+        btn.classList.toggle('is-active', !this.reBypass);
+        btn.setAttribute('aria-pressed', String(this.reBypass));
+        const statusEl = btn.querySelector('.te-mute-status');
+        if (statusEl) {
+          statusEl.textContent = this.reBypass ? 'BYPASSED' : 'ACTIVE';
+        }
+        btn.title = this.reBypass
+          ? 'Roland RE-201 FX is currently BYPASSED (muted). Click to engage FX.'
+          : 'Roland RE-201 FX is currently ACTIVE. Click to mute / bypass FX.';
+      }
+    }
+
+    if (unit === 'cc' || unit === 'both') {
+      const btn = q('#cc-btn-bypass');
+      if (btn) {
+        btn.classList.toggle('is-bypassed', this.ccBypass);
+        btn.classList.toggle('is-active', !this.ccBypass);
+        btn.setAttribute('aria-pressed', String(this.ccBypass));
+        const statusEl = btn.querySelector('.te-mute-status');
+        if (statusEl) {
+          statusEl.textContent = this.ccBypass ? 'BYPASSED' : 'ACTIVE';
+        }
+        btn.title = this.ccBypass
+          ? 'Watkins Copicat FX is currently BYPASSED (muted). Click to engage FX.'
+          : 'Watkins Copicat FX is currently ACTIVE. Click to mute / bypass FX.';
+      }
+    }
+  }
+
   _setRe201Mode(modeNum) {
     const m = Math.max(1, Math.min(12, Math.round(modeNum)));
     this.engine.setParam('reMode', m, 0.01);
@@ -1275,6 +1355,7 @@ export class TapeEchoModule {
 
     if (presetId === 'apache-1960') {
       // Hank Marvin / The Shadows 1960 Copicat Multi-Head Gallop
+      this.setCcBypass(false);
       this.engine.setParam('ccHead1', 1);
       this.engine.setParam('ccHead2', 1);
       this.engine.setParam('ccHead3', 1);
@@ -1296,6 +1377,7 @@ export class TapeEchoModule {
       }
     } else if (presetId === 'rockabilly-58') {
       // 1958 London Skiffle / Rock & Roll single-head slapback
+      this.setCcBypass(false);
       this.engine.setParam('ccHead1', 1);
       this.engine.setParam('ccHead2', 0);
       this.engine.setParam('ccHead3', 0);
@@ -1309,6 +1391,7 @@ export class TapeEchoModule {
       this.engine.triggerGuitarChord();
     } else if (presetId === 'king-tubby-74') {
       // 1974 Black Ark / King Tubby Dub Space Echo
+      this.setReBypass(false);
       this._setRe201Mode(11);
       setSlider('#re-repeat-rate', 44);
       setSlider('#re-intensity', 78);
@@ -1322,17 +1405,21 @@ export class TapeEchoModule {
         this.engine.playStem('dub-skank');
       }
     } else if (presetId === 'saturation-demo') {
+      this.setReBypass(false);
+      this.setCcBypass(false);
       setSlider('#te-input-gain', 180);
       if (!this.engine.isPlaying) {
         this.engine.triggerGuitarChord();
       }
     } else if (presetId === 'wow-flutter-demo') {
+      this.setCcBypass(false);
       this._setCopicatMotor(0);
       setTimeout(() => this._setCopicatMotor(1), 400);
       if (!this.engine.isPlaying) {
         this.engine.playStem('shadows-guitar');
       }
     } else if (presetId === 'dub-oscillation-demo') {
+      this.setReBypass(false);
       this._setRe201Mode(9);
       setSlider('#re-intensity', 96);
       this.engine.triggerDubRimshot();
