@@ -137,6 +137,9 @@ html, body {
   position: relative;
   width: 100%;
   max-width: 1400px;
+  margin: 0 auto;
+  min-width: 0;
+  box-sizing: border-box;
   /* Authentic 1960s German Silver-Sage Hammerschlag (Hammer-Tone) Enamel */
   background:
     radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
@@ -204,6 +207,9 @@ html, body {
   flex-direction: column;
   gap: 14px;
   padding: 16px 20px 20px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* ----------------------------------------------------------------------------
@@ -216,6 +222,7 @@ html, body {
   gap: 18px;
   padding-bottom: 12px;
   border-bottom: 2px groove rgba(255, 255, 255, 0.14);
+  min-width: 0;
 }
 
 .brand-plate {
@@ -495,6 +502,9 @@ html, body {
   grid-template-columns: 1.15fr 1.5fr 1.05fr 235px;
   gap: 14px;
   align-items: stretch;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .hw-bay {
@@ -511,6 +521,8 @@ html, body {
   flex-direction: column;
   justify-content: space-between;
   gap: 12px;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .bay-header {
@@ -1079,10 +1091,13 @@ html, body {
 /* Dual Stage Container */
 .em-dual-stage {
   width: 100%;
-  max-width: 1440px;
+  max-width: 1400px;
+  margin: 0 auto;
   display: grid;
   gap: 16px;
   align-items: start;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .em-dual-stage.mode-plate {
@@ -1440,4 +1455,111 @@ html, body {
   pointer-events: none;
   filter: grayscale(0.6);
 }
+
+/* ----------------------------------------------------------------------------
+   Spring Reverb 2x2 Knobs Layout & Responsive Width Balancing (Matches Plate)
+   ---------------------------------------------------------------------------- */
+.spring-knobs-4 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px 10px;
+  justify-items: center;
+  align-items: center;
+  width: 100%;
+}
+
+.spring-knobs-4 .knob-widget {
+  width: 86px;
+}
+
+.spring-knobs-4 .knob-svg-wrap {
+  width: 70px;
+  height: 70px;
+}
+
+.spring-knobs-4 .knob-label {
+  font-size: 0.60rem;
+}
+
+.spring-knobs-4 .knob-readout {
+  font-size: 0.62rem;
+  min-width: 52px;
+  padding: 1px 4px;
+}
+
+/* Side-by-side mode scaling for Spring Bay III 2x2 knobs */
+.em-dual-stage.mode-side-by-side .spring-knobs-4 {
+  gap: 4px 6px;
+}
+
+.em-dual-stage.mode-side-by-side .spring-knobs-4 .knob-widget {
+  width: 64px;
+}
+
+.em-dual-stage.mode-side-by-side .spring-knobs-4 .knob-svg-wrap {
+  width: 56px;
+  height: 56px;
+}
+
+/* Header & Telemetry Fluid Sizing */
+.spring-telemetry-housing {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.spring-telemetry-housing .gondola-top-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  justify-content: space-between;
+}
+
+.spring-telemetry-housing .gondola-scale-marks {
+  font-size: 0.54rem;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+#spring-subtitle-line {
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+  font-size: 0.65rem;
+  line-height: 1.35;
+}
+
+@media (max-width: 900px) {
+  .spring-math-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 560px) {
+  .knob-widget {
+    width: 76px;
+  }
+  .knob-svg-wrap {
+    width: 64px;
+    height: 64px;
+  }
+  .knob-label {
+    font-size: 0.58rem;
+  }
+  .knob-readout {
+    font-size: 0.60rem;
+    min-width: 48px;
+  }
+  .knobs-row {
+    gap: 4px;
+  }
+  .spring-knobs-4 .knob-widget {
+    width: 72px;
+  }
+  .spring-knobs-4 .knob-svg-wrap {
+    width: 60px;
+    height: 60px;
+  }
+}
+
 
